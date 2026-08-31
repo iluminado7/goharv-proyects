@@ -32,6 +32,11 @@ sumar uno nuevo se hace en un solo archivo.
 y queda registrado en `project_updates` con autor, fecha, estado anterior y
 comentario. No hay manera de mover un proyecto sin dejar rastro.
 
+**Comentarios.** Se puede dejar una nota en un proyecto sin moverlo de estado, y
+queda en la misma línea de tiempo que los movimientos, con el punto hueco para
+distinguirla. Comentar está abierto a todo el equipo, no solo a quienes
+participan del proyecto: no cambia ningún dato y sirve para avisar algo.
+
 **Orden y filtros.** Por prioridad (default), por estado, por último movimiento
 o alfabético. Filtros por estado, responsable y búsqueda de texto, de a 30 por
 página. La búsqueda usa el índice fulltext donde el motor lo soporta.
@@ -44,6 +49,11 @@ responsable del proyecto y los del panel.
 **Mi perfil.** Cada uno cambia su nombre, su correo y su clave (pidiendo la
 actual). Ahí figura su rol; el rol y el alta o baja los sigue manejando el
 responsable del panel.
+
+**Se instala en el celular.** Es una PWA: desde Android el navegador ofrece
+instalarla solo, y desde iPhone se agrega con Compartir → Agregar a inicio.
+Queda con ícono propio y abre a pantalla completa. Sin conexión muestra una
+pantalla propia en vez del error del navegador.
 
 **Menú y fondo.** Header con Proyectos, Equipo (solo responsables) y Mi perfil,
 marcando en cuál se está parado. El botón ☀/☾ alterna entre fondo negro y claro:
@@ -126,8 +136,10 @@ app/Policies/         ProjectPolicy
 resources/views/      layouts/app, auth/login, projects/*, members/index,
                       profile/edit, partials/theme-toggle, pagination/goharv
 public/css/           goharv.css
+public/                manifest.webmanifest, sw.js, offline.html, icons/
 tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
-                      Menu, Theme
+                      Menu, Theme, ProjectComment, ArchivedProject, ProxyUrl,
+                      Pwa
 ```
 
 ---
@@ -152,27 +164,25 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 
 ### Funcionalidad pendiente
 
-5. **Comentarios sueltos.** `project_updates` ya acepta un `body` sin cambio de
-   estado, pero no hay interfaz para dejar una nota sin mover el proyecto.
-6. **Adjuntos.** Subir archivos al proyecto (`spatie/laravel-medialibrary` o
+5. **Adjuntos.** Subir archivos al proyecto (`spatie/laravel-medialibrary` o
    storage nativo).
-7. **Notificaciones.** Avisar al responsable cuando le asignan un proyecto o
+6. **Notificaciones.** Avisar al responsable cuando le asignan un proyecto o
    cuando se vence una fecha de entrega.
-8. **Tablero por columnas.** El listado ordenado funciona bien, pero una vista
+7. **Tablero por columnas.** El listado ordenado funciona bien, pero una vista
    tipo kanban con las cuatro columnas puede leerse más rápido. Requiere JS,
    así que va contra la decisión de Blade puro: evaluarlo antes.
-9. **Exportar.** Un CSV del estado de todos los proyectos para reportes.
-10. **Ordenar los enlaces a mano.** La columna `position` está, pero el orden
+8. **Exportar.** Un CSV del estado de todos los proyectos para reportes.
+9. **Ordenar los enlaces a mano.** La columna `position` está, pero el orden
     hoy es el de carga en el formulario. Reordenar sin JS implica flechas
     arriba/abajo con un POST por clic.
 
 ### Decisiones a tomar
 
-11. **Qué pasa con un proyecto terminado.** ¿Se archiva solo a los X días? ¿Queda
+10. **Qué pasa con un proyecto terminado.** ¿Se archiva solo a los X días? ¿Queda
     en el tablero para siempre? Sin una regla, el listado se llena de terminados.
     Ahora que archivar y restaurar es un clic, la salida barata es archivarlos a
     mano hasta decidir si conviene automatizarlo.
-12. **Borrado definitivo.** Los archivados se acumulan para siempre. Falta
+11. **Borrado definitivo.** Los archivados se acumulan para siempre. Falta
     decidir si alguien puede vaciarlos de verdad y quién.
 
 ---
@@ -187,9 +197,9 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 56 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 70 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
-  archivados y —sobre todo— que `moveTo()` escriba el historial.
+  archivados, comentarios y —sobre todo— que `moveTo()` escriba el historial.
   `php artisan test`.
 - **Índice de texto completo.** Migración con `fullText` sobre `name` y
   `description`; `Project::scopeSearch()` lo usa en MySQL/MariaDB/PostgreSQL con
@@ -202,6 +212,14 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **Menú completo y fondo claro.** El header ya tiene su botón a Proyectos, el
   rol salió de ahí y quedó en el perfil, y el fondo se alterna entre negro y
   claro desde el header o desde el login.
+- **Instalable en el celular.** Manifest, iconos generados con GD, service
+  worker y pantalla de sin conexión. Toques de 44px donde el puntero es grueso,
+  campos de 16px para que Safari no haga zoom, y un breakpoint en 520px. El
+  service worker **no cachea páginas** a propósito: el panel muestra datos del
+  equipo y un teléfono se pierde o se presta.
+- **Comentarios sueltos.** `Project::comment()` guarda la nota con el mismo
+  estado en las dos puntas, así `isStatusChange()` da false y el historial la
+  muestra distinta sin necesidad de una columna nueva.
 - **Quién edita qué, decidido.** Edita quien está metido en el proyecto. La regla
   quedó escrita en `ProjectPolicy` y cubierta por `ProjectPolicyTest`, así que si
   algún día cambia, se cambia en un solo lugar.
@@ -219,6 +237,11 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   `@can` en las vistas), no con `abort_unless` sueltos.
 - Nada de SQL propio de un motor. Si hace falta ordenar por una secuencia, va un
   `CASE WHEN` armado desde el enum.
+- El único JavaScript del panel es el registro del service worker, seis líneas
+  en `partials/pwa-register`. Si aparece la tentación de sumar más, revisar
+  primero si se puede resolver con un formulario.
+- Al tocar `goharv.css` hay que subir `VERSION` en `public/sw.js`, o los
+  celulares que ya instalaron la app siguen con el CSS viejo.
 - Nada de `<select multiple>`: para elegir varios van checkboxes, que no piden
   Ctrl+clic ni explicación.
 - Los colores salen de las variables CSS (`--bg`, `--panel`, `--line`, `--ink`,

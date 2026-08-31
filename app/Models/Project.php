@@ -152,6 +152,21 @@ class Project extends Model
         return true;
     }
 
+    /**
+     * Nota al pie del proyecto, sin moverlo de estado. Se guarda con el estado
+     * actual en las dos puntas: asi isStatusChange() da false y el historial lo
+     * muestra como comentario y no como movimiento.
+     */
+    public function comment(User $author, string $body): ProjectUpdate
+    {
+        return $this->updates()->create([
+            'user_id'     => $author->id,
+            'body'        => $body,
+            'status_from' => $this->status->value,
+            'status_to'   => $this->status->value,
+        ]);
+    }
+
     /** Orden natural del tablero: primero lo urgente, despues lo mas movido. */
     public function scopeSorted(Builder $query, string $by = 'prioridad'): Builder
     {

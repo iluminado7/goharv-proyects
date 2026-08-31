@@ -54,10 +54,24 @@
         @endcan
     </div>
 
-    <h2 style="font-size:16px;font-weight:600;margin:32px 0 16px">Historial</h2>
+    <h2 class="section">Historial</h2>
+
+    @can('comment', $project)
+        <form method="POST" action="{{ route('projects.comment', $project) }}" class="comment-box">
+            @csrf
+            <label for="body" class="sr-only">Comentario</label>
+            <textarea id="body" name="body" rows="2" maxlength="1000"
+                      placeholder="Dejá una nota: qué falta, qué trabaste, qué averiguaste. No mueve el estado.">{{ old('body') }}</textarea>
+            @error('body') <p class="err">{{ $message }}</p> @enderror
+            <div class="comment-acts">
+                <button class="btn btn-sm">Comentar</button>
+            </div>
+        </form>
+    @endcan
+
     <ul class="timeline">
         @forelse ($project->updates as $u)
-            <li>
+            <li class="{{ $u->isStatusChange() ? '' : 'is-note' }}">
                 <p style="margin:0">
                     @if ($u->isStatusChange())
                         <strong>{{ $u->status_from?->label() ?? 'Alta' }} → {{ $u->status_to?->label() }}</strong>
@@ -67,7 +81,7 @@
                 <span class="when">{{ $u->author?->name ?? 'Alguien' }} · {{ $u->created_at->translatedFormat('d M Y, H:i') }}</span>
             </li>
         @empty
-            <li><p style="margin:0;color:var(--muted)">Todavía no hay movimientos registrados.</p></li>
+            <li><p style="margin:0;color:var(--muted)">Todavía no hay movimientos ni comentarios.</p></li>
         @endforelse
     </ul>
     <div style="height:60px"></div>

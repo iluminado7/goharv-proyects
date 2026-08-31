@@ -1,6 +1,12 @@
 # Contrarresta el "Require all denied" de la carpeta de arriba: esta si se sirve.
 Require all granted
 
+# Apache no conoce .webmanifest y lo sirve sin content-type; algunos
+# navegadores lo descartan y entonces no ofrecen instalar la app.
+<IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes

@@ -149,6 +149,23 @@ class ProjectController extends Controller
         return back()->with('ok', 'Estado actualizado.');
     }
 
+    /** Una nota en el historial, sin tocar el estado del proyecto. */
+    public function comment(Request $request, Project $project): RedirectResponse
+    {
+        $this->authorize('comment', $project);
+
+        $data = $request->validate([
+            'body' => ['required', 'string', 'max:1000'],
+        ], [
+            'body.required' => 'Escribí algo antes de mandar.',
+            'body.max'      => 'El comentario no puede pasar de 1000 caracteres.',
+        ]);
+
+        $project->comment($request->user(), $data['body']);
+
+        return back()->with('ok', 'Comentario agregado.');
+    }
+
     public function destroy(Request $request, Project $project): RedirectResponse
     {
         $this->authorize('delete', $project);

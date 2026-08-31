@@ -3,7 +3,7 @@
 
     <div class="body">
         <div class="title-line">
-            <h3><a href="{{ route('projects.show', $project) }}">{{ $project->name }}</a></h3>
+            <h3><a href="{{ route('projects.show', $project) }}" class="to-detail">{{ $project->name }}</a></h3>
             <span class="prio">prioridad {{ mb_strtolower($project->priority->label()) }}</span>
         </div>
 
@@ -37,11 +37,12 @@
     <div class="acts">
         @php ($link = $project->primaryLink())
         @if ($link)
-            <a class="btn btn-sm" href="{{ $link->url }}" target="_blank" rel="noopener">Abrir</a>
+            <a class="btn btn-sm" href="{{ $link->url }}" target="_blank" rel="noopener">URL</a>
             @if ($project->links->count() > 1)
                 <span class="more-links">+{{ $project->links->count() - 1 }}</span>
             @endif
         @endif
+        <a class="btn btn-ghost btn-sm" href="{{ route('projects.show', $project) }}">Notas</a>
         @can('update', $project)
             <a class="btn btn-ghost btn-sm" href="{{ route('projects.edit', $project) }}">Editar</a>
         @endcan

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sin conexión — GoHarv</title>
+    <!-- Estilos embebidos a proposito: esta pantalla tiene que dibujarse aunque
+         no haya red y aunque el CSS no este en el cache. -->
+    <style>
+        :root { color-scheme: dark light; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            padding: 32px 24px; text-align: center; background: #000; color: #F5F4F2;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; line-height: 1.5;
+        }
+        .marca {
+            font-family: Georgia, 'Times New Roman', serif; font-variant: small-caps;
+            font-weight: 800; font-size: 40px; line-height: 1; margin-bottom: 24px; display: block;
+        }
+        .marca sup { font-size: .34em; vertical-align: super; font-variant: normal; margin-left: .12em; }
+        h1 { font-family: Georgia, serif; font-weight: 600; font-size: 22px; margin: 0 0 10px; }
+        p { color: #9A9A9E; margin: 0 0 26px; font-size: 14.5px; max-width: 38ch; }
+        button {
+            background: #F5F4F2; color: #000; border: 1px solid #F5F4F2; border-radius: 8px;
+            padding: 13px 22px; font: inherit; font-weight: 600; cursor: pointer; min-height: 44px;
+        }
+        @media (prefers-color-scheme: light) {
+            body { background: #FAF9F7; color: #16161A; }
+            p { color: #5F6169; }
+            button { background: #16161A; color: #FAF9F7; border-color: #16161A; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <span class="marca">GoHarv.<sup>&reg;</sup></span>
+        <h1>Sin conexión</h1>
+        <p>
+            El panel lee los proyectos del servidor, así que necesita internet para
+            mostrarte algo. Fijate la señal y volvé a intentar.
+        </p>
+        <button onclick="location.reload()">Reintentar</button>
+    </main>
+</body>
+</html>

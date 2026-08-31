@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/proyectos/{project}/editar', [ProjectController::class, 'edit'])->name('projects.edit');
     Route::put('/proyectos/{project}', [ProjectController::class, 'update'])->name('projects.update');
     Route::patch('/proyectos/{project}/estado', [ProjectController::class, 'moveStatus'])->name('projects.status');
+    Route::post('/proyectos/{project}/comentarios', [ProjectController::class, 'comment'])->name('projects.comment');
     Route::delete('/proyectos/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
     Route::patch('/proyectos/{project}/restaurar', [ProjectController::class, 'restore'])
         ->withTrashed()

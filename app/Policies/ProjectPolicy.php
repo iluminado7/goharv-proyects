@@ -42,10 +42,20 @@ class ProjectPolicy
         return $this->involved($user, $project);
     }
 
-    /** Mover de estado y comentar: lo mismo que editar. */
+    /** Mover de estado: lo mismo que editar. */
     public function move(User $user, Project $project): bool
     {
         return $this->involved($user, $project);
+    }
+
+    /**
+     * Comentar es mas abierto que editar a proposito: si alguien del equipo ve
+     * algo que sirve, tiene que poder decirlo sin que lo sumen al proyecto.
+     * No cambia ningun dato, solo agrega una linea al historial.
+     */
+    public function comment(User $user, Project $project): bool
+    {
+        return true;
     }
 
     public function delete(User $user, Project $project): bool
