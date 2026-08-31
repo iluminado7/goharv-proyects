@@ -1,0 +1,3 @@
+# Nada de esta carpeta se sirve por HTTP: aca estan .env, app/, storage/ y
+# vendor/. Lo unico publico es public/, que se habilita en su propio .htaccess.
+Require all denied
