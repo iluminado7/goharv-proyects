@@ -39,6 +39,14 @@ Route::middleware('auth')->group(function () {
         ->withTrashed()
         ->name('projects.restore');
 
+    // Borrado definitivo: pantalla de confirmacion aparte, porque no se deshace.
+    Route::get('/proyectos/{project}/eliminar', [ProjectController::class, 'confirmDelete'])
+        ->withTrashed()
+        ->name('projects.delete.confirm');
+    Route::delete('/proyectos/{project}/definitivo', [ProjectController::class, 'forceDestroy'])
+        ->withTrashed()
+        ->name('projects.force-destroy');
+
     Route::get('/perfil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/perfil', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/perfil/clave', [ProfileController::class, 'updatePassword'])->name('profile.password');

@@ -6,6 +6,9 @@ Reemplaza el seguimiento disperso entre chats, planillas y memoria de cada uno.
 
 **Stack:** Laravel · Blade (sin capa JS) · autenticación propia sobre sesiones · MySQL/MariaDB
 
+Este archivo es la documentación técnica. Para el equipo que va a usar el panel
+está la [Guía del panel](GUIA.md), que explica cómo se usa sin hablar de código.
+
 ---
 
 ## Qué hace hoy
@@ -17,6 +20,11 @@ intentos fallidos por minuto y bloqueo de cuentas dadas de baja. Dos niveles:
 **Archivar y restaurar.** Archivar saca el proyecto del tablero sin borrar nada.
 Los archivados tienen su pantalla en `/proyectos/archivados`, con buscador, y
 vuelven con un clic. Las dos cosas quedan asentadas en el historial.
+
+**Borrado definitivo.** Solo los responsables del panel, solo sobre proyectos ya
+archivados, y con una pantalla previa donde hay que escribir el nombre del
+proyecto. Se lleva el historial, los enlaces y los colaboradores en cascada: es
+la única acción del panel que no se puede deshacer.
 
 **Proyectos.** Nombre, detalle, responsable, colaboradores, prioridad
 (alta / media / baja), estado y fecha de entrega opcional. Cada proyecto lleva
@@ -182,8 +190,6 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
     en el tablero para siempre? Sin una regla, el listado se llena de terminados.
     Ahora que archivar y restaurar es un clic, la salida barata es archivarlos a
     mano hasta decidir si conviene automatizarlo.
-11. **Borrado definitivo.** Los archivados se acumulan para siempre. Falta
-    decidir si alguien puede vaciarlos de verdad y quién.
 
 ---
 
@@ -197,9 +203,10 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 70 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 82 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
-  archivados, comentarios y —sobre todo— que `moveTo()` escriba el historial.
+  archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
+  escriba el historial.
   `php artisan test`.
 - **Índice de texto completo.** Migración con `fullText` sobre `name` y
   `description`; `Project::scopeSearch()` lo usa en MySQL/MariaDB/PostgreSQL con
@@ -237,9 +244,11 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   `@can` en las vistas), no con `abort_unless` sueltos.
 - Nada de SQL propio de un motor. Si hace falta ordenar por una secuencia, va un
   `CASE WHEN` armado desde el enum.
-- El único JavaScript del panel es el registro del service worker, seis líneas
-  en `partials/pwa-register`. Si aparece la tentación de sumar más, revisar
-  primero si se puede resolver con un formulario.
+- El JavaScript del panel son dos partials y nada más: `pwa-register` (registra
+  el service worker) y `password-toggle` (el ojito para ver la clave). Los dos
+  hacen cosas que el servidor no puede hacer, y los dos degradan bien si el JS
+  no corre. Si aparece la tentación de sumar un tercero, revisar primero si se
+  puede resolver con un formulario.
 - Al tocar `goharv.css` hay que subir `VERSION` en `public/sw.js`, o los
   celulares que ya instalaron la app siguen con el CSS viejo.
 - Nada de `<select multiple>`: para elegir varios van checkboxes, que no piden

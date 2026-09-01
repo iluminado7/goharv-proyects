@@ -46,6 +46,7 @@
     @endif
     @yield('content')
 </main>
+@include('partials.password-toggle')
 @include('partials.pwa-register')
 </body>
 </html>

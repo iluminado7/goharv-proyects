@@ -68,6 +68,17 @@ class ProjectPolicy
         return $project->owner_id === $user->id;
     }
 
+    /**
+     * Borrar de verdad. Devuelve false para todo el mundo: los responsables del
+     * panel ya pasaron por before(). Es la unica accion del panel que no se
+     * puede deshacer, y se lleva el historial en cascada, asi que no se delega
+     * ni siquiera en el responsable del proyecto.
+     */
+    public function forceDelete(User $user, Project $project): bool
+    {
+        return false;
+    }
+
     private function involved(User $user, Project $project): bool
     {
         if ($project->owner_id === $user->id) {

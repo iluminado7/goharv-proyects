@@ -169,6 +169,37 @@ class ProjectTest extends TestCase
         $this->assertNotSame('Renombrado', $project->fresh()->name);
     }
 
+    /**
+     * Dos enlaces sin nombre solian quedar los dos como "Enlace": dos botones
+     * identicos que iban a lugares distintos.
+     */
+    public function test_un_enlace_sin_nombre_se_bautiza_con_su_url(): void
+    {
+        $user    = User::factory()->create();
+        $project = Project::factory()->ownedBy($user)->create();
+
+        $project->syncLinks([
+            ['label' => '', 'url' => 'https://ejemplo.test/'],
+            ['label' => '', 'url' => 'https://ejemplo.test/panel'],
+            ['label' => 'A mano', 'url' => 'https://ejemplo.test/otro'],
+        ]);
+
+        $etiquetas = $project->links->pluck('label')->all();
+
+        $this->assertSame(['ejemplo.test', 'Panel', 'A mano'], $etiquetas);
+        $this->assertSame(count($etiquetas), count(array_unique($etiquetas)));
+    }
+
+    public function test_el_nombre_derivado_no_desborda_el_boton(): void
+    {
+        $largo = 'https://un-subdominio-desmedidamente-largo.ejemplo.test/';
+
+        $this->assertLessThanOrEqual(
+            \App\Models\ProjectLink::LARGO_NOMBRE,
+            mb_strlen(\App\Models\ProjectLink::labelFromUrl($largo))
+        );
+    }
+
     public function test_archivar_no_borra_ni_lo_deja_en_el_tablero(): void
     {
         $user    = User::factory()->create();

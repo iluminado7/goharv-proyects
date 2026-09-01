@@ -32,7 +32,7 @@
             @csrf @method('PATCH')
             <div class="row-2">
                 <div class="field">
-                    <label for="status">Mover a</label>
+                    <label for="status">Cambiar estado</label>
                     <select id="status" name="status">
                         @foreach ($statuses as $s)
                             <option value="{{ $s->value }}" @selected($project->status === $s)>{{ $s->label() }}</option>
@@ -54,7 +54,7 @@
         @endcan
     </div>
 
-    <h2 class="section">Historial</h2>
+    <h2 class="section">Notas</h2>
 
     @can('comment', $project)
         <form method="POST" action="{{ route('projects.comment', $project) }}" class="comment-box">

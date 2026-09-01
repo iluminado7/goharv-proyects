@@ -204,6 +204,48 @@ class ProjectController extends Controller
             ->with('ok', 'Proyecto restaurado. Volvió al tablero.');
     }
 
+    /** Pantalla previa: dice exactamente que se va a perder. */
+    public function confirmDelete(Project $project): View
+    {
+        $this->authorize('forceDelete', $project);
+        $this->soloArchivados($project);
+
+        $project->loadCount(['updates', 'links', 'collaborators']);
+
+        return view('projects.delete', ['project' => $project]);
+    }
+
+    public function forceDestroy(Request $request, Project $project): RedirectResponse
+    {
+        $this->authorize('forceDelete', $project);
+        $this->soloArchivados($project);
+
+        $request->validate([
+            'confirmacion' => ['required', 'string'],
+        ], ['confirmacion.required' => 'Escribí el nombre del proyecto para confirmar.']);
+
+        if (trim($request->input('confirmacion')) !== $project->name) {
+            return back()->withErrors([
+                'confirmacion' => 'El nombre no coincide. No se borró nada.',
+            ]);
+        }
+
+        $nombre = $project->name;
+
+        // En cascada se van el historial, los enlaces y los colaboradores.
+        $project->forceDelete();
+
+        return redirect()
+            ->route('projects.archived')
+            ->with('ok', 'Se borró «'.$nombre.'» para siempre, con todo su historial.');
+    }
+
+    /** Hay que archivar antes de borrar: obliga a pasar por un paso reversible. */
+    private function soloArchivados(Project $project): void
+    {
+        abort_unless($project->trashed(), 404, 'Solo se puede borrar un proyecto que ya está archivado.');
+    }
+
     private function activeMembers()
     {
         return User::where('is_active', true)->orderBy('name')->get();

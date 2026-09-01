@@ -36,6 +36,7 @@
         </form>
     </div>
 </div>
+@include('partials.password-toggle')
 @include('partials.pwa-register')
 </body>
 </html>

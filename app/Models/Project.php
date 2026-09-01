@@ -107,7 +107,7 @@ class Project extends Model
             }
 
             $clean[] = [
-                'label'    => trim((string) ($row['label'] ?? '')) ?: 'Enlace',
+                'label'    => trim((string) ($row['label'] ?? '')) ?: ProjectLink::labelFromUrl($url),
                 'url'      => $url,
                 'position' => count($clean),
             ];

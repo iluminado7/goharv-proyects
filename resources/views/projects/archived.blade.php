@@ -42,9 +42,13 @@
                             @csrf @method('PATCH')
                             <button class="btn btn-sm">Restaurar</button>
                         </form>
-                    @else
-                        <span class="hint" style="margin:0">Lo restaura su responsable</span>
                     @endcan
+                    @can('forceDelete', $project)
+                        <a class="btn btn-danger btn-sm" href="{{ route('projects.delete.confirm', $project) }}">Borrar</a>
+                    @endcan
+                    @cannot('restore', $project)
+                        <span class="hint" style="margin:0">Lo restaura su responsable</span>
+                    @endcannot
                 </div>
             </article>
         @empty
