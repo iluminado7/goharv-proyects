@@ -54,7 +54,7 @@
         <div class="row-2">
             <div class="field">
                 <label for="password">Clave inicial</label>
-                <input id="password" name="password" type="text" required>
+                <input id="password" name="password" type="password" autocomplete="new-password" required>
                 @error('password') <p class="err">{{ $message }}</p> @enderror
             </div>
             <div class="field">

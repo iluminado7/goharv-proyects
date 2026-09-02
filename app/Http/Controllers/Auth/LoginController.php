@@ -42,9 +42,13 @@ class LoginController extends Controller
 
         if (! Auth::user()->is_active) {
             Auth::logout();
+            RateLimiter::hit($key, 60);
 
+            // Mismo texto que para una clave equivocada, a proposito: si dijera
+            // "cuenta dada de baja" estaria confirmando que el correo existe y
+            // que la clave probada era la correcta.
             throw ValidationException::withMessages([
-                'email' => 'Esta cuenta está dada de baja. Hablá con el responsable del panel.',
+                'email' => 'Esos datos no coinciden con ninguna cuenta.',
             ]);
         }
 

@@ -139,7 +139,7 @@ app/Enums/            ProjectStatus, ProjectPriority, UserRole
 app/Models/           Project, ProjectLink, ProjectUpdate, User
 app/Http/Controllers/ ProjectController, MemberController, ProfileController,
                       ThemeController, Auth/LoginController
-app/Http/Middleware/  EnsureUserIsAdmin
+app/Http/Middleware/  EnsureUserIsAdmin, EnsureUserIsActive, SecurityHeaders
 app/Policies/         ProjectPolicy
 resources/views/      layouts/app, auth/login, projects/*, members/index,
                       profile/edit, partials/theme-toggle, pagination/goharv
@@ -163,10 +163,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 2. **Configurar el envío de correo.** Sin esto no funciona ni el punto anterior
    ni ninguna notificación futura.
 3. **HTTPS y `APP_DEBUG=false` en el servidor.** El login viaja en texto plano
-   sobre HTTP. El `trustProxies` de `bootstrap/app.php` hoy confía en cualquier
-   proxy (`at: '*'`), que sirve para mirar el panel por ngrok; en producción hay
-   que dejar ahí la IP del proxy real, o alguien puede falsear el host de las
-   URLs que genera el panel.
+   sobre HTTP.
 4. **Backups automáticos de la base.** El panel pasa a ser la fuente de verdad
    de los proyectos; perder esa tabla es perder el historial completo.
 
@@ -203,7 +200,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 82 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 101 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.
@@ -227,6 +224,29 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **Comentarios sueltos.** `Project::comment()` guarda la nota con el mismo
   estado en las dos puntas, así `isStatusChange()` da false y el historial la
   muestra distinta sin necesidad de una columna nueva.
+- **Cabeceras de seguridad.** `SecurityHeaders` agrega CSP, `X-Frame-Options`,
+  `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` y HSTS
+  (esta última solo si la request ya es HTTPS). La CSP usa un **nonce por
+  request** para los dos scripts del panel en lugar de abrir `unsafe-inline`:
+  si algún día se cuela un script inyectado, no va a tener el nonce.
+- **Reglas de clave en un solo lugar.** `Password::defaults()` en
+  `AppServiceProvider`; en producción suma `uncompromised()`, que contrasta
+  contra bases de claves filtradas. Fuera de producción no, para no meter una
+  llamada de red en los tests.
+- **Límites de intentos** en el cambio de clave (6/min) y en los comentarios
+  (30/min), además del login que ya los tenía.
+- **El login no delata cuentas de baja.** Antes ese mensaje aparecía recién
+  después de acertar la clave, o sea que confirmaba que la clave era correcta.
+- **Baja efectiva.** `EnsureUserIsActive` corre en todo el grupo `web`: si la
+  cuenta está dada de baja, cierra la sesión en el acto. Antes el chequeo estaba
+  solo en el login, así que una sesión ya abierta seguía leyendo el tablero
+  entero y un responsable dado de baja podía reactivarse solo desde *Equipo*.
+- **El host no se hereda del proxy.** `trustProxies` confía en el esquema, el
+  puerto y la IP de origen, pero no en `X-Forwarded-Host`: esa cabecera la manda
+  cualquiera y serviría para que el panel genere enlaces hacia otro dominio.
+  Importa sobre todo el día que haya recuperación de clave por correo.
+- **Cookie de sesión `secure` sola en producción.** `config/session.php` la
+  activa cuando `APP_ENV=production`, sin depender de que alguien se acuerde.
 - **Quién edita qué, decidido.** Edita quien está metido en el proyecto. La regla
   quedó escrita en `ProjectPolicy` y cubierta por `ProjectPolicyTest`, así que si
   algún día cambia, se cambia en un solo lugar.
@@ -253,6 +273,8 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   celulares que ya instalaron la app siguen con el CSS viejo.
 - Nada de `<select multiple>`: para elegir varios van checkboxes, que no piden
   Ctrl+clic ni explicación.
+- Cualquier `<script>` nuevo necesita `nonce="{{ $cspNonce }}"` o la CSP lo
+  bloquea sin decir nada en pantalla.
 - Los colores salen de las variables CSS (`--bg`, `--panel`, `--line`, `--ink`,
   `--muted`, `--faint`, `--track`), nunca de un hex suelto, o el fondo claro se
   rompe.

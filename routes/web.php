@@ -33,7 +33,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/proyectos/{project}/editar', [ProjectController::class, 'edit'])->name('projects.edit');
     Route::put('/proyectos/{project}', [ProjectController::class, 'update'])->name('projects.update');
     Route::patch('/proyectos/{project}/estado', [ProjectController::class, 'moveStatus'])->name('projects.status');
-    Route::post('/proyectos/{project}/comentarios', [ProjectController::class, 'comment'])->name('projects.comment');
+    Route::post('/proyectos/{project}/comentarios', [ProjectController::class, 'comment'])
+        ->middleware('throttle:30,1')
+        ->name('projects.comment');
     Route::delete('/proyectos/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
     Route::patch('/proyectos/{project}/restaurar', [ProjectController::class, 'restore'])
         ->withTrashed()
@@ -49,7 +51,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/perfil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/perfil', [ProfileController::class, 'update'])->name('profile.update');
-    Route::put('/perfil/clave', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    // Pide la clave actual: sin limite, una sesion ajena podria adivinarla.
+    Route::put('/perfil/clave', [ProfileController::class, 'updatePassword'])
+        ->middleware('throttle:6,1')
+        ->name('profile.password');
 
     Route::middleware('admin')->group(function () {
         Route::get('/equipo', [MemberController::class, 'index'])->name('members.index');

@@ -39,7 +39,7 @@ class ProfileController extends Controller
     {
         $data = $request->validate([
             'current_password' => ['required', 'current_password'],
-            'password'         => ['required', 'confirmed', Password::min(8)],
+            'password'         => ['required', 'confirmed', Password::defaults()],
         ], [
             'current_password.current_password' => 'La clave actual no coincide.',
             'password.confirmed'                => 'La repetición no coincide con la clave nueva.',
