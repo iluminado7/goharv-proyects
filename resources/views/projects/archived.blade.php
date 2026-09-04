@@ -21,6 +21,9 @@
                 <div class="pbar" style="background:var(--track)"></div>
 
                 <div class="body">
+                    @if ($project->client)
+                        <p class="empresa">{{ $project->client }}</p>
+                    @endif
                     <div class="title-line">
                         <h3>{{ $project->name }}</h3>
                         <span class="prio">{{ $project->status->label() }}</span>

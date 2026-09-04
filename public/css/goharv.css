@@ -65,6 +65,8 @@ header.mast{border-bottom:1px solid var(--line);position:sticky;top:0;background
 .item-off{grid-template-columns:4px 1fr auto}
 .item-off .title-line h3{color:var(--muted)}
 .body{padding:15px 0 15px 4px;min-width:0}
+.empresa{margin:0 0 3px;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.empresa-ficha{margin:28px 0 0;font-size:12.5px}
 .title-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .title-line h3{margin:0;font-size:16px;font-weight:600}
 .to-detail{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
@@ -135,6 +137,7 @@ header.mast{border-bottom:1px solid var(--line);position:sticky;top:0;background
 .member-row form{flex-wrap:wrap}
 
 h1.page{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:28px;margin:28px 0 6px}
+.empresa-ficha + h1.page{margin-top:4px}
 p.page-sub{color:var(--muted);margin:0 0 24px;font-size:14px}
 
 .me{display:flex;align-items:center;gap:7px}

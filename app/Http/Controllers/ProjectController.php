@@ -18,7 +18,7 @@ class ProjectController extends Controller
 
     public function index(Request $request): View
     {
-        $filters = $request->only(['q', 'status', 'priority', 'owner']);
+        $filters = $request->only(['q', 'status', 'priority', 'owner', 'client']);
         $sort    = $request->string('sort', 'prioridad')->toString();
 
         $projects = Project::with(['owner', 'links'])
@@ -40,6 +40,7 @@ class ProjectController extends Controller
             'statuses'   => ProjectStatus::cases(),
             'priorities' => ProjectPriority::cases(),
             'members'    => $this->activeMembers(),
+            'empresas'   => Project::clientes(),
         ]);
     }
 
@@ -69,6 +70,7 @@ class ProjectController extends Controller
             'statuses'   => ProjectStatus::cases(),
             'priorities' => ProjectPriority::cases(),
             'members'    => $this->activeMembers(),
+            'empresas'   => Project::clientes(),
         ]);
     }
 
@@ -113,6 +115,7 @@ class ProjectController extends Controller
             'statuses'   => ProjectStatus::cases(),
             'priorities' => ProjectPriority::cases(),
             'members'    => $this->activeMembers(),
+            'empresas'   => Project::clientes(),
         ]);
     }
 
@@ -256,6 +259,7 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'name'            => ['required', 'string', 'max:120'],
             'description'     => ['nullable', 'string', 'max:2000'],
+            'client'          => ['nullable', 'string', 'max:120'],
             'status'          => ['required', Rule::in(ProjectStatus::values())],
             'priority'        => ['required', Rule::in(ProjectPriority::values())],
             'owner_id'        => ['nullable', 'exists:users,id'],

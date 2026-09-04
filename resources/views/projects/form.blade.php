@@ -11,10 +11,27 @@
         @csrf
         @if ($project->exists) @method('PUT') @endif
 
-        <div class="field">
-            <label for="name">Nombre</label>
-            <input id="name" name="name" value="{{ old('name', $project->name) }}" required>
-            @error('name') <p class="err">{{ $message }}</p> @enderror
+        <div class="row-2">
+            <div class="field">
+                <label for="name">Nombre</label>
+                <input id="name" name="name" value="{{ old('name', $project->name) }}" required>
+                @error('name') <p class="err">{{ $message }}</p> @enderror
+            </div>
+            <div class="field">
+                <label for="client">Empresa</label>
+                {{-- El datalist es HTML puro: sugiere las empresas ya cargadas
+                     sin impedir escribir una nueva, y evita que la misma
+                     empresa entre con tres grafias distintas. --}}
+                <input id="client" name="client" list="empresas-cargadas" autocomplete="off"
+                       maxlength="120" placeholder="Para quién es el proyecto"
+                       value="{{ old('client', $project->client) }}">
+                <datalist id="empresas-cargadas">
+                    @foreach ($empresas as $empresa)
+                        <option value="{{ $empresa }}"></option>
+                    @endforeach
+                </datalist>
+                @error('client') <p class="err">{{ $message }}</p> @enderror
+            </div>
         </div>
 
         @php

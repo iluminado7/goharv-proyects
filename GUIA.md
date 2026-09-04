@@ -50,8 +50,10 @@ cuántos en cada estado.
 
 ### Encontrar algo
 
-- **Buscador:** busca por nombre y por el detalle del proyecto. No busca dentro
-  de las notas.
+- **Buscador:** busca por nombre, por el detalle y por la empresa. No busca
+  dentro de las notas.
+- **Todas las empresas:** filtra por cliente. Aparece cuando hay al menos un
+  proyecto con empresa cargada.
 - **Todo el equipo:** filtra por responsable. Muestra los proyectos donde esa
   persona figura como responsable, no en los que colabora.
 - **Ordenar:** por prioridad (el orden por defecto), por estado, por últimos
@@ -119,6 +121,15 @@ Con **Agregar proyecto**, arriba a la derecha del tablero.
 
 Lo único obligatorio es el **nombre**. Todo lo demás se puede completar después,
 así que no lo dejes sin cargar por no tener todos los datos.
+
+**Empresa.** Para qué cliente es el proyecto. Al escribir, el panel te sugiere
+las empresas que ya cargaste: **elegí siempre la sugerencia si la empresa ya
+existe**. Si la escribís distinto —"Cerrajería Leonardo" y "cerrajeria leonardo"—
+el panel las va a tratar como dos empresas separadas y el filtro te va a mostrar
+los proyectos partidos en dos.
+
+Una vez cargada, aparece arriba del nombre en el tablero y en la ficha, y podés
+filtrar el tablero por empresa desde el desplegable de arriba.
 
 **Enlaces.** Podés poner todos los que necesite: el repo, la carpeta de Drive, el
 sitio de prueba, el diseño. Cada uno lleva un nombre y una URL. Poné nombres

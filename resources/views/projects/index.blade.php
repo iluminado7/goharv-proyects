@@ -15,6 +15,14 @@
     <form method="GET" class="tools">
         <input type="search" name="q" value="{{ $filters['q'] ?? '' }}"
                placeholder="Buscar por nombre o detalle">
+        @if ($empresas->isNotEmpty())
+            <select name="client" onchange="this.form.submit()">
+                <option value="">Todas las empresas</option>
+                @foreach ($empresas as $empresa)
+                    <option value="{{ $empresa }}" @selected(($filters['client'] ?? null) === $empresa)>{{ $empresa }}</option>
+                @endforeach
+            </select>
+        @endif
         <select name="owner" onchange="this.form.submit()">
             <option value="">Todo el equipo</option>
             @foreach ($members as $m)

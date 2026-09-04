@@ -2,6 +2,9 @@
 @section('title', $project->name)
 
 @section('content')
+    @if ($project->client)
+        <p class="empresa empresa-ficha">{{ $project->client }}</p>
+    @endif
     <h1 class="page">{{ $project->name }}</h1>
     <p class="page-sub">
         {{ $project->owner?->name ?? 'Sin responsable' }} ·

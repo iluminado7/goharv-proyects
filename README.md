@@ -26,6 +26,13 @@ archivados, y con una pantalla previa donde hay que escribir el nombre del
 proyecto. Se lleva el historial, los enlaces y los colaboradores en cascada: es
 la única acción del panel que no se puede deshacer.
 
+**Empresa por proyecto.** La consultora trabaja para varios clientes, así que
+cada proyecto lleva el nombre de la empresa. Es texto libre —decisión del
+equipo— con dos amortiguadores: el formulario sugiere las ya cargadas con un
+`<datalist>` (HTML puro, sin JS) y el modelo normaliza los espacios al guardar,
+para que la misma empresa no entre con tres grafías. El tablero filtra por
+empresa y el buscador la incluye.
+
 **Proyectos.** Nombre, detalle, responsable, colaboradores, prioridad
 (alta / media / baja), estado y fecha de entrega opcional. Cada proyecto lleva
 todos los enlaces que necesite (repo, Drive, staging, diseño); el primero de la
@@ -123,7 +130,7 @@ inmediato y cargar al resto del equipo desde *Equipo*.
 | Tabla | Para qué |
 |---|---|
 | `users` | Se le agregan `role` (admin/member) e `is_active`. |
-| `projects` | Nombre, slug, detalle, estado, prioridad, `owner_id`, `due_date`, `started_at`, `completed_at`. Con `softDeletes` e índice fulltext sobre nombre y detalle. |
+| `projects` | Nombre, slug, detalle, `client`, estado, prioridad, `owner_id`, `due_date`, `started_at`, `completed_at`. Con `softDeletes` e índice fulltext sobre nombre, detalle y empresa. |
 | `project_links` | Enlaces del proyecto: `label`, `url`, `position`. |
 | `project_user` | Colaboradores además del responsable. |
 | `project_updates` | Historial: autor, comentario, `status_from`, `status_to`. |
@@ -200,7 +207,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 101 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 110 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.

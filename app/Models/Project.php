@@ -6,6 +6,7 @@ use App\Enums\ProjectPriority;
 use App\Enums\ProjectStatus;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,7 +21,7 @@ class Project extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name', 'slug', 'description',
+        'name', 'slug', 'description', 'client',
         'status', 'priority', 'owner_id', 'due_date',
         'started_at', 'completed_at',
     ];
@@ -34,6 +35,26 @@ class Project extends Model
             'started_at'   => 'datetime',
             'completed_at' => 'datetime',
         ];
+    }
+
+    /** Sin espacios de sobra: es texto libre y se filtra por valor exacto. */
+    protected function client(): Attribute
+    {
+        return Attribute::set(function (?string $value) {
+            $limpio = trim(preg_replace('/\s+/u', ' ', (string) $value));
+
+            return $limpio === '' ? null : $limpio;
+        });
+    }
+
+    /** Las empresas ya cargadas, para el filtro y el autocompletado. */
+    public static function clientes(): \Illuminate\Support\Collection
+    {
+        return static::query()
+            ->whereNotNull('client')
+            ->distinct()
+            ->orderBy('client')
+            ->pluck('client');
     }
 
     protected static function booted(): void
@@ -204,6 +225,7 @@ class Project extends Model
             ->when($filters['status'] ?? null, fn ($q, $s) => $q->where('status', $s))
             ->when($filters['priority'] ?? null, fn ($q, $p) => $q->where('priority', $p))
             ->when($filters['owner'] ?? null, fn ($q, $o) => $q->where('owner_id', $o))
+            ->when($filters['client'] ?? null, fn ($q, $c) => $q->where('client', $c))
             ->when($filters['q'] ?? null, fn ($q, $term) => $q->search($term));
     }
 
@@ -225,13 +247,14 @@ class Project extends Model
                 ->implode(' ');
 
             if ($boolean !== '') {
-                return $query->whereFullText(['name', 'description'], $boolean, ['mode' => 'boolean']);
+                return $query->whereFullText(['name', 'description', 'client'], $boolean, ['mode' => 'boolean']);
             }
         }
 
         return $query->where(function (Builder $sub) use ($term) {
             $sub->where('name', 'like', "%{$term}%")
-                ->orWhere('description', 'like', "%{$term}%");
+                ->orWhere('description', 'like', "%{$term}%")
+                ->orWhere('client', 'like', "%{$term}%");
         });
     }
 
