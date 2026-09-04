@@ -27,13 +27,20 @@ class ProjectController extends Controller
             ->paginate(self::PER_PAGE)
             ->withQueryString();
 
-        $counts = Project::selectRaw('status, count(*) as total')
+        // Los contadores se calculan con todos los filtros MENOS el de estado:
+        // asi el numero de cada estado no cambia al pararse sobre uno, que es
+        // lo que permite saltar de un estado a otro sin perder la referencia.
+        $sinEstado = Project::filtered(collect($filters)->except('status')->all());
+
+        $counts = (clone $sinEstado)
+            ->selectRaw('status, count(*) as total')
             ->groupBy('status')
             ->pluck('total', 'status');
 
         return view('projects.index', [
             'projects'   => $projects,
             'counts'     => $counts,
+            'total'      => (clone $sinEstado)->count(),
             'archivados' => Project::onlyTrashed()->count(),
             'filters'    => $filters,
             'sort'       => $sort,

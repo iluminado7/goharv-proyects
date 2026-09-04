@@ -53,8 +53,13 @@ distinguirla. Comentar está abierto a todo el equipo, no solo a quienes
 participan del proyecto: no cambia ningún dato y sirve para avisar algo.
 
 **Orden y filtros.** Por prioridad (default), por estado, por último movimiento
-o alfabético. Filtros por estado, responsable y búsqueda de texto, de a 30 por
+o alfabético. Filtros por empresa, responsable y búsqueda de texto, de a 30 por
 página. La búsqueda usa el índice fulltext donde el motor lo soporta.
+
+Los contadores de arriba **son** el filtro por estado: muestran cuántos hay en
+cada uno y llevan ahí con un clic. Se calculan con todos los filtros vigentes
+menos el de estado, para que los números no se muevan al pararse en uno y se
+pueda saltar de un estado a otro.
 
 **Quién edita qué.** `ProjectPolicy`: el proyecto lo edita y lo mueve de estado
 quien está metido en él —responsable o colaborador— más los responsables del
@@ -207,7 +212,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 110 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 116 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.

@@ -46,7 +46,8 @@ señal vas a ver una pantalla que te avisa, en vez del error del navegador.
 ## El tablero
 
 Es la pantalla principal. Arriba de todo, los números: cuántos proyectos hay y
-cuántos en cada estado.
+cuántos en cada estado. **Son botones**: clic en *en desarrollo* y el listado
+queda solo con esos; clic en *proyectos* y vuelven todos.
 
 ### Encontrar algo
 
@@ -58,8 +59,8 @@ cuántos en cada estado.
   persona figura como responsable, no en los que colabora.
 - **Ordenar:** por prioridad (el orden por defecto), por estado, por últimos
   movimientos o alfabético.
-- **Los botones redondos** (Todos, Nuevo, Inicio, En desarrollo, Terminado)
-  filtran por estado con un clic.
+- **Los números de arriba:** filtran por estado. Se combinan con el resto, así
+  que podés pedir "los proyectos en desarrollo de tal empresa".
 
 Con muchos proyectos el listado se corta de a 30 y aparecen *Anterior* y
 *Siguiente* abajo. Los filtros se mantienen al cambiar de página.

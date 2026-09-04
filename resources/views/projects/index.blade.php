@@ -2,15 +2,27 @@
 @section('title', 'Proyectos')
 
 @section('content')
-    <div class="tally">
-        <div><span class="n">{{ $projects->total() }}</span><span class="l">proyectos</span></div>
+    @php ($sinEstado = request()->except(['status', 'page']))
+
+    {{-- Los contadores son el filtro por estado: muestran cuantos hay y llevan
+         ahi con un clic. Reemplazan a la fila de chips, que hacia lo mismo. --}}
+    <nav class="tally" aria-label="Filtrar por estado">
+        <a class="tally-item {{ empty($filters['status']) ? 'on' : '' }}"
+           href="{{ route('projects.index', $sinEstado) }}"
+           @if (empty($filters['status'])) aria-current="true" @endif>
+            <span class="n">{{ $total }}</span><span class="l">proyectos</span>
+        </a>
+
         @foreach ($statuses as $s)
-            <div>
+            @php ($activo = ($filters['status'] ?? null) === $s->value)
+            <a class="tally-item {{ $activo ? 'on' : '' }}"
+               href="{{ route('projects.index', array_merge($sinEstado, ['status' => $s->value])) }}"
+               @if ($activo) aria-current="true" @endif>
                 <span class="n" style="color:{{ $s->color() }}">{{ $counts[$s->value] ?? 0 }}</span>
                 <span class="l">{{ mb_strtolower($s->label()) }}</span>
-            </div>
+            </a>
         @endforeach
-    </div>
+    </nav>
 
     <form method="GET" class="tools">
         <input type="search" name="q" value="{{ $filters['q'] ?? '' }}"
@@ -41,12 +53,6 @@
     </form>
 
     <div class="chips">
-        <a class="chip {{ empty($filters['status']) ? 'on' : '' }}"
-           href="{{ route('projects.index', array_merge(request()->except(['status', 'page']), [])) }}">Todos</a>
-        @foreach ($statuses as $s)
-            <a class="chip {{ ($filters['status'] ?? null) === $s->value ? 'on' : '' }}"
-               href="{{ route('projects.index', array_merge(request()->except(['status', 'page']), ['status' => $s->value])) }}">{{ $s->label() }}</a>
-        @endforeach
 
         @if ($archivados > 0)
             <a class="chip chip-off" href="{{ route('projects.archived') }}">

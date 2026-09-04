@@ -44,15 +44,18 @@ header.mast{border-bottom:1px solid var(--line);position:sticky;top:0;background
 .btn-sm{padding:6px 11px;font-size:13px;border-radius:7px}
 .btn-wide{width:100%}
 
-.tally{display:flex;gap:22px;flex-wrap:wrap;padding:22px 0 18px;border-bottom:1px solid var(--line)}
-.tally div{display:flex;align-items:baseline;gap:8px}
+.tally{display:flex;gap:6px;flex-wrap:wrap;padding:16px 0 14px;border-bottom:1px solid var(--line)}
+.tally-item{display:flex;align-items:baseline;gap:8px;padding:8px 14px;border:1px solid transparent;border-radius:9px;cursor:pointer}
+.tally-item:hover{border-color:var(--line);background:var(--panel)}
+.tally-item.on{border-color:var(--ink);background:var(--panel)}
 .tally .n{font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:600;line-height:1}
 .tally .l{font-size:12.5px;color:var(--muted)}
+.tally-item.on .l{color:var(--ink)}
 
 .tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:18px 0}
 .tools input[type=search],.tools select{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
 .tools input[type=search]{flex:1 1 220px;min-width:170px}
-.chips{display:flex;gap:6px;flex-wrap:wrap;padding-bottom:14px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding-bottom:14px;justify-content:flex-end}
 .chip{border:1px solid var(--line);color:var(--muted);border-radius:20px;padding:5px 13px;font-size:13px;background:transparent;cursor:pointer}
 .chip.on{border-color:var(--ink);color:var(--ink)}
 
