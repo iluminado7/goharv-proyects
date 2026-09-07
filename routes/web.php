@@ -36,6 +36,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/proyectos/{project}/comentarios', [ProjectController::class, 'comment'])
         ->middleware('throttle:30,1')
         ->name('projects.comment');
+    Route::delete('/proyectos/{project}/notas/{update}', [ProjectController::class, 'destroyComment'])
+        ->scopeBindings()
+        ->name('projects.comment.destroy');
     Route::delete('/proyectos/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
     Route::patch('/proyectos/{project}/restaurar', [ProjectController::class, 'restore'])
         ->withTrashed()

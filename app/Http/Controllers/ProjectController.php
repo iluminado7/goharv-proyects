@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\ProjectPriority;
 use App\Enums\ProjectStatus;
 use App\Models\Project;
+use App\Models\ProjectUpdate;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -174,6 +175,16 @@ class ProjectController extends Controller
         $project->comment($request->user(), $data['body']);
 
         return back()->with('ok', 'Comentario agregado.');
+    }
+
+    /** Borra una nota. Los cambios de estado no se tocan: los frena la Policy. */
+    public function destroyComment(Project $project, ProjectUpdate $update): RedirectResponse
+    {
+        $this->authorize('delete', $update);
+
+        $update->delete();
+
+        return back()->with('ok', 'Nota borrada.');
     }
 
     public function destroy(Request $request, Project $project): RedirectResponse

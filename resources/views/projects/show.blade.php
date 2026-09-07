@@ -75,13 +75,19 @@
     <ul class="timeline">
         @forelse ($project->updates as $u)
             <li class="{{ $u->isStatusChange() ? '' : 'is-note' }}">
-                <p style="margin:0">
-                    @if ($u->isStatusChange())
-                        <strong>{{ $u->status_from?->label() ?? 'Alta' }} → {{ $u->status_to?->label() }}</strong>
-                    @endif
-                    {{ $u->body }}
-                </p>
-                <span class="when">{{ $u->author?->name ?? 'Alguien' }} · {{ $u->created_at->translatedFormat('d M Y, H:i') }}</span>
+                {{-- El cuerpo va en su propio elemento con white-space:pre-line,
+                     para respetar los saltos de linea sin dejar pasar HTML. --}}
+                <p class="cuerpo">@if ($u->isStatusChange())<strong>{{ $u->status_from?->label() ?? 'Alta' }} → {{ $u->status_to?->label() }}</strong> @endif{{ $u->body }}</p>
+                <div class="pie">
+                    <span class="when">{{ $u->author?->name ?? 'Alguien' }} · {{ $u->created_at->translatedFormat('d M Y, H:i') }}</span>
+                    @can('delete', $u)
+                        <form method="POST" action="{{ route('projects.comment.destroy', [$project, $u]) }}"
+                              onsubmit="return confirm('¿Borrar esta nota? No se puede deshacer.')">
+                            @csrf @method('DELETE')
+                            <button class="borrar-nota">Borrar</button>
+                        </form>
+                    @endcan
+                </div>
             </li>
         @empty
             <li><p style="margin:0;color:var(--muted)">Todavía no hay movimientos ni comentarios.</p></li>

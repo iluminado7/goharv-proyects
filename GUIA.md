@@ -103,6 +103,13 @@ Usalo.
 dicho: qué estás esperando, con quién hablaste, qué trabó. Cualquiera del equipo
 puede comentar en cualquier proyecto, aunque no participe.
 
+Podés usar **saltos de línea** para separar ideas o pegar varios enlaces uno
+debajo del otro: se respetan tal como los escribiste.
+
+Si te equivocaste, cada nota tiene un **Borrar** chiquito al lado de la fecha.
+Solo aparece en las tuyas —los responsables del panel pueden borrar cualquiera—
+y no se puede deshacer.
+
 ### El historial
 
 Abajo de todo está la línea de tiempo, de lo más nuevo a lo más viejo. Cada
@@ -110,6 +117,9 @@ línea dice quién y cuándo.
 
 - **Punto lleno:** un movimiento de estado.
 - **Punto hueco:** una nota.
+
+Los movimientos de estado **no se pueden borrar**, ni siquiera siendo
+responsable del panel. Es a propósito: son el registro de quién movió qué.
 
 Ahí queda todo: el alta del proyecto, cada cambio de estado, cada comentario, y
 también cuándo se archivó o se restauró.

@@ -50,7 +50,12 @@ comentario. No hay manera de mover un proyecto sin dejar rastro.
 **Comentarios.** Se puede dejar una nota en un proyecto sin moverlo de estado, y
 queda en la misma línea de tiempo que los movimientos, con el punto hueco para
 distinguirla. Comentar está abierto a todo el equipo, no solo a quienes
-participan del proyecto: no cambia ningún dato y sirve para avisar algo.
+participan del proyecto: no cambia ningún dato y sirve para avisar algo. Los
+saltos de línea se respetan (`white-space: pre-line`, sin imprimir HTML crudo).
+
+Las notas las borra su autor, o cualquier responsable del panel. Los **cambios
+de estado no se borran nunca**, ni por un admin: `ProjectUpdatePolicy` lo frena.
+Son el registro de quién movió el proyecto, que es para lo que existe el panel.
 
 **Orden y filtros.** Por prioridad (default), por estado, por último movimiento
 o alfabético. Filtros por empresa, responsable y búsqueda de texto, de a 30 por
@@ -152,7 +157,7 @@ app/Models/           Project, ProjectLink, ProjectUpdate, User
 app/Http/Controllers/ ProjectController, MemberController, ProfileController,
                       ThemeController, Auth/LoginController
 app/Http/Middleware/  EnsureUserIsAdmin, EnsureUserIsActive, SecurityHeaders
-app/Policies/         ProjectPolicy
+app/Policies/         ProjectPolicy, ProjectUpdatePolicy
 resources/views/      layouts/app, auth/login, projects/*, members/index,
                       profile/edit, partials/theme-toggle, pagination/goharv
 public/css/           goharv.css
@@ -212,7 +217,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 116 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 123 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.

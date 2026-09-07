@@ -123,6 +123,11 @@ header.mast{border-bottom:1px solid var(--line);position:sticky;top:0;background
 .timeline li:last-child{padding-bottom:0}
 .timeline li::before{content:"";position:absolute;left:-4px;top:6px;width:7px;height:7px;border-radius:50%;background:var(--faint)}
 .timeline .when{font-size:12px;color:var(--faint)}
+/* Respeta los saltos de linea que se escribieron en la nota. */
+.timeline .cuerpo{margin:0;white-space:pre-line}
+.timeline .pie{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:2px}
+.borrar-nota{background:none;border:0;padding:0;font-size:12px;color:var(--faint);cursor:pointer;text-decoration:underline}
+.borrar-nota:hover{color:#E05C4B}
 /* Los comentarios no mueven el proyecto: el punto va hueco para distinguirlos. */
 .timeline li.is-note::before{background:var(--bg);border:1px solid var(--muted)}
 .timeline li.is-note p{color:var(--ink)}
