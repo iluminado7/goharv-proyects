@@ -53,6 +53,10 @@ Route::middleware('auth')->group(function () {
         ->name('projects.force-destroy');
 
     Route::get('/perfil', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::post('/perfil/foto', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+    Route::delete('/perfil/foto', [ProfileController::class, 'destroyAvatar'])->name('profile.avatar.destroy');
+    // La foto de cualquiera del equipo: se usa en el historial y en Equipo.
+    Route::get('/equipo/{user}/foto', [ProfileController::class, 'avatar'])->name('users.avatar');
     Route::put('/perfil', [ProfileController::class, 'update'])->name('profile.update');
     // Pide la clave actual: sin limite, una sesion ajena podria adivinarla.
     Route::put('/perfil/clave', [ProfileController::class, 'updatePassword'])

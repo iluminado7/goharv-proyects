@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Support\AvatarImage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use RuntimeException;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
@@ -32,6 +36,61 @@ class ProfileController extends Controller
         return redirect()
             ->route('profile.edit')
             ->with('ok', 'Datos actualizados.');
+    }
+
+    public function updateAvatar(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'avatar' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:4096'],
+        ], [
+            'avatar.required' => 'Elegí una imagen.',
+            'avatar.image'    => 'El archivo tiene que ser una imagen.',
+            'avatar.mimes'    => 'Se aceptan JPG, PNG o WebP.',
+            'avatar.max'      => 'La imagen no puede pasar de 4 MB.',
+        ]);
+
+        try {
+            $binario = AvatarImage::fromUpload($request->file('avatar'));
+        } catch (RuntimeException) {
+            return back()->withErrors(['avatar' => 'No se pudo leer esa imagen. Probá con otra.']);
+        }
+
+        $request->user()->avatar()->updateOrCreate([], [
+            'mime'  => AvatarImage::MIME,
+            'image' => $binario,
+        ]);
+
+        return redirect()->route('profile.edit')->with('ok', 'Foto actualizada.');
+    }
+
+    public function destroyAvatar(Request $request): RedirectResponse
+    {
+        $request->user()->avatar()->delete();
+
+        return redirect()->route('profile.edit')->with('ok', 'Foto quitada. Volvés a las iniciales.');
+    }
+
+    /**
+     * Sirve la foto desde la base. Va con ETag para que el navegador no la
+     * pida de nuevo en cada pantalla, y privada para que no la guarde el CDN.
+     */
+    public function avatar(Request $request, User $user): Response
+    {
+        $avatar = $user->avatar()->first();
+
+        abort_if($avatar === null, 404);
+
+        $etag = '"'.md5($user->id.'-'.$avatar->updated_at->getTimestamp()).'"';
+
+        if ($request->headers->get('If-None-Match') === $etag) {
+            return response('', 304);
+        }
+
+        return response($avatar->image, 200, [
+            'Content-Type'  => $avatar->mime,
+            'Cache-Control' => 'private, max-age=86400',
+            'ETag'          => $etag,
+        ]);
     }
 
     /** Pide la clave actual: sin eso, una sesion abierta ajena cambia la clave. */

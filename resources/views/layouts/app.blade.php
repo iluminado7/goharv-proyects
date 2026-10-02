@@ -29,7 +29,10 @@
                 </nav>
             </div>
             <div class="who">
-                <a href="{{ route('profile.edit') }}" class="me"><strong>{{ auth()->user()->name }}</strong></a>
+                <a href="{{ route('profile.edit') }}" class="me">
+                    <x-avatar :user="auth()->user()" :size="28" />
+                    <strong>{{ auth()->user()->name }}</strong>
+                </a>
                 @include('partials.theme-toggle')
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf

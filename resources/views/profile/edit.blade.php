@@ -9,6 +9,36 @@
         en el panel desde {{ $user->created_at->translatedFormat('F Y') }}
     </p>
 
+    <div class="card" style="margin-bottom:22px">
+        <div class="foto-fila">
+            <x-avatar :user="$user" :size="88" />
+
+            <div class="foto-acciones">
+                <form method="POST" action="{{ route('profile.avatar.update') }}" enctype="multipart/form-data">
+                    @csrf
+                    <label for="avatar" class="sr-only">Foto de perfil</label>
+                    <input id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/webp" required>
+                    <button class="btn btn-sm">Subir foto</button>
+                </form>
+
+                @if ($user->hasAvatar())
+                    <form method="POST" action="{{ route('profile.avatar.destroy') }}"
+                          onsubmit="return confirm('¿Quitar la foto? Volvés a las iniciales.')">
+                        @csrf @method('DELETE')
+                        <button class="btn btn-ghost btn-sm">Quitar</button>
+                    </form>
+                @endif
+            </div>
+        </div>
+
+        @error('avatar') <p class="err">{{ $message }}</p> @enderror
+        <p class="hint" style="margin:12px 0 0">
+            JPG, PNG o WebP, hasta 4 MB. Se recorta al centro en un cuadrado y se
+            achica: no hace falta que prepares nada. Si no subís ninguna, se usan
+            tus iniciales.
+        </p>
+    </div>
+
     <form method="POST" action="{{ route('profile.update') }}" class="card">
         @csrf @method('PUT')
 

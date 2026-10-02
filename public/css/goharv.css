@@ -148,6 +148,16 @@ h1.page{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:2
 .empresa-ficha + h1.page{margin-top:4px}
 p.page-sub{color:var(--muted);margin:0 0 24px;font-size:14px}
 
+.avatar{border-radius:50%;object-fit:cover;flex:none;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;background:var(--panel-2)}
+.avatar-txt{color:#fff;font-weight:600;letter-spacing:.01em;line-height:1;font-family:'Inter',system-ui,sans-serif}
+.member-id{display:flex;align-items:center;gap:12px}
+.foto-fila{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.foto-acciones{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.foto-acciones input[type=file]{font-size:13px;max-width:230px}
+.foto-acciones form{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.timeline .when{display:inline-flex;align-items:center;gap:7px}
+.avatar-grande{margin-bottom:14px}
+
 .me{display:flex;align-items:center;gap:7px}
 .me:hover strong{text-decoration:underline}
 

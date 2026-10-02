@@ -71,8 +71,16 @@ quien está metido en él —responsable o colaborador— más los responsables 
 panel. El resto del equipo lo ve, pero no lo toca. Archivar queda para el
 responsable del proyecto y los del panel.
 
-**Mi perfil.** Cada uno cambia su nombre, su correo y su clave (pidiendo la
-actual). Ahí figura su rol; el rol y el alta o baja los sigue manejando el
+**Mi perfil.** Cada uno cambia su nombre, su correo, su clave (pidiendo la
+actual) y su **foto**. Quien no sube ninguna queda con un círculo de iniciales
+en un color derivado de su nombre, así que nunca hay un hueco.
+
+La foto se guarda **en la base, en la tabla `user_avatars`**, no en disco: el
+filesystem de Laravel Cloud se borra en cada deploy y un bucket costaría aparte.
+Se recorta al centro y se recodifica a JPEG de 256px con GD (una foto típica
+queda en 2–20 KB), lo que de paso descarta metadatos y cualquier cosa escondida
+en el archivo original. Está en su propia tabla para que el binario no viaje en
+cada listado de usuarios. Ahí figura su rol; el rol y el alta o baja los sigue manejando el
 responsable del panel.
 
 **Se instala en el celular.** Es una PWA: desde Android el navegador ofrece
@@ -142,6 +150,7 @@ inmediato y cargar al resto del equipo desde *Equipo*.
 | `users` | Se le agregan `role` (admin/member) e `is_active`. |
 | `projects` | Nombre, slug, detalle, `client`, estado, prioridad, `owner_id`, `due_date`, `started_at`, `completed_at`. Con `softDeletes` e índice fulltext sobre nombre, detalle y empresa. |
 | `project_links` | Enlaces del proyecto: `label`, `url`, `position`. |
+| `user_avatars` | Foto de perfil: `user_id`, `mime`, `image` (MEDIUMBLOB). |
 | `project_user` | Colaboradores además del responsable. |
 | `project_updates` | Historial: autor, comentario, `status_from`, `status_to`. |
 
@@ -153,7 +162,8 @@ Los archivados no son otra tabla: son filas de `projects` con `deleted_at` carga
 
 ```
 app/Enums/            ProjectStatus, ProjectPriority, UserRole
-app/Models/           Project, ProjectLink, ProjectUpdate, User
+app/Models/           Project, ProjectLink, ProjectUpdate, User, UserAvatar
+app/Support/          AvatarImage
 app/Http/Controllers/ ProjectController, MemberController, ProfileController,
                       ThemeController, Auth/LoginController
 app/Http/Middleware/  EnsureUserIsAdmin, EnsureUserIsActive, SecurityHeaders
@@ -217,7 +227,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 123 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 132 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.

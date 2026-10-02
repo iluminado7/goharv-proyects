@@ -229,8 +229,14 @@ sirve para avisar algo sin tener que pedir que te sumen.
 
 ## Tu cuenta
 
-En **Mi perfil** cambiás tu nombre, tu correo y tu clave. Ahí también ves qué
-rol tenés y cuántos proyectos tenés a cargo.
+En **Mi perfil** cambiás tu foto, tu nombre, tu correo y tu clave. Ahí también
+ves qué rol tenés y cuántos proyectos tenés a cargo.
+
+**La foto.** Subí un JPG, PNG o WebP de hasta 4 MB: el panel la recorta al
+centro en un cuadrado y la achica solo, no hace falta que la prepares. Si no
+subís ninguna, aparecés con tus iniciales en un círculo de color. Tu cara se ve
+en el menú de arriba, en el historial de cada proyecto al lado de tus notas, y
+en la pantalla de Equipo.
 
 Para cambiar la clave hay que escribir la actual. Mínimo 8 caracteres. El ojito
 al costado del campo te deja ver lo que estás escribiendo, que en el celular

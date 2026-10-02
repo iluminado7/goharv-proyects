@@ -79,7 +79,10 @@
                      para respetar los saltos de linea sin dejar pasar HTML. --}}
                 <p class="cuerpo">@if ($u->isStatusChange())<strong>{{ $u->status_from?->label() ?? 'Alta' }} → {{ $u->status_to?->label() }}</strong> @endif{{ $u->body }}</p>
                 <div class="pie">
-                    <span class="when">{{ $u->author?->name ?? 'Alguien' }} · {{ $u->created_at->translatedFormat('d M Y, H:i') }}</span>
+                    <span class="when">
+                        <x-avatar :user="$u->author" :size="20" />
+                        {{ $u->author?->name ?? 'Alguien' }} · {{ $u->created_at->translatedFormat('d M Y, H:i') }}
+                    </span>
                     @can('delete', $u)
                         <form method="POST" action="{{ route('projects.comment.destroy', [$project, $u]) }}"
                               onsubmit="return confirm('¿Borrar esta nota? No se puede deshacer.')">

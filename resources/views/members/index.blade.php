@@ -8,13 +8,16 @@
     <div class="card" style="margin-bottom:28px">
         @foreach ($members as $m)
             <div class="member-row">
-                <span>
+                <span class="member-id">
+                    <x-avatar :user="$m" :size="40" />
+                    <span>
                     {{ $m->name }}
                     <span class="rol">{{ $m->role->label() }}</span>
                     @unless ($m->is_active) <span class="rol">de baja</span> @endunless
                     <br>
                     <span style="font-size:12.5px;color:var(--faint)">
                         {{ $m->email }} · {{ $m->owned_projects_count }} proyecto(s) a cargo
+                    </span>
                     </span>
                 </span>
 
