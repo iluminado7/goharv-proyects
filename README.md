@@ -77,7 +77,9 @@ en un color derivado de su nombre, así que nunca hay un hueco.
 
 La foto se guarda **en la base, en la tabla `user_avatars`**, no en disco: el
 filesystem de Laravel Cloud se borra en cada deploy y un bucket costaría aparte.
-Se recorta al centro y se recodifica a JPEG de 256px con GD (una foto típica
+Quien sube la foto la encuadra antes, en un cuadro con zoom y arrastre
+(`avatar-cropper`); sin JavaScript se sube igual y el servidor recorta al
+centro. En las dos vías el servidor recodifica a JPEG de 256px con GD (una foto típica
 queda en 2–20 KB), lo que de paso descarta metadatos y cualquier cosa escondida
 en el archivo original. Está en su propia tabla para que el binario no viaje en
 cada listado de usuarios. Ahí figura su rol; el rol y el alta o baja los sigue manejando el
@@ -163,7 +165,7 @@ Los archivados no son otra tabla: son filas de `projects` con `deleted_at` carga
 ```
 app/Enums/            ProjectStatus, ProjectPriority, UserRole
 app/Models/           Project, ProjectLink, ProjectUpdate, User, UserAvatar
-app/Support/          AvatarImage
+app/Support/          AvatarImage, Assets
 app/Http/Controllers/ ProjectController, MemberController, ProfileController,
                       ThemeController, Auth/LoginController
 app/Http/Middleware/  EnsureUserIsAdmin, EnsureUserIsActive, SecurityHeaders
@@ -227,7 +229,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 132 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 137 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.
@@ -291,13 +293,15 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   `@can` en las vistas), no con `abort_unless` sueltos.
 - Nada de SQL propio de un motor. Si hace falta ordenar por una secuencia, va un
   `CASE WHEN` armado desde el enum.
-- El JavaScript del panel son dos partials y nada más: `pwa-register` (registra
-  el service worker) y `password-toggle` (el ojito para ver la clave). Los dos
-  hacen cosas que el servidor no puede hacer, y los dos degradan bien si el JS
-  no corre. Si aparece la tentación de sumar un tercero, revisar primero si se
-  puede resolver con un formulario.
-- Al tocar `goharv.css` hay que subir `VERSION` en `public/sw.js`, o los
-  celulares que ya instalaron la app siguen con el CSS viejo.
+- El JavaScript del panel son tres partials y nada más: `pwa-register` (registra
+  el service worker), `password-toggle` (el ojito de la clave) y
+  `avatar-cropper` (encuadrar la foto). Los tres hacen cosas que el servidor no
+  puede hacer, y los tres degradan bien si el JS no corre. Si aparece la
+  tentación de sumar un cuarto, revisar primero si se puede resolver con un
+  formulario.
+- El CSS se enlaza con `Assets::versioned()`, que le pega la fecha del archivo.
+  Un cambio de estilo se ve solo: ya no hay que acordarse de subir `VERSION` en
+  `public/sw.js` ni de forzar recargas.
 - Nada de `<select multiple>`: para elegir varios van checkboxes, que no piden
   Ctrl+clic ni explicación.
 - Cualquier `<script>` nuevo necesita `nonce="{{ $cspNonce }}"` o la CSP lo

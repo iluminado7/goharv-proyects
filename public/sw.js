@@ -4,19 +4,21 @@
  * Decision importante: las paginas NO se cachean. El panel muestra datos del
  * equipo y el telefono puede quedar prestado o perdido; un cache de HTML seria
  * una copia de los proyectos leible sin sesion. Solo se guardan los archivos
- * estaticos (el CSS, los iconos) y una pantalla de "sin conexion".
+ * estaticos (los iconos) y una pantalla de "sin conexion".
  *
- * Al cambiar el CSS hay que subir VERSION para que el service worker
- * reemplace lo viejo.
+ * El CSS no necesita que se suba VERSION a mano: su URL lleva la fecha de
+ * modificacion del archivo, asi que cada cambio es una direccion distinta.
  */
 
-const VERSION = 'goharv-v1';
+const VERSION = 'goharv-v2';
 
 // Rutas relativas al alcance del service worker, para que funcione tanto en la
 // raiz del dominio como colgando de una subcarpeta (XAMPP).
+// El CSS no se precachea: su URL lleva la fecha del archivo, asi que cada
+// cambio es una direccion nueva y no hay version vieja que pueda quedar
+// pegada. Aca solo va lo que tiene URL fija.
 const ESTATICOS = [
   'offline.html',
-  'css/goharv.css',
   'icons/icon-192.png',
   'icons/apple-touch-icon.png',
 ];

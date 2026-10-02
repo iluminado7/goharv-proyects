@@ -151,10 +151,33 @@ p.page-sub{color:var(--muted);margin:0 0 24px;font-size:14px}
 .avatar{border-radius:50%;object-fit:cover;flex:none;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;background:var(--panel-2)}
 .avatar-txt{color:#fff;font-weight:600;letter-spacing:.01em;line-height:1;font-family:'Inter',system-ui,sans-serif}
 .member-id{display:flex;align-items:center;gap:12px}
-.foto-fila{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.foto-acciones{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.foto-acciones input[type=file]{font-size:13px;max-width:230px}
+.foto-fila{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.foto-fila .avatar{box-shadow:0 0 0 1px var(--line)}
+.foto-datos{min-width:0;flex:1 1 260px}
+.foto-datos h2{margin:0 0 3px;font-size:15px;font-weight:600}
+.foto-acciones{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
 .foto-acciones form{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* El input de archivo nativo desentona con el resto. Se le da forma al boton
+   que trae adentro y se deja el nombre del archivo, que es la parte util. */
+.foto-acciones input[type=file]{max-width:100%;font-size:13px;color:var(--muted)}
+.foto-acciones input[type=file]::file-selector-button{
+  background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:8px;
+  padding:7px 13px;margin-right:10px;font:inherit;font-weight:600;font-size:13px;cursor:pointer}
+.foto-acciones input[type=file]::file-selector-button:hover{border-color:var(--muted);background:var(--panel-2)}
+
+/* Cuadro para encuadrar la foto. Lo arma el script; sin JS no existe. */
+.sin-scroll{overflow:hidden}
+.recorte-fondo{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.6)}
+.recorte-fondo[hidden]{display:none}
+.recorte-caja{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;max-width:380px;width:100%;max-height:100%;overflow:auto}
+.recorte-caja h2{margin:0 0 4px;font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:19px}
+.recorte-caja .hint{margin:0 0 16px}
+.recorte-lienzo{display:flex;justify-content:center;background:var(--bg);border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.recorte-lienzo canvas{display:block;max-width:100%;height:auto;cursor:grab;touch-action:none}
+.recorte-lienzo canvas:active{cursor:grabbing}
+.recorte-zoom{display:flex;gap:8px;justify-content:center;margin-top:14px}
+.recorte-acts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
 .timeline .when{display:inline-flex;align-items:center;gap:7px}
 .avatar-grande{margin-bottom:14px}
 

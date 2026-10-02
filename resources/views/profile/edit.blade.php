@@ -13,30 +13,34 @@
         <div class="foto-fila">
             <x-avatar :user="$user" :size="88" />
 
-            <div class="foto-acciones">
-                <form method="POST" action="{{ route('profile.avatar.update') }}" enctype="multipart/form-data">
-                    @csrf
-                    <label for="avatar" class="sr-only">Foto de perfil</label>
-                    <input id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/webp" required>
-                    <button class="btn btn-sm">Subir foto</button>
-                </form>
+            <div class="foto-datos">
+                <h2>{{ $user->hasAvatar() ? 'Tu foto' : 'Todavía no subiste una foto' }}</h2>
+                <p class="hint" style="margin:0">
+                    {{ $user->hasAvatar()
+                        ? 'Se ve en el menú, en el historial y en Equipo.'
+                        : 'Mientras tanto aparecés con tus iniciales. JPG, PNG o WebP, hasta 4 MB: se recorta y se achica solo.' }}
+                </p>
 
-                @if ($user->hasAvatar())
-                    <form method="POST" action="{{ route('profile.avatar.destroy') }}"
-                          onsubmit="return confirm('¿Quitar la foto? Volvés a las iniciales.')">
-                        @csrf @method('DELETE')
-                        <button class="btn btn-ghost btn-sm">Quitar</button>
+                <div class="foto-acciones">
+                    <form method="POST" action="{{ route('profile.avatar.update') }}" enctype="multipart/form-data">
+                        @csrf
+                        <label for="avatar" class="sr-only">Foto de perfil</label>
+                        <input id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/webp" required>
+                        <button class="btn btn-sm">Subir</button>
                     </form>
-                @endif
+
+                    @if ($user->hasAvatar())
+                        <form method="POST" action="{{ route('profile.avatar.destroy') }}"
+                              onsubmit="return confirm('¿Quitar la foto? Volvés a las iniciales.')">
+                            @csrf @method('DELETE')
+                            <button class="btn btn-ghost btn-sm">Quitar</button>
+                        </form>
+                    @endif
+                </div>
+
+                @error('avatar') <p class="err">{{ $message }}</p> @enderror
             </div>
         </div>
-
-        @error('avatar') <p class="err">{{ $message }}</p> @enderror
-        <p class="hint" style="margin:12px 0 0">
-            JPG, PNG o WebP, hasta 4 MB. Se recorta al centro en un cuadrado y se
-            achica: no hace falta que prepares nada. Si no subís ninguna, se usan
-            tus iniciales.
-        </p>
     </div>
 
     <form method="POST" action="{{ route('profile.update') }}" class="card">
@@ -92,4 +96,6 @@
     </form>
 
     <div style="height:60px"></div>
+
+    @include('partials.avatar-cropper')
 @endsection
