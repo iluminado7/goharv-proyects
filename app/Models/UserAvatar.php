@@ -16,6 +16,19 @@ class UserAvatar extends Model
     /** Nunca en un JSON ni en un dump: son cientos de KB de binario. */
     protected $hidden = ['image'];
 
+    /**
+     * users.avatar_updated_at acompana a esta tabla. Se mantiene desde aca y
+     * no desde el controlador para que no dependa de que alguien se acuerde.
+     */
+    protected static function booted(): void
+    {
+        static::saved(fn (self $avatar) => User::whereKey($avatar->user_id)
+            ->update(['avatar_updated_at' => $avatar->updated_at]));
+
+        static::deleted(fn (self $avatar) => User::whereKey($avatar->user_id)
+            ->update(['avatar_updated_at' => null]));
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

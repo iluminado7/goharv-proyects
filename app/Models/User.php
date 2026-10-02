@@ -23,7 +23,8 @@ class User extends Authenticatable
     {
         return [
             'password'  => 'hashed',
-            'is_active' => 'boolean',
+            'is_active'         => 'boolean',
+            'avatar_updated_at' => 'datetime',
             'role'      => UserRole::class,
         ];
     }
@@ -39,7 +40,20 @@ class User extends Authenticatable
 
     public function hasAvatar(): bool
     {
-        return $this->avatar()->exists();
+        return $this->avatar_updated_at !== null;
+    }
+
+    /**
+     * La URL lleva la fecha de la foto: al cambiarla cambia la direccion, y
+     * entonces el navegador la pide de nuevo en vez de mostrar la anterior.
+     */
+    public function avatarUrl(): ?string
+    {
+        if (! $this->hasAvatar()) {
+            return null;
+        }
+
+        return route('users.avatar', [$this, 'v' => $this->avatar_updated_at->getTimestamp()]);
     }
 
     /** Hasta dos letras; con eso alcanza para reconocer a alguien. */

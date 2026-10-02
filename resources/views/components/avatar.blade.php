@@ -2,7 +2,7 @@
 
 {{-- Si no hay foto, el circulo de iniciales. Nunca queda un hueco. --}}
 @if ($user?->hasAvatar())
-    <img class="avatar" src="{{ route('users.avatar', $user) }}" alt="{{ $user->name }}"
+    <img class="avatar" src="{{ $user->avatarUrl() }}" alt="{{ $user->name }}"
          width="{{ $size }}" height="{{ $size }}" loading="lazy"
          style="width:{{ $size }}px;height:{{ $size }}px">
 @else

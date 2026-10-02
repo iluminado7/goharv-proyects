@@ -55,17 +55,25 @@ class ProfileController extends Controller
             return back()->withErrors(['avatar' => 'No se pudo leer esa imagen. Probá con otra.']);
         }
 
-        $request->user()->avatar()->updateOrCreate([], [
+        $avatar = $request->user()->avatar()->updateOrCreate([], [
             'mime'  => AvatarImage::MIME,
             'image' => $binario,
         ]);
+
+        // Si la imagen nueva da los mismos bytes, Eloquent no ve cambios y no
+        // mueve updated_at: la URL quedaria igual y el navegador seguiria
+        // mostrando la anterior. Subir una foto siempre renueva la direccion.
+        $avatar->touch();
 
         return redirect()->route('profile.edit')->with('ok', 'Foto actualizada.');
     }
 
     public function destroyAvatar(Request $request): RedirectResponse
     {
-        $request->user()->avatar()->delete();
+        // Se busca el modelo y se borra el modelo: un ->avatar()->delete()
+        // borra por query builder y no dispara los eventos, asi que dejaria
+        // users.avatar_updated_at apuntando a una foto que ya no existe.
+        $request->user()->avatar()->first()?->delete();
 
         return redirect()->route('profile.edit')->with('ok', 'Foto quitada. Volvés a las iniciales.');
     }
@@ -86,9 +94,13 @@ class ProfileController extends Controller
             return response('', 304);
         }
 
+        // La URL lleva la fecha de la foto, asi que este contenido no cambia
+        // nunca: se puede guardar sin vencimiento. Al cambiar la foto cambia
+        // la direccion y el navegador pide la nueva. Privada igual: son caras
+        // del equipo y no las tiene que guardar el CDN.
         return response($avatar->image, 200, [
             'Content-Type'  => $avatar->mime,
-            'Cache-Control' => 'private, max-age=86400',
+            'Cache-Control' => 'private, max-age=31536000, immutable',
             'ETag'          => $etag,
         ]);
     }

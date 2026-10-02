@@ -98,6 +98,54 @@ class AvatarTest extends TestCase
 
         $this->assertDatabaseCount('user_avatars', 0);
         $this->assertFalse($user->fresh()->hasAvatar());
+        $this->assertNull($user->fresh()->avatar_updated_at);
+        $this->assertNull($user->fresh()->avatarUrl());
+    }
+
+    /** El problema que motivo todo esto: la foto nueva no se veia. */
+    public function test_al_cambiar_la_foto_cambia_la_url(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post(route('profile.avatar.update'), ['avatar' => $this->imagen()]);
+        $primera = $user->fresh()->avatarUrl();
+
+        $this->travel(2)->seconds();
+
+        $this->actingAs($user)->post(route('profile.avatar.update'), ['avatar' => $this->imagen(600, 600)]);
+        $segunda = $user->fresh()->avatarUrl();
+
+        $this->assertStringContainsString('v=', $primera);
+        $this->assertNotSame($primera, $segunda, 'Con la misma URL el navegador sigue mostrando la foto vieja');
+    }
+
+    /** Con la URL versionada el contenido ya no cambia: se guarda para siempre. */
+    public function test_la_respuesta_se_puede_cachear_sin_vencimiento(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user)->post(route('profile.avatar.update'), ['avatar' => $this->imagen()]);
+
+        $cache = $this->actingAs($user)->get(route('users.avatar', $user))->headers->get('Cache-Control');
+
+        $this->assertStringContainsString('immutable', $cache);
+        $this->assertStringContainsString('private', $cache);
+    }
+
+    /** Saber si alguien tiene foto no puede costar una consulta por cara. */
+    public function test_dibujar_las_caras_no_dispara_consultas_extra(): void
+    {
+        $admin = User::factory()->admin()->create();
+        User::factory()->count(6)->create();
+
+        $this->actingAs($admin)->get(route('members.index'));
+
+        \DB::enableQueryLog();
+        $this->actingAs($admin)->get(route('members.index'))->assertOk();
+        $consultas = count(\DB::getQueryLog());
+        \DB::disableQueryLog();
+
+        // Con 7 miembros, si cada cara preguntara por su cuenta serian 7 mas.
+        $this->assertLessThan(8, $consultas, "Demasiadas consultas: {$consultas}");
     }
 
     public function test_un_archivo_que_no_es_imagen_se_rechaza(): void

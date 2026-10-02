@@ -82,7 +82,14 @@ Quien sube la foto la encuadra antes, en un cuadro con zoom y arrastre
 centro. En las dos vías el servidor recodifica a JPEG de 256px con GD (una foto típica
 queda en 2–20 KB), lo que de paso descarta metadatos y cualquier cosa escondida
 en el archivo original. Está en su propia tabla para que el binario no viaje en
-cada listado de usuarios. Ahí figura su rol; el rol y el alta o baja los sigue manejando el
+cada listado de usuarios.
+
+La URL de la foto lleva su fecha (`/equipo/{id}/foto?v=…`), que se guarda
+duplicada en `users.avatar_updated_at`. Eso resuelve dos cosas: cambiar la foto
+cambia la dirección, así que ninguna capa de caché puede servir la vieja; y
+saber si alguien tiene foto no cuesta una consulta por cara dibujada —en el
+historial de un proyecto era una por línea—. La columna la mantienen los
+eventos de `UserAvatar`, no el controlador. Ahí figura su rol; el rol y el alta o baja los sigue manejando el
 responsable del panel.
 
 **Se instala en el celular.** Es una PWA: desde Android el navegador ofrece
@@ -229,7 +236,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 137 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 140 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.
@@ -299,9 +306,10 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   puede hacer, y los tres degradan bien si el JS no corre. Si aparece la
   tentación de sumar un cuarto, revisar primero si se puede resolver con un
   formulario.
-- El CSS se enlaza con `Assets::versioned()`, que le pega la fecha del archivo.
-  Un cambio de estilo se ve solo: ya no hay que acordarse de subir `VERSION` en
-  `public/sw.js` ni de forzar recargas.
+- Todo lo que el navegador pueda cachear lleva su versión en la URL: el CSS con
+  `Assets::versioned()` y las fotos con `?v=` + la fecha de la foto. Si algún
+  día se suma otro archivo así, que siga la misma regla: sin versión en la URL,
+  el cambio tarda días en verse y se termina peleando con el caché.
 - Nada de `<select multiple>`: para elegir varios van checkboxes, que no piden
   Ctrl+clic ni explicación.
 - Cualquier `<script>` nuevo necesita `nonce="{{ $cspNonce }}"` o la CSP lo
