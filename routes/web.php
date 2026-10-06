@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
@@ -51,6 +52,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/proyectos/{project}/definitivo', [ProjectController::class, 'forceDestroy'])
         ->withTrashed()
         ->name('projects.force-destroy');
+
+    // Lo que llega de los formularios del sitio (se guarda por routes/api.php).
+    Route::get('/consultas', [InquiryController::class, 'index'])->name('inquiries.index');
 
     Route::get('/perfil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/perfil/foto', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
