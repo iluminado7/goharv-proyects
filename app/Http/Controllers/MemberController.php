@@ -12,10 +12,18 @@ use Illuminate\View\View;
 
 class MemberController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $administra = $request->user()->isAdmin();
+
         return view('members.index', [
-            'members' => User::orderBy('name')->withCount('ownedProjects')->get(),
+            'members' => User::query()
+                // Las cuentas de baja solo le sirven a quien puede reactivarlas.
+                ->when(! $administra, fn ($q) => $q->where('is_active', true))
+                ->orderBy('name')
+                ->withCount('ownedProjects')
+                ->get(),
+            'administra' => $administra,
         ]);
     }
 

@@ -250,7 +250,11 @@ Tu rol y el alta o baja de tu cuenta los maneja un responsable del panel, no vos
 
 ## El equipo
 
-Solo para responsables del panel, en **Equipo**.
+En **Equipo** está la lista de quiénes están en el panel, con su rol y cuántos
+proyectos tiene a cargo cada uno. La ve todo el equipo: sirve para saber a quién
+pedirle algo.
+
+Lo que sigue es solo para responsables del panel.
 
 Para **sumar a alguien** hace falta nombre, correo, una clave inicial y el nivel
 de permisos. Pasale la clave inicial por un medio seguro y decile que la cambie

@@ -63,8 +63,11 @@ Route::middleware('auth')->group(function () {
         ->middleware('throttle:6,1')
         ->name('profile.password');
 
+    // La lista la ve todo el equipo: sirve para saber a quien pedirle algo.
+    Route::get('/equipo', [MemberController::class, 'index'])->name('members.index');
+
+    // Sumar gente, cambiar permisos y dar de baja siguen siendo de admins.
     Route::middleware('admin')->group(function () {
-        Route::get('/equipo', [MemberController::class, 'index'])->name('members.index');
         Route::post('/equipo', [MemberController::class, 'store'])->name('members.store');
         Route::patch('/equipo/{user}', [MemberController::class, 'update'])->name('members.update');
     });

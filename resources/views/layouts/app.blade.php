@@ -20,10 +20,8 @@
                 <nav class="menu">
                     <a class="btn btn-ghost btn-sm {{ request()->routeIs('projects.*') ? 'on' : '' }}"
                        href="{{ route('projects.index') }}">Proyectos</a>
-                    @if (auth()->user()->isAdmin())
-                        <a class="btn btn-ghost btn-sm {{ request()->routeIs('members.*') ? 'on' : '' }}"
-                           href="{{ route('members.index') }}">Equipo</a>
-                    @endif
+                    <a class="btn btn-ghost btn-sm {{ request()->routeIs('members.*') ? 'on' : '' }}"
+                       href="{{ route('members.index') }}">Equipo</a>
                     <a class="btn btn-ghost btn-sm {{ request()->routeIs('profile.*') ? 'on' : '' }}"
                        href="{{ route('profile.edit') }}">Mi perfil</a>
                 </nav>

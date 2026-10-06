@@ -19,15 +19,20 @@ class MenuTest extends TestCase
             ->assertSee('>Mi perfil</a>', escape: false);
     }
 
-    public function test_solo_el_responsable_del_panel_ve_equipo(): void
+    /**
+     * Equipo esta en el menu para todos: la lista le sirve a cualquiera para
+     * saber a quien pedirle algo. Lo que cambia es lo que hay adentro, y eso
+     * lo cubre TeamVisibilityTest.
+     */
+    public function test_el_menu_tiene_las_tres_secciones_para_todos(): void
     {
-        $this->actingAs(User::factory()->create())
-            ->get(route('projects.index'))
-            ->assertDontSee('>Equipo</a>', escape: false);
+        foreach ([User::factory()->create(), User::factory()->admin()->create()] as $quien) {
+            $html = $this->actingAs($quien)->get(route('projects.index'))->getContent();
 
-        $this->actingAs(User::factory()->admin()->create())
-            ->get(route('projects.index'))
-            ->assertSee('>Equipo</a>', escape: false);
+            foreach (['>Proyectos</a>', '>Equipo</a>', '>Mi perfil</a>'] as $boton) {
+                $this->assertStringContainsString($boton, $html);
+            }
+        }
     }
 
     public function test_el_rol_ya_no_esta_en_el_header_sino_en_el_perfil(): void

@@ -102,8 +102,12 @@ marcando en cuál se está parado. El botón ☀/☾ alterna entre fondo negro y
 la preferencia va en una cookie y el tema lo escribe el servidor en el `<html>`,
 así que no hay JS ni parpadeo al cargar.
 
-**Gestión del equipo.** El responsable suma miembros, cambia permisos y da de
-baja. Hay una validación que impide dejar el panel sin ningún responsable activo.
+**Gestión del equipo.** *Equipo* la ve todo el panel: es a quién pedirle algo.
+Los controles —sumar, cambiar permisos, dar de baja— solo aparecen para los
+responsables, y las rutas que los ejecutan siguen detrás del middleware `admin`:
+esconder el formulario nunca es la defensa. A quien no administra se le muestran
+solo las cuentas activas. Hay una validación que impide dejar el panel sin
+ningún responsable activo, y nadie puede sacarse a sí mismo.
 
 ---
 
@@ -236,7 +240,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 140 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 146 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.
