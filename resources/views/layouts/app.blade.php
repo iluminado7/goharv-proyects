@@ -20,6 +20,8 @@
                 <nav class="menu">
                     <a class="btn btn-ghost btn-sm {{ request()->routeIs('projects.*') ? 'on' : '' }}"
                        href="{{ route('projects.index') }}">Proyectos</a>
+                    <a class="btn btn-ghost btn-sm {{ request()->routeIs('inquiries.*') ? 'on' : '' }}"
+                       href="{{ route('inquiries.index') }}">Consultas web</a>
                     <a class="btn btn-ghost btn-sm {{ request()->routeIs('members.*') ? 'on' : '' }}"
                        href="{{ route('members.index') }}">Equipo</a>
                     <a class="btn btn-ghost btn-sm {{ request()->routeIs('profile.*') ? 'on' : '' }}"

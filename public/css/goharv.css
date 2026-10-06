@@ -85,6 +85,20 @@ header.mast{border-bottom:1px solid var(--line);position:sticky;top:0;background
 .dot{width:7px;height:7px;border-radius:50%}
 .acts{display:flex;gap:7px;padding:15px 16px 15px 0;align-items:center}
 
+/* Consultas web: una tarjeta por consulta o pedido de "Avisame". */
+.msg{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:15px 18px}
+[data-theme="claro"] .msg{box-shadow:0 1px 2px rgba(20,20,25,.05)}
+.msg-tag{font-size:11.5px;color:var(--muted);border:1px solid var(--line);padding:1px 8px;border-radius:20px}
+.msg-contact{margin:5px 0 0;font-size:13.5px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+.msg-contact a{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
+.msg-contact a:hover{color:var(--ink);text-decoration-color:var(--ink)}
+.msg-text{margin:10px 0 0;font-size:14px;max-width:72ch;white-space:pre-line;overflow-wrap:anywhere}
+.msg .meta{margin-bottom:0}
+.tools-date{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.tools-date input{flex:1}
+.tools input[type=date]{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color-scheme:dark}
+[data-theme="claro"] .tools input[type=date]{color-scheme:light}
+
 .danger-card{border-color:rgba(224,92,75,.4)}
 .perdida{margin:0;padding-left:20px;color:var(--muted);font-size:14px}
 .perdida li{margin-bottom:4px}
@@ -251,7 +265,7 @@ h2.section{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-siz
   .to-detail{text-decoration-color:var(--muted)}
   /* Safari hace zoom al enfocar cualquier campo de menos de 16px. */
   .field input,.field select,.field textarea,
-  .tools input[type=search],.tools select,
+  .tools input[type=search],.tools select,.tools input[type=date],
   .links-grid input,.comment-box textarea,.member-row select{font-size:16px}
 }
 
