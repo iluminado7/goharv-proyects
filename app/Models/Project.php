@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ActivityAction;
 use App\Enums\ProjectPriority;
 use App\Enums\ProjectStatus;
 use Illuminate\Contracts\Database\Query\Expression;
@@ -169,6 +170,17 @@ class Project extends Model
             'status_from' => $from->value,
             'status_to'   => $status->value,
         ]);
+
+        // Va en el modelo y no en el controlador porque el estado se mueve
+        // desde dos lados: el formulario de edicion y el atajo de la ficha.
+        // Solo cuando el estado cambio de verdad: moveTo() tambien se usa para
+        // dejar una nota sobre el estado actual.
+        if ($from !== $status) {
+            Activity::anotar(
+                ActivityAction::EstadoCambiado, $author, $this,
+                detail: $from->label().' → '.$status->label(),
+            );
+        }
 
         return true;
     }

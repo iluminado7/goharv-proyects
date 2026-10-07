@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\ActivityAction;
 use App\Http\Controllers\Controller;
+use App\Models\Activity;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,12 +38,26 @@ class LoginController extends Controller
         if (! Auth::attempt($data, $request->boolean('remember'))) {
             RateLimiter::hit($key, 60);
 
+            // En la bitácora sí se distingue entre un correo que no existe y
+            // una clave equivocada: al que lee el log le dicen cosas distintas
+            // —alguien tanteando correos, o alguien que olvidó su clave—. A
+            // quien intenta entrar se le responde lo mismo en los dos casos.
+            $existente = User::firstWhere('email', $data['email']);
+
+            Activity::anotar(
+                $existente ? ActivityAction::ClaveIncorrecta : ActivityAction::CorreoInexistente,
+                user: $existente,
+                subject: $data['email'],
+            );
+
             throw ValidationException::withMessages([
                 'email' => 'Esos datos no coinciden con ninguna cuenta.',
             ]);
         }
 
         if (! Auth::user()->is_active) {
+            Activity::anotar(ActivityAction::CuentaDeBaja, user: Auth::user(), subject: $data['email']);
+
             Auth::logout();
             RateLimiter::hit($key, 60);
 
@@ -55,11 +72,15 @@ class LoginController extends Controller
         RateLimiter::clear($key);
         $request->session()->regenerate();
 
+        Activity::anotar(ActivityAction::Ingreso, user: $request->user());
+
         return redirect()->intended(route('projects.index'));
     }
 
     public function destroy(Request $request): RedirectResponse
     {
+        Activity::anotar(ActivityAction::Salida, user: $request->user());
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ProfileController;
@@ -68,6 +69,7 @@ Route::middleware('auth')->group(function () {
 
     // Sumar gente, cambiar permisos y dar de baja siguen siendo de admins.
     Route::middleware('admin')->group(function () {
+        Route::get('/actividad', [ActivityController::class, 'index'])->name('activity.index');
         Route::post('/equipo', [MemberController::class, 'store'])->name('members.store');
         Route::patch('/equipo/{user}', [MemberController::class, 'update'])->name('members.update');
     });

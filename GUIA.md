@@ -269,6 +269,21 @@ intentás, te lo dice.
 
 ---
 
+## Actividad
+
+Solo para responsables del panel, en **Actividad**. Es el registro de todo lo
+que pasa: quién entró, quién intentó entrar sin lograrlo, qué proyectos se
+crearon, se movieron de estado o se archivaron, y quién borró qué.
+
+Arriba hay cuatro botones para filtrar —*Todo*, *Accesos*, *Fallidos*,
+*Proyectos*— y se puede acotar por acción o por persona. Si ves muchos
+**intentos fallidos** seguidos de un mismo correo, puede ser alguien que se
+olvidó la clave… o alguien probando.
+
+El registro no se puede editar ni borrar desde el panel: solo se escribe.
+
+---
+
 ## El fondo claro y oscuro
 
 El botón ☀ / ☾ del menú alterna entre fondo negro y claro. La elección se

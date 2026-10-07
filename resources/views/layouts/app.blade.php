@@ -22,6 +22,10 @@
                        href="{{ route('projects.index') }}">Proyectos</a>
                     <a class="btn btn-ghost btn-sm {{ request()->routeIs('members.*') ? 'on' : '' }}"
                        href="{{ route('members.index') }}">Equipo</a>
+                    @if (auth()->user()->isAdmin())
+                        <a class="btn btn-ghost btn-sm {{ request()->routeIs('activity.*') ? 'on' : '' }}"
+                           href="{{ route('activity.index') }}">Actividad</a>
+                    @endif
                     <a class="btn btn-ghost btn-sm {{ request()->routeIs('profile.*') ? 'on' : '' }}"
                        href="{{ route('profile.edit') }}">Mi perfil</a>
                 </nav>

@@ -109,6 +109,15 @@ esconder el formulario nunca es la defensa. A quien no administra se le muestran
 solo las cuentas activas. Hay una validación que impide dejar el panel sin
 ningún responsable activo, y nadie puede sacarse a sí mismo.
 
+**Bitácora.** `activity_logs` registra accesos (ingreso, salida, clave
+incorrecta, correo inexistente, intento con cuenta de baja) y lo que pasa con
+los proyectos (alta, cambio de estado, cambio de prioridad, nota nueva,
+archivado, restaurado, eliminado). Guarda quién, cuándo, desde qué IP y el
+detalle del cambio. Se lee en `/actividad`, solo para responsables del panel.
+
+No reemplaza a `project_updates`: ese es el historial visible de cada proyecto y
+parte de la herramienta. La bitácora es para mirar el panel entero.
+
 ---
 
 ## Instalación
@@ -164,6 +173,7 @@ inmediato y cargar al resto del equipo desde *Equipo*.
 | `projects` | Nombre, slug, detalle, `client`, estado, prioridad, `owner_id`, `due_date`, `started_at`, `completed_at`. Con `softDeletes` e índice fulltext sobre nombre, detalle y empresa. |
 | `project_links` | Enlaces del proyecto: `label`, `url`, `position`. |
 | `user_avatars` | Foto de perfil: `user_id`, `mime`, `image` (MEDIUMBLOB). |
+| `activity_logs` | Bitácora: `user_id`, `action`, `project_id`, `subject`, `detail`, `ip`, `created_at`. Append-only, sin `updated_at`. |
 | `project_user` | Colaboradores además del responsable. |
 | `project_updates` | Historial: autor, comentario, `status_from`, `status_to`. |
 
@@ -174,8 +184,9 @@ Los archivados no son otra tabla: son filas de `projects` con `deleted_at` carga
 ## Mapa de archivos
 
 ```
-app/Enums/            ProjectStatus, ProjectPriority, UserRole
-app/Models/           Project, ProjectLink, ProjectUpdate, User, UserAvatar
+app/Enums/            ProjectStatus, ProjectPriority, UserRole, ActivityAction
+app/Models/           Project, ProjectLink, ProjectUpdate, User, UserAvatar,
+                      Activity
 app/Support/          AvatarImage, Assets
 app/Http/Controllers/ ProjectController, MemberController, ProfileController,
                       ThemeController, Auth/LoginController
@@ -221,6 +232,10 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
     hoy es el de carga en el formulario. Reordenar sin JS implica flechas
     arriba/abajo con un POST por clic.
 
+11. **Limpieza de la bitácora.** `activity_logs` crece y nada la purga. Con
+    cinco personas tarda años en pesar, pero en algún momento va a querer un
+    comando que borre lo anterior a X meses.
+
 ### Decisiones a tomar
 
 10. **Qué pasa con un proyecto terminado.** ¿Se archiva solo a los X días? ¿Queda
@@ -240,7 +255,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 146 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 161 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.
@@ -300,6 +315,8 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   `App\Enums`.
 - Los cambios de estado van por `Project::moveTo()`, nunca con un `update()`
   directo sobre la columna `status`, o se pierde el historial.
+- Anotar en la bitácora va siempre por `Activity::anotar()`, que traga sus
+  propios errores: un log roto nunca puede voltear la acción que lo originó.
 - Los permisos van por `ProjectPolicy` (`$this->authorize(...)` en el controlador,
   `@can` en las vistas), no con `abort_unless` sueltos.
 - Nada de SQL propio de un motor. Si hace falta ordenar por una secuencia, va un

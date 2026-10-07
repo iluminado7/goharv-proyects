@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ActivityAction;
 use App\Enums\ProjectPriority;
 use App\Enums\ProjectStatus;
+use App\Models\Activity;
 use App\Models\Project;
 use App\Models\ProjectUpdate;
 use App\Models\User;
@@ -98,6 +100,8 @@ class ProjectController extends Controller
             'status_to' => $project->status->value,
         ]);
 
+        Activity::anotar(ActivityAction::ProyectoCreado, $request->user(), $project);
+
         return redirect()
             ->route('projects.show', $project)
             ->with('ok', 'Proyecto creado.');
@@ -135,7 +139,16 @@ class ProjectController extends Controller
         $newState = ProjectStatus::from($data['status']);
         unset($data['status']);
 
+        $prioridadAnterior = $project->priority;
+
         $project->update($data);
+
+        if ($project->priority !== $prioridadAnterior) {
+            Activity::anotar(
+                ActivityAction::PrioridadCambiada, $request->user(), $project,
+                detail: $prioridadAnterior->label().' → '.$project->priority->label(),
+            );
+        }
         $project->collaborators()->sync($request->input('collaborators', []));
         $project->syncLinks($request->input('links', []));
         $project->moveTo($newState, $request->user());
@@ -174,6 +187,8 @@ class ProjectController extends Controller
 
         $project->comment($request->user(), $data['body']);
 
+        Activity::anotar(ActivityAction::NotaNueva, $request->user(), $project, detail: \Illuminate\Support\Str::limit($data['body'], 120));
+
         return back()->with('ok', 'Comentario agregado.');
     }
 
@@ -200,6 +215,8 @@ class ProjectController extends Controller
             'status_to'   => $project->status->value,
         ]);
 
+        Activity::anotar(ActivityAction::ProyectoArchivado, $request->user(), $project);
+
         $project->delete();
 
         return redirect()
@@ -219,6 +236,8 @@ class ProjectController extends Controller
             'status_from' => $project->status->value,
             'status_to'   => $project->status->value,
         ]);
+
+        Activity::anotar(ActivityAction::ProyectoRestaurado, $request->user(), $project);
 
         return redirect()
             ->route('projects.show', $project)
@@ -252,6 +271,13 @@ class ProjectController extends Controller
         }
 
         $nombre = $project->name;
+
+        // Se anota antes de borrar: despues el proyecto ya no esta, y este es
+        // justamente el registro que no puede faltar.
+        Activity::anotar(
+            ActivityAction::ProyectoEliminado, $request->user(), $project,
+            detail: 'Con su historial, enlaces y colaboradores.',
+        );
 
         // En cascada se van el historial, los enlaces y los colaboradores.
         $project->forceDelete();
