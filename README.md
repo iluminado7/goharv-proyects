@@ -71,6 +71,11 @@ quien está metido en él —responsable o colaborador— más los responsables 
 panel. El resto del equipo lo ve, pero no lo toca. Archivar queda para el
 responsable del proyecto y los del panel.
 
+La **prioridad** es la excepción: ordena el tablero de todo el equipo, así que
+la decide el responsable del proyecto, no quien colabora. Se cambia desde la
+ficha, y el formulario de edición respeta la misma regla —a quien no puede, el
+campo se le muestra como texto y el servidor descarta lo que llegue por él—.
+
 **Mi perfil.** Cada uno cambia su nombre, su correo, su clave (pidiendo la
 actual) y su **foto**. Quien no sube ninguna queda con un círculo de iniciales
 en un color derivado de su nombre, así que nunca hay un hueco.
@@ -255,7 +260,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 161 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 171 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.

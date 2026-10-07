@@ -175,6 +175,11 @@ La **prioridad** (alta, media, baja) no cambia nada del funcionamiento: cambia e
 orden en que aparecen. Con el orden por defecto, primero salen las altas, y
 dentro de cada grupo, las que tienen entrega más cercana.
 
+Se cambia desde la ficha del proyecto, abajo del cambio de estado. **Solo la
+toca el responsable del proyecto** (y los responsables del panel, en cualquiera):
+como ordena el tablero que mira todo el equipo, no es algo que convenga que
+cambie cualquiera que colabore.
+
 ---
 
 ## Archivar, restaurar y borrar
@@ -215,6 +220,7 @@ Para un miembro, lo que puede hacer depende de su relación con cada proyecto:
 | Ver la ficha y el historial | Sí | Sí | Sí |
 | Dejar notas | Sí | Sí | Sí |
 | Editar datos y enlaces | Sí | Sí | No |
+| Cambiar la prioridad | Sí | **No** | No |
 | Cambiar el estado | Sí | Sí | No |
 | Archivar y restaurar | Sí | No | No |
 | Borrar para siempre | No | No | No |

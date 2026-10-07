@@ -75,11 +75,21 @@
             </div>
             <div class="field">
                 <label for="priority">Prioridad</label>
-                <select id="priority" name="priority">
-                    @foreach ($priorities as $p)
-                        <option value="{{ $p->value }}" @selected(old('priority', $project->priority?->value) === $p->value)>{{ $p->label() }}</option>
-                    @endforeach
-                </select>
+                @if (! $project->exists || auth()->user()->can('changePriority', $project))
+                    <select id="priority" name="priority">
+                        @foreach ($priorities as $p)
+                            <option value="{{ $p->value }}" @selected(old('priority', $project->priority?->value) === $p->value)>{{ $p->label() }}</option>
+                        @endforeach
+                    </select>
+                @else
+                    {{-- Oculto y con el valor actual para que la validación no
+                         se queje por un campo requerido que no llega. Da igual
+                         lo que diga: el servidor lo descarta y conserva el
+                         valor guardado. --}}
+                    <input type="hidden" name="priority" value="{{ $project->priority->value }}">
+                    <p class="solo-lectura">{{ $project->priority->label() }}</p>
+                    <p class="hint" style="margin:6px 0 0">La cambia el responsable del proyecto.</p>
+                @endif
             </div>
         </div>
 

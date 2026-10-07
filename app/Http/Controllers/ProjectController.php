@@ -112,8 +112,9 @@ class ProjectController extends Controller
         $project->load(['owner', 'collaborators', 'links', 'updates.author']);
 
         return view('projects.show', [
-            'project'  => $project,
-            'statuses' => ProjectStatus::cases(),
+            'project'    => $project,
+            'statuses'   => ProjectStatus::cases(),
+            'priorities' => ProjectPriority::cases(),
         ]);
     }
 
@@ -140,6 +141,13 @@ class ProjectController extends Controller
         unset($data['status']);
 
         $prioridadAnterior = $project->priority;
+
+        // Misma regla que el atajo de la ficha: si no puede cambiar la
+        // prioridad, lo que venga en el formulario se descarta. Esconder el
+        // campo en la vista no alcanza.
+        if ($request->user()->cannot('changePriority', $project)) {
+            unset($data['priority']);
+        }
 
         $project->update($data);
 
@@ -171,6 +179,32 @@ class ProjectController extends Controller
         $project->moveTo(ProjectStatus::from($data['status']), $request->user(), $data['note'] ?? null);
 
         return back()->with('ok', 'Estado actualizado.');
+    }
+
+    /** Atajo desde la ficha: cambiar la prioridad sin abrir el formulario. */
+    public function changePriority(Request $request, Project $project): RedirectResponse
+    {
+        $this->authorize('changePriority', $project);
+
+        $data = $request->validate([
+            'priority' => ['required', Rule::in(ProjectPriority::values())],
+        ]);
+
+        $nueva = ProjectPriority::from($data['priority']);
+
+        if ($nueva === $project->priority) {
+            return back();
+        }
+
+        $anterior = $project->priority;
+        $project->update(['priority' => $nueva]);
+
+        Activity::anotar(
+            ActivityAction::PrioridadCambiada, $request->user(), $project,
+            detail: $anterior->label().' → '.$nueva->label(),
+        );
+
+        return back()->with('ok', 'Prioridad actualizada: '.mb_strtolower($nueva->label()).'.');
     }
 
     /** Una nota en el historial, sin tocar el estado del proyecto. */

@@ -34,6 +34,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/proyectos/{project}/editar', [ProjectController::class, 'edit'])->name('projects.edit');
     Route::put('/proyectos/{project}', [ProjectController::class, 'update'])->name('projects.update');
     Route::patch('/proyectos/{project}/estado', [ProjectController::class, 'moveStatus'])->name('projects.status');
+    Route::patch('/proyectos/{project}/prioridad', [ProjectController::class, 'changePriority'])
+        ->name('projects.priority');
     Route::post('/proyectos/{project}/comentarios', [ProjectController::class, 'comment'])
         ->middleware('throttle:30,1')
         ->name('projects.comment');

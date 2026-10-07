@@ -55,6 +55,20 @@
             al responsable que te sume como colaborador.
         </p>
         @endcan
+
+        @can('changePriority', $project)
+            <form method="POST" action="{{ route('projects.priority', $project) }}" class="prioridad-fila">
+                @csrf @method('PATCH')
+                <label for="priority">Prioridad</label>
+                <select id="priority" name="priority">
+                    @foreach ($priorities as $p)
+                        <option value="{{ $p->value }}" @selected($project->priority === $p)>{{ $p->label() }}</option>
+                    @endforeach
+                </select>
+                <button class="btn btn-ghost btn-sm">Cambiar</button>
+                <span class="hint" style="margin:0">Ordena el proyecto en el tablero de todo el equipo.</span>
+            </form>
+        @endcan
     </div>
 
     <h2 class="section">Notas</h2>

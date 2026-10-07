@@ -58,6 +58,16 @@ class ProjectPolicy
         return true;
     }
 
+    /**
+     * La prioridad no es un dato del proyecto como los demas: ordena el
+     * tablero que mira todo el equipo. Por eso la decide el responsable del
+     * proyecto, y no cualquiera que colabore en el.
+     */
+    public function changePriority(User $user, Project $project): bool
+    {
+        return $project->owner_id === $user->id;
+    }
+
     public function delete(User $user, Project $project): bool
     {
         return $project->owner_id === $user->id;
