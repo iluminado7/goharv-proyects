@@ -35,19 +35,7 @@
                     <x-avatar :user="auth()->user()" :size="28" />
                     <strong>{{ auth()->user()->name }}</strong>
                 </a>
-                @php ($sinLeer = auth()->user()->unreadNotifications()->count())
-                <a class="campana {{ $sinLeer ? 'con-avisos' : '' }}" href="{{ route('notifications.index') }}"
-                   title="{{ $sinLeer ? $sinLeer.' sin leer' : 'Notificaciones' }}"
-                   aria-label="{{ $sinLeer ? 'Notificaciones, '.$sinLeer.' sin leer' : 'Notificaciones' }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
-                        <path d="M13.7 21a2 2 0 0 1-3.4 0"/>
-                    </svg>
-                    @if ($sinLeer)
-                        <span class="campana-n">{{ $sinLeer > 9 ? '9+' : $sinLeer }}</span>
-                    @endif
-                </a>
+                @include('partials.notifications-bell')
                 @include('partials.theme-toggle')
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -64,6 +52,7 @@
     @endif
     @yield('content')
 </main>
+@include('partials.dropdown-close')
 @include('partials.password-toggle')
 @include('partials.pwa-register')
 </body>

@@ -119,6 +119,10 @@ otro en un proyecto donde estás: te asignaron como responsable, te sumaron como
 colaborador, comentaron, o movieron el estado. Nunca tus propias acciones,
 nunca proyectos ajenos, nunca a cuentas dadas de baja.
 
+Se abre en un cuadro desde la campana del header, hecho con `<details>` —un
+desplegable nativo de HTML, sin JavaScript—. Muestra las últimas seis y enlaza
+a `/notificaciones`, que tiene la lista completa con paginado.
+
 Usa la tabla `notifications` del framework con una sola clase, `ProjectEvent`,
 que distingue los casos por un enum. El día que haya correo configurado se le
 suma `toMail()` y `'mail'` al `via()`: los lugares que disparan el aviso no se
@@ -345,12 +349,14 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   `@can` en las vistas), no con `abort_unless` sueltos.
 - Nada de SQL propio de un motor. Si hace falta ordenar por una secuencia, va un
   `CASE WHEN` armado desde el enum.
-- El JavaScript del panel son tres partials y nada más: `pwa-register` (registra
-  el service worker), `password-toggle` (el ojito de la clave) y
-  `avatar-cropper` (encuadrar la foto). Los tres hacen cosas que el servidor no
-  puede hacer, y los tres degradan bien si el JS no corre. Si aparece la
-  tentación de sumar un cuarto, revisar primero si se puede resolver con un
-  formulario.
+- El JavaScript del panel son cuatro partials chicos: `pwa-register` (registra
+  el service worker), `password-toggle` (el ojito de la clave),
+  `avatar-cropper` (encuadrar la foto) y `dropdown-close` (cerrar la campana al
+  tocar afuera). Los cuatro hacen cosas que el servidor no puede hacer y los
+  cuatro degradan bien si el JS no corre. La regla ya no es "nada de JS" sino
+  **nada que el HTML o un formulario puedan resolver solos**: antes de sumar
+  otro, buscar el elemento nativo —`<details>`, `<datalist>`— que haga el
+  trabajo.
 - Todo lo que el navegador pueda cachear lleva su versión en la URL: el CSS con
   `Assets::versioned()` y las fotos con `?v=` + la fecha de la foto. Si algún
   día se suma otro archivo así, que siga la misma regla: sin versión en la URL,

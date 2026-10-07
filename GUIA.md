@@ -278,7 +278,8 @@ intentás, te lo dice.
 ## La campana
 
 Arriba a la derecha, al lado de tu nombre. El número rojo son los avisos sin
-leer. Te avisa cuatro cosas, siempre sobre proyectos donde estás y siempre
+leer. Tocala y se abre un cuadro con los últimos; para cerrarlo, tocá afuera o
+volvé a tocar la campana. Desde ahí, *Ver todas* lleva a la lista completa. Te avisa cuatro cosas, siempre sobre proyectos donde estás y siempre
 cuando las hizo otro:
 
 - Te asignaron como responsable de un proyecto

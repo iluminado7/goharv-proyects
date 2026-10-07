@@ -160,6 +160,41 @@ class NotificationTest extends TestCase
             ->assertSee('>2</span>', escape: false);
     }
 
+    public function test_la_campana_abre_un_cuadro_con_las_ultimas(): void
+    {
+        $duenio  = User::factory()->create();
+        $otro    = User::factory()->create(['name' => 'Ana Gómez']);
+        $project = Project::factory()->ownedBy($duenio)->create(['name' => 'Portal de reclamos']);
+
+        $this->actingAs($otro)->post(route('projects.comment', $project), ['body' => 'Mirá esto.']);
+
+        $html = $this->actingAs($duenio)->get(route('projects.index'))->getContent();
+
+        // El cuadro viene en la pagina, no hace falta navegar a otro lado.
+        $this->assertStringContainsString('campana-panel', $html);
+        $this->assertStringContainsString('Portal de reclamos', $html);
+        $this->assertStringContainsString('Ana Gómez', $html);
+        $this->assertStringContainsString('Ver todas', $html);
+    }
+
+    /** <details> es HTML puro: el cuadro abre y cierra aunque no corra el JS. */
+    public function test_el_cuadro_no_depende_de_javascript(): void
+    {
+        $html = $this->actingAs(User::factory()->create())
+            ->get(route('projects.index'))
+            ->getContent();
+
+        $this->assertStringContainsString('<details class="campana-caja">', $html);
+        $this->assertStringContainsString('<summary class="campana', $html);
+    }
+
+    public function test_el_cuadro_vacio_lo_dice(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('projects.index'))
+            ->assertSee('Sin notificaciones pendientes');
+    }
+
     public function test_sin_avisos_no_hay_contador(): void
     {
         $this->actingAs(User::factory()->create())
