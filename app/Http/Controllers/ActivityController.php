@@ -25,8 +25,8 @@ class ActivityController extends Controller
             'filters' => $filters,
             'acciones' => ActivityAction::cases(),
             'members' => User::orderBy('name')->get(),
-            // Los fallos de ingreso de la ultima semana: es el numero que uno
-            // viene a mirar cuando entra aca.
+            // Los fallos de ingreso de la ultima semana: 
+            // es el numero que uno viene a mirar cuando entra aca.
             'fallosSemana' => Activity::whereIn('action', [
                 ActivityAction::ClaveIncorrecta->value,
                 ActivityAction::CorreoInexistente->value,

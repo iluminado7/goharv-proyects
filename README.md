@@ -335,6 +335,9 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   Ctrl+clic ni explicación.
 - Cualquier `<script>` nuevo necesita `nonce="{{ $cspNonce }}"` o la CSP lo
   bloquea sin decir nada en pantalla.
+- Tres fuentes y cada una con su trabajo: Playfair Display para títulos y el
+  wordmark, Inter para el resto del texto, y Montserrat para los números, vía
+  la variable `--fuente-numeros`.
 - Los colores salen de las variables CSS (`--bg`, `--panel`, `--line`, `--ink`,
   `--muted`, `--faint`, `--track`), nunca de un hex suelto, o el fondo claro se
   rompe.
