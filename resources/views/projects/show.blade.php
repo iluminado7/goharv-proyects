@@ -66,7 +66,7 @@
                     @endforeach
                 </select>
                 <button class="btn btn-ghost btn-sm">Cambiar</button>
-                <span class="hint" style="margin:0">Ordena el proyecto en el tablero de todo el equipo.</span>
+                <span class="hint" style="margin:0"></span>
             </form>
         @endcan
     </div>
