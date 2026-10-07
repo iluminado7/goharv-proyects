@@ -3,14 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ActivityAction;
+use App\Enums\NotificationType;
 use App\Enums\ProjectPriority;
 use App\Enums\ProjectStatus;
 use App\Models\Activity;
 use App\Models\Project;
 use App\Models\ProjectUpdate;
 use App\Models\User;
+use App\Notifications\ProjectEvent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -91,8 +95,10 @@ class ProjectController extends Controller
         $data = $this->validated($request);
 
         $project = Project::create($data);
-        $project->collaborators()->sync($request->input('collaborators', []));
+        $sync = $project->collaborators()->sync($request->input('collaborators', []));
         $project->syncLinks($request->input('links', []));
+
+        $this->avisarAsignaciones($project, $request->user(), $sync['attached'], null);
 
         $project->updates()->create([
             'user_id'   => $request->user()->id,
@@ -141,6 +147,7 @@ class ProjectController extends Controller
         unset($data['status']);
 
         $prioridadAnterior = $project->priority;
+        $duenioAnterior    = $project->owner_id;
 
         // Misma regla que el atajo de la ficha: si no puede cambiar la
         // prioridad, lo que venga en el formulario se descarta. Esconder el
@@ -157,8 +164,11 @@ class ProjectController extends Controller
                 detail: $prioridadAnterior->label().' → '.$project->priority->label(),
             );
         }
-        $project->collaborators()->sync($request->input('collaborators', []));
+        $sync = $project->collaborators()->sync($request->input('collaborators', []));
         $project->syncLinks($request->input('links', []));
+
+        $this->avisarAsignaciones($project, $request->user(), $sync['attached'], $duenioAnterior);
+
         $project->moveTo($newState, $request->user());
 
         return redirect()
@@ -221,7 +231,14 @@ class ProjectController extends Controller
 
         $project->comment($request->user(), $data['body']);
 
-        Activity::anotar(ActivityAction::NotaNueva, $request->user(), $project, detail: \Illuminate\Support\Str::limit($data['body'], 120));
+        $resumen = Str::limit($data['body'], 120);
+
+        Activity::anotar(ActivityAction::NotaNueva, $request->user(), $project, detail: $resumen);
+
+        Notification::send(
+            $project->interesados($request->user()),
+            new ProjectEvent(NotificationType::Comentario, $project, $request->user(), $resumen),
+        );
 
         return back()->with('ok', 'Comentario agregado.');
     }
@@ -325,6 +342,29 @@ class ProjectController extends Controller
     private function soloArchivados(Project $project): void
     {
         abort_unless($project->trashed(), 404, 'Solo se puede borrar un proyecto que ya está archivado.');
+    }
+
+    /**
+     * Avisa a quien acaba de quedar a cargo y a los colaboradores recién
+     * sumados. Solo a los nuevos: `sync()` devuelve los que se agregaron en
+     * esta pasada, así que guardar sin tocar la lista no molesta a nadie.
+     */
+    private function avisarAsignaciones(Project $project, User $actor, array $sumados, ?int $duenioAnterior): void
+    {
+        if ($project->owner_id && $project->owner_id !== $duenioAnterior && $project->owner_id !== $actor->id) {
+            $project->owner?->notify(
+                new ProjectEvent(NotificationType::TeAsignaron, $project, $actor)
+            );
+        }
+
+        $nuevos = User::whereIn('id', $sumados)
+            ->whereKeyNot($actor->id)
+            // Al responsable ya se le avisó arriba: no se le manda dos veces.
+            ->when($project->owner_id, fn ($q) => $q->whereKeyNot($project->owner_id))
+            ->where('is_active', true)
+            ->get();
+
+        Notification::send($nuevos, new ProjectEvent(NotificationType::TeSumaron, $project, $actor));
     }
 
     private function activeMembers()

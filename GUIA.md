@@ -275,6 +275,27 @@ intentás, te lo dice.
 
 ---
 
+## La campana
+
+Arriba a la derecha, al lado de tu nombre. El número rojo son los avisos sin
+leer. Te avisa cuatro cosas, siempre sobre proyectos donde estás y siempre
+cuando las hizo otro:
+
+- Te asignaron como responsable de un proyecto
+- Te sumaron como colaborador
+- Alguien dejó una nota
+- Alguien movió el estado
+
+**No te avisa de lo que hacés vos**, ni de proyectos en los que no participás.
+Es a propósito: una campana que suena por todo se termina ignorando.
+
+Los avisos sin leer quedan resaltados. Con *Marcar todas como leídas* se limpia
+el contador; los avisos no se borran.
+
+Por ahora los avisos viven dentro del panel: **no llega nada por correo**.
+
+---
+
 ## Actividad
 
 Solo para responsables del panel, en **Actividad**. Es el registro de todo lo

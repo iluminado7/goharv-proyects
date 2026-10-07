@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Enums\ActivityAction;
+use App\Enums\NotificationType;
 use App\Enums\ProjectPriority;
 use App\Enums\ProjectStatus;
+use App\Notifications\ProjectEvent;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -14,7 +16,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
 class Project extends Model
@@ -176,13 +180,32 @@ class Project extends Model
         // Solo cuando el estado cambio de verdad: moveTo() tambien se usa para
         // dejar una nota sobre el estado actual.
         if ($from !== $status) {
-            Activity::anotar(
-                ActivityAction::EstadoCambiado, $author, $this,
-                detail: $from->label().' → '.$status->label(),
+            $detalle = $from->label().' → '.$status->label();
+
+            Activity::anotar(ActivityAction::EstadoCambiado, $author, $this, detail: $detalle);
+
+            Notification::send(
+                $this->interesados($author),
+                new ProjectEvent(NotificationType::CambioEstado, $this, $author, $detalle),
             );
         }
 
         return true;
+    }
+
+    /**
+     * A quiénes les importa este proyecto: el responsable y los colaboradores,
+     * sin quien acaba de hacer la acción —nadie recibe aviso de lo suyo— y sin
+     * las cuentas dadas de baja.
+     */
+    public function interesados(?User $excepto = null): Collection
+    {
+        return collect([$this->owner])
+            ->merge($this->collaborators)
+            ->filter()
+            ->unique('id')
+            ->reject(fn (User $u) => $u->id === $excepto?->id || ! $u->is_active)
+            ->values();
     }
 
     /**

@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ThemeController;
@@ -54,6 +55,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/proyectos/{project}/definitivo', [ProjectController::class, 'forceDestroy'])
         ->withTrashed()
         ->name('projects.force-destroy');
+
+    Route::get('/notificaciones', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notificaciones/leidas', [NotificationController::class, 'readAll'])->name('notifications.read-all');
 
     Route::get('/perfil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/perfil/foto', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');

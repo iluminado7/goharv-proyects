@@ -114,14 +114,28 @@ esconder el formulario nunca es la defensa. A quien no administra se le muestran
 solo las cuentas activas. Hay una validación que impide dejar el panel sin
 ningún responsable activo, y nadie puede sacarse a sí mismo.
 
+**Campana de notificaciones.** Avisa cuatro cosas, y solo cuando te las hizo
+otro en un proyecto donde estás: te asignaron como responsable, te sumaron como
+colaborador, comentaron, o movieron el estado. Nunca tus propias acciones,
+nunca proyectos ajenos, nunca a cuentas dadas de baja.
+
+Usa la tabla `notifications` del framework con una sola clase, `ProjectEvent`,
+que distingue los casos por un enum. El día que haya correo configurado se le
+suma `toMail()` y `'mail'` al `via()`: los lugares que disparan el aviso no se
+tocan. Los datos del proyecto y del actor se guardan congelados en el payload,
+así que un aviso viejo se sigue leyendo aunque el proyecto ya no exista.
+
 **Bitácora.** `activity_logs` registra accesos (ingreso, salida, clave
 incorrecta, correo inexistente, intento con cuenta de baja) y lo que pasa con
 los proyectos (alta, cambio de estado, cambio de prioridad, nota nueva,
 archivado, restaurado, eliminado). Guarda quién, cuándo, desde qué IP y el
 detalle del cambio. Se lee en `/actividad`, solo para responsables del panel.
 
-No reemplaza a `project_updates`: ese es el historial visible de cada proyecto y
-parte de la herramienta. La bitácora es para mirar el panel entero.
+Son tres cosas distintas y conviene no mezclarlas: `project_updates` es el
+historial visible de cada proyecto y parte de la herramienta; la **bitácora** es
+para auditar el panel entero y la mira un responsable cuando quiere; la
+**campana** es personal y trae solo lo que pide tu atención. Si un evento no
+cumple "otro te lo hizo y podés hacer algo", va a la bitácora y no a la campana.
 
 ---
 
@@ -178,6 +192,7 @@ inmediato y cargar al resto del equipo desde *Equipo*.
 | `projects` | Nombre, slug, detalle, `client`, estado, prioridad, `owner_id`, `due_date`, `started_at`, `completed_at`. Con `softDeletes` e índice fulltext sobre nombre, detalle y empresa. |
 | `project_links` | Enlaces del proyecto: `label`, `url`, `position`. |
 | `user_avatars` | Foto de perfil: `user_id`, `mime`, `image` (MEDIUMBLOB). |
+| `notifications` | La del framework. Avisos personales, con estado de leído. |
 | `activity_logs` | Bitácora: `user_id`, `action`, `project_id`, `subject`, `detail`, `ip`, `created_at`. Append-only, sin `updated_at`. |
 | `project_user` | Colaboradores además del responsable. |
 | `project_updates` | Historial: autor, comentario, `status_from`, `status_to`. |
@@ -189,7 +204,9 @@ Los archivados no son otra tabla: son filas de `projects` con `deleted_at` carga
 ## Mapa de archivos
 
 ```
-app/Enums/            ProjectStatus, ProjectPriority, UserRole, ActivityAction
+app/Enums/            ProjectStatus, ProjectPriority, UserRole, ActivityAction,
+                      NotificationType
+app/Notifications/    ProjectEvent
 app/Models/           Project, ProjectLink, ProjectUpdate, User, UserAvatar,
                       Activity
 app/Support/          AvatarImage, Assets
@@ -227,8 +244,10 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 
 5. **Adjuntos.** Subir archivos al proyecto (`spatie/laravel-medialibrary` o
    storage nativo).
-6. **Notificaciones.** Avisar al responsable cuando le asignan un proyecto o
-   cuando se vence una fecha de entrega.
+6. **Avisos por correo y por vencimiento.** La campana ya avisa dentro del
+   panel. Falta que esos mismos avisos salgan por mail (depende del punto 2) y
+   que haya uno por fecha de entrega próxima, que necesita una tarea programada
+   —hoy no hay ninguna configurada, y ningún proyecto tiene fecha cargada—.
 7. **Tablero por columnas.** El listado ordenado funciona bien, pero una vista
    tipo kanban con las cuatro columnas puede leerse más rápido. Requiere JS,
    así que va contra la decisión de Blade puro: evaluarlo antes.
@@ -260,7 +279,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 171 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 183 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.
