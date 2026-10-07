@@ -35,6 +35,27 @@ class MenuTest extends TestCase
         }
     }
 
+    /**
+     * En el celular los cuatro botones ocupaban media pantalla. Se colapsan
+     * detras de un boton que es CSS puro: el mismo HTML sirve para las dos
+     * pantallas y la media query decide.
+     */
+    public function test_el_menu_del_celular_sale_en_el_mismo_html(): void
+    {
+        $html = $this->actingAs(User::factory()->create())
+            ->get(route('projects.index'))
+            ->getContent();
+
+        $this->assertStringContainsString('id="abrir-menu"', $html);
+        $this->assertStringContainsString('class="hamburguesa"', $html);
+        $this->assertStringContainsString('aria-label="Abrir el menú"', $html);
+
+        // Los enlaces estan en el HTML siempre: el boton solo los esconde con
+        // CSS en pantallas chicas, no cambia lo que se manda.
+        $this->assertStringContainsString('>Proyectos</a>', $html);
+        $this->assertStringContainsString('>Mi perfil</a>', $html);
+    }
+
     public function test_el_rol_ya_no_esta_en_el_header_sino_en_el_perfil(): void
     {
         $miembro = User::factory()->create();

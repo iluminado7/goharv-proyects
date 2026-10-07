@@ -41,6 +41,9 @@ navegador.
 Necesita internet para funcionar: el panel lee los proyectos del servidor. Sin
 señal vas a ver una pantalla que te avisa, en vez del error del navegador.
 
+En el celular las secciones viven detrás del **botón de menú** (las tres rayas,
+al lado del logo). La campana, el fondo y Salir quedan siempre a mano.
+
 ---
 
 ## El tablero

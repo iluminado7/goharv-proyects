@@ -102,8 +102,10 @@ instalarla solo, y desde iPhone se agrega con Compartir → Agregar a inicio.
 Queda con ícono propio y abre a pantalla completa. Sin conexión muestra una
 pantalla propia en vez del error del navegador.
 
-**Menú y fondo.** Header con Proyectos, Equipo (solo responsables) y Mi perfil,
-marcando en cuál se está parado. El botón ☀/☾ alterna entre fondo negro y claro:
+**Menú y fondo.** Header con Proyectos, Equipo, Actividad (solo responsables) y
+Mi perfil, marcando en cuál se está parado. En pantallas chicas los botones se
+colapsan detrás de un botón de menú, hecho con un checkbox y CSS: el mismo HTML
+sirve para las dos pantallas y decide la media query. El botón ☀/☾ alterna entre fondo negro y claro:
 la preferencia va en una cookie y el tema lo escribe el servidor en el `<html>`,
 así que no hay JS ni parpadeo al cargar.
 
@@ -351,8 +353,8 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   `CASE WHEN` armado desde el enum.
 - El JavaScript del panel son cuatro partials chicos: `pwa-register` (registra
   el service worker), `password-toggle` (el ojito de la clave),
-  `avatar-cropper` (encuadrar la foto) y `dropdown-close` (cerrar la campana al
-  tocar afuera). Los cuatro hacen cosas que el servidor no puede hacer y los
+  `avatar-cropper` (encuadrar la foto) y `dropdown-close` (cerrar la campana y
+  el menú del celular al tocar afuera). Los cuatro hacen cosas que el servidor no puede hacer y los
   cuatro degradan bien si el JS no corre. La regla ya no es "nada de JS" sino
   **nada que el HTML o un formulario puedan resolver solos**: antes de sumar
   otro, buscar el elemento nativo —`<details>`, `<datalist>`— que haga el

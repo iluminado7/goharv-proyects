@@ -1,24 +1,34 @@
-{{-- Cuarta y mas chica de las mejoras con JavaScript. El desplegable abre y
-     cierra solo con <details>, que es HTML puro; esto agrega lo unico que el
-     elemento no trae: cerrarlo al tocar afuera o con Escape. Sin el script el
-     cuadro sigue funcionando, se cierra volviendo a tocar la campana. --}}
+{{-- La campana y el menu del celular abren y cierran sin JavaScript: una con
+     <details> y el otro con un checkbox. Esto agrega lo unico que ninguno de
+     los dos trae de fabrica, cerrarse al tocar afuera o con Escape. Sin el
+     script los dos siguen funcionando: se cierran volviendo a tocar su boton. --}}
 <script nonce="{{ $cspNonce ?? '' }}">
     (function () {
-        var caja = document.querySelector('.campana-caja');
+        var campana = document.querySelector('.campana-caja');
+        var menu    = document.getElementById('abrir-menu');
+        var navZona = document.querySelector('.mast-nav');
 
-        if (!caja) {
-            return;
+        function cerrarTodo() {
+            if (campana) campana.open = false;
+            if (menu) menu.checked = false;
         }
 
         document.addEventListener('click', function (e) {
-            if (caja.open && !caja.contains(e.target)) {
-                caja.open = false;
+            var enCampana = campana && campana.contains(e.target);
+            var enMenu    = navZona && navZona.contains(e.target);
+
+            if (campana && campana.open && !enCampana) {
+                campana.open = false;
+            }
+
+            if (menu && menu.checked && !enMenu) {
+                menu.checked = false;
             }
         });
 
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
-                caja.open = false;
+                cerrarTodo();
             }
         });
     })();

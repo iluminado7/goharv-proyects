@@ -17,6 +17,19 @@
         <div class="wrap mast-in">
             <div class="mast-nav">
                 <a href="{{ route('projects.index') }}"><span class="wordmark">GoHarv.<sup>&reg;</sup></span></a>
+
+                {{-- En el celular los cuatro botones comian media pantalla. Se
+                     colapsan detras de este boton, que es un checkbox escondido
+                     con su label: CSS puro, y a diferencia de <details> se puede
+                     dejar siempre abierto en escritorio con una media query. --}}
+                <input type="checkbox" id="abrir-menu" class="sr-only menu-switch">
+                <label for="abrir-menu" class="hamburguesa" aria-label="Abrir el menú">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                         stroke-linecap="round" aria-hidden="true">
+                        <path d="M4 7h16M4 12h16M4 17h16"/>
+                    </svg>
+                </label>
+
                 <nav class="menu">
                     <a class="btn btn-ghost btn-sm {{ request()->routeIs('projects.*') ? 'on' : '' }}"
                        href="{{ route('projects.index') }}">Proyectos</a>
