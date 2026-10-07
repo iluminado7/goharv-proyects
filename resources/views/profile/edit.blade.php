@@ -88,7 +88,7 @@
             </div>
         </div>
 
-        <p class="hint">Mínimo 8 caracteres. Si la olvidás, hoy la única salida es pedirle al responsable que la resetee.</p>
+        <p class="hint">Mínimo 8 caracteres.</p>
 
         <div class="form-acts">
             <button class="btn">Cambiar clave</button>
