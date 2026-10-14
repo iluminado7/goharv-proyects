@@ -12,7 +12,7 @@ class Lead extends Model
 
     protected $fillable = [
         'name', 'email', 'phone', 'newsletter', 'program', 'source',
-        'page', 'consented_at', 'ip',
+        'page', 'locale', 'consented_at', 'ip',
     ];
 
     protected function casts(): array

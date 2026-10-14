@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lead;
+use App\Support\WebForms;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -30,11 +31,15 @@ class LeadController extends Controller
             'program'    => ['required', 'string', 'max:80', 'regex:/^[a-z0-9-]+$/'],
             'source'     => ['required', 'string', 'max:40', 'regex:/^[a-z0-9-]+$/'],
             'page'       => ['nullable', 'string', 'max:255'],
+            // Idioma del sitio desde el que se envió (el sitio es trilingüe). Un valor desconocido no
+            // rechaza la consulta: se guarda sin idioma.
+            'locale'     => ['nullable', 'string', 'max:5'],
         ]);
 
         Lead::create([
             ...collect($data)->except('consent')->all(),
             'newsletter'   => $request->boolean('newsletter'),
+            'locale'       => array_key_exists($data['locale'] ?? '', WebForms::LOCALES) ? $data['locale'] : null,
             'consented_at' => now(),
             'ip'           => $request->ip(),
         ]);

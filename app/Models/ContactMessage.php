@@ -12,7 +12,7 @@ class ContactMessage extends Model
 
     protected $fillable = [
         'name', 'email', 'phone', 'company', 'country', 'unit',
-        'message', 'page', 'consented_at', 'ip',
+        'message', 'page', 'locale', 'consented_at', 'ip',
     ];
 
     protected function casts(): array

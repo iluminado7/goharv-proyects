@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\ConsultingRequest;
 use App\Models\ContactMessage;
+use App\Models\InCompanyRequest;
 use App\Models\Lead;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -49,6 +51,130 @@ class InquiryTest extends TestCase
         return $l;
     }
 
+    private function inCompany(array $attrs = []): InCompanyRequest
+    {
+        return InCompanyRequest::create(array_merge([
+            'name'         => 'Laura Díaz',
+            'role'         => 'Gerenta de RRHH',
+            'company'      => 'Industrias del Sur SA',
+            'email'        => 'laura@industrias.com.ar',
+            'phone'        => '1145678901',
+            'team_size'    => '31–100',
+            'areas'        => ['Compliance', 'Gestión comercial'],
+            'modality'     => 'Presencial',
+            'message'      => 'Queremos capacitar a los mandos medios.',
+            'page'         => '/academy/formacion-in-company',
+            'consented_at' => now(),
+        ], $attrs));
+    }
+
+    private function consulting(array $attrs = []): ConsultingRequest
+    {
+        return ConsultingRequest::create(array_merge([
+            'challenge'    => 'ia-automatizacion',
+            'goal'         => 'Automatizar la atención al cliente.',
+            'name'         => 'Pablo Ruiz',
+            'role'         => 'Director',
+            'company'      => 'Ruiz Hnos SRL',
+            'email'        => 'pablo@ruiz.com.ar',
+            'phone'        => '3415551234',
+            'page'         => '/consulting',
+            'consented_at' => now(),
+        ], $attrs));
+    }
+
+    public function test_formacion_in_company_tiene_su_seccion_con_sus_datos(): void
+    {
+        $this->consulta(['name' => 'Ana Contacto']);
+        $this->inCompany(['name' => 'Laura InCompany']);
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('inquiries.index', ['form' => 'in-company']))
+            ->assertOk()
+            ->assertSee('<h1 class="page" id="inq-title">Formación In Company</h1>', escape: false)
+            ->assertSee('Laura InCompany')
+            ->assertSee('Industrias del Sur SA · Gerenta de RRHH')
+            ->assertSee('31–100 colaboradores')
+            ->assertSee('Gestión comercial')
+            ->assertSee('Queremos capacitar a los mandos medios.')
+            ->assertSee('modalidad: Presencial')
+            ->assertDontSee('Ana Contacto');
+    }
+
+    public function test_analizar_mi_empresa_tiene_su_seccion_con_el_desafio(): void
+    {
+        $this->consulta(['name' => 'Ana Contacto']);
+        $this->consulting(['name' => 'Pablo Consulting']);
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('inquiries.index', ['form' => 'analizar-empresa']))
+            ->assertOk()
+            ->assertSee('<h1 class="page" id="inq-title">Analizar mi empresa</h1>', escape: false)
+            ->assertSee('Pablo Consulting')
+            ->assertSee('Ruiz Hnos SRL · Director')
+            ->assertSee('IA y automatización')
+            ->assertSee('Automatizar la atención al cliente.')
+            ->assertDontSee('Ana Contacto');
+    }
+
+    public function test_los_contadores_incluyen_las_secciones_nuevas(): void
+    {
+        $this->inCompany();
+        $this->inCompany();
+        $this->consulting();
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('inquiries.index'))
+            ->assertSeeInOrder(['<span class="inq-link-l">Formación In Company</span>', '<span class="inq-count">2</span>'], escape: false)
+            ->assertSeeInOrder(['<span class="inq-link-l">Analizar mi empresa</span>', '<span class="inq-count">1</span>'], escape: false);
+    }
+
+    public function test_filtra_in_company_por_empresa_y_colaboradores(): void
+    {
+        $this->inCompany(['name' => 'Chica Acme', 'company' => 'Acme', 'team_size' => '1–10']);
+        $this->inCompany(['name' => 'Grande Acme', 'company' => 'Acme', 'team_size' => 'Más de 100']);
+        $this->inCompany(['name' => 'Grande Otra', 'company' => 'Otra SRL', 'team_size' => 'Más de 100']);
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('inquiries.index', ['form' => 'in-company', 'empresa' => 'Acme', 'tamano' => 'Más de 100']))
+            ->assertSee('Todos los tamaños')
+            ->assertSee('Grande Acme')
+            ->assertDontSee('Chica Acme')
+            ->assertDontSee('Grande Otra');
+    }
+
+    public function test_filtra_analizar_mi_empresa_por_desafio(): void
+    {
+        $this->consulting(['name' => 'Quiere IA', 'challenge' => 'ia-automatizacion']);
+        $this->consulting(['name' => 'Quiere Costos', 'challenge' => 'costos']);
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('inquiries.index', ['form' => 'analizar-empresa', 'desafio' => 'costos']))
+            ->assertSee('Todos los desafíos')
+            ->assertSee('Quiere Costos')
+            ->assertDontSee('Quiere IA');
+    }
+
+    /** Un desafio que el panel no conoce se muestra pasado en limpio. */
+    /** Los formularios van agrupados: primero las consultas, despues los "Avisame". */
+    public function test_la_barra_lateral_agrupa_consultas_y_avisame(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get(route('inquiries.index', ['form' => 'in-company']))
+            ->assertSeeInOrder(['Consultas', 'Contacto', 'Formación In Company', 'Analizar mi empresa', 'Avisame', 'Inteligencia Artificial para Empresas'])
+            ->assertSee('aria-current="page"', escape: false)
+            ->assertSee('0 consultas');
+    }
+
+    public function test_un_desafio_desconocido_se_ve_igual(): void
+    {
+        $this->consulting(['challenge' => 'sucesion-familiar']);
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('inquiries.index', ['form' => 'analizar-empresa']))
+            ->assertSee('Sucesion Familiar');
+    }
+
     public function test_sin_sesion_va_al_login(): void
     {
         $this->get(route('inquiries.index'))->assertRedirect(route('login'));
@@ -77,7 +203,7 @@ class InquiryTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->get(route('inquiries.index', ['form' => 'workshop-consorcios']))
             ->assertOk()
-            ->assertSee('<h1 class="page">Consorcios de propiedad horizontal</h1>', escape: false)
+            ->assertSee('<h1 class="page" id="inq-title">Consorcios de propiedad horizontal</h1>', escape: false)
             ->assertSee('Juan Consorcios')
             ->assertDontSee('Eva Accesos')
             ->assertDontSee('Ana Contacto');
@@ -92,9 +218,9 @@ class InquiryTest extends TestCase
 
         $this->actingAs(User::factory()->create())
             ->get(route('inquiries.index'))
-            ->assertSeeInOrder(['2', 'contacto'])
-            ->assertSeeInOrder(['1', 'avisame · Consorcios de propiedad horizontal'])
-            ->assertSeeInOrder(['0', 'avisame · Business Workshop: Access control and smart locks']);
+            ->assertSeeInOrder(['<span class="inq-link-l">Contacto</span>', '<span class="inq-count">2</span>'], escape: false)
+            ->assertSeeInOrder(['<span class="inq-link-l">Consorcios de propiedad horizontal</span>', '<span class="inq-count">1</span>'], escape: false)
+            ->assertSeeInOrder(['<span class="inq-link-l">Business Workshop: Access control and smart locks</span>', '<span class="inq-count">0</span>'], escape: false);
     }
 
     /** Un programa nuevo del sitio aparece igual, con su etiqueta pasada en limpio. */
@@ -203,6 +329,18 @@ class InquiryTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->get(route('inquiries.index', ['desde' => 'ayer']))
             ->assertRedirect();
+    }
+
+    /** Cada consulta muestra el idioma del sitio desde el que llegó (las viejas, sin idioma, nada) */
+    public function test_muestra_el_idioma_de_cada_consulta(): void
+    {
+        $this->consulta(['name' => 'Desde Brasil', 'locale' => 'pt']);
+        $this->consulta(['name' => 'Sin idioma', 'locale' => null]);
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('inquiries.index'))
+            ->assertSee('title="Portugués">PT</span>', escape: false)
+            ->assertDontSee('>ES</span>', escape: false);
     }
 
     public function test_el_mensaje_no_imprime_html(): void

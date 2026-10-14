@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ContactMessage;
+use App\Support\WebForms;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -33,10 +34,14 @@ class ContactMessageController extends Controller
             'message' => ['required', 'string', 'max:500'],
             'consent' => ['accepted'],
             'page'    => ['nullable', 'string', 'max:255'],
+            // Idioma del sitio desde el que se envió (el sitio es trilingüe). Un valor desconocido no
+            // rechaza la consulta: se guarda sin idioma.
+            'locale'  => ['nullable', 'string', 'max:5'],
         ]);
 
         ContactMessage::create([
             ...collect($data)->except('consent')->all(),
+            'locale'       => array_key_exists($data['locale'] ?? '', WebForms::LOCALES) ? $data['locale'] : null,
             'consented_at' => now(),
             'ip'           => $request->ip(),
         ]);

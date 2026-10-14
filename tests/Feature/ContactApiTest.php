@@ -41,6 +41,22 @@ class ContactApiTest extends TestCase
         $this->assertNotNull($message->ip);
     }
 
+    /** El sitio es trilingüe: cada consulta guarda el idioma desde el que se envió */
+    public function test_guarda_el_idioma_del_sitio(): void
+    {
+        $this->postJson(route('api.contact.store'), $this->payload(['locale' => 'pt']))->assertCreated();
+
+        $this->assertSame('pt', ContactMessage::sole()->locale);
+    }
+
+    /** Un idioma que el panel no conoce no puede hacer que se pierda la consulta */
+    public function test_un_idioma_desconocido_se_guarda_sin_idioma(): void
+    {
+        $this->postJson(route('api.contact.store'), $this->payload(['locale' => 'fr']))->assertCreated();
+
+        $this->assertNull(ContactMessage::sole()->locale);
+    }
+
     public function test_los_campos_opcionales_pueden_venir_vacios(): void
     {
         $this->postJson(route('api.contact.store'), $this->payload([

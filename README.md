@@ -109,13 +109,15 @@ esconder el formulario nunca es la defensa. A quien no administra se le muestran
 solo las cuentas activas. Hay una validación que impide dejar el panel sin
 ningún responsable activo, y nadie puede sacarse a sí mismo.
 
-**Formularios del sitio.** El panel recibe los dos formularios de goharv.com.ar
+**Formularios del sitio.** El panel recibe los formularios de goharv.com.ar
 (un sitio estático, sin backend propio) por una API mínima en `routes/api.php`:
 
 | Ruta | Formulario | Tabla |
 |---|---|---|
 | `POST /api/contacto` | Contacto (home y /contacto) | `contact_messages` |
 | `POST /api/avisame` | "Avisame" de los programas en desarrollo | `leads` |
+| `POST /api/in-company` | Formación In Company (/academy/formacion-in-company) | `in_company_requests` |
+| `POST /api/analizar-empresa` | "Quiero analizar mi empresa" (/consulting) | `consulting_requests` |
 
 Llegan como JSON desde otro dominio y sin sesión, así que no pasan por el grupo
 `web`: ni CSRF, ni CSP, ni el chequeo de cuentas de baja. A cambio:
@@ -133,17 +135,33 @@ Llegan como JSON desde otro dominio y sin sesión, así que no pasan por el grup
 - **5 envíos por minuto por IP** (`throttle:5,1`).
 - **CORS** solo para los orígenes de `CORS_ALLOWED_ORIGINS` (`config/cors.php`).
   Sin la variable no se acepta ninguno.
+- **"Analizar mi empresa" sin JavaScript.** Ese formulario también funciona sin JS:
+  el navegador manda el `<form>` común (`application/x-www-form-urlencoded`,
+  `consent=on`, `newsletter=on` solo si se marcó). En ese caso el panel guarda y
+  redirige (303) a la página de origen del sitio con `?consulta=enviada#hablemos`,
+  solo si el `Referer` es uno de los orígenes de `CORS_ALLOWED_ORIGINS` (no redirige
+  a dominios ajenos). Con JS contesta JSON, como los demás.
 
 Se registra a mano en `bootstrap/app.php` y no con `php artisan install:api`,
 que suma Sanctum: acá no hay tokens ni sesiones.
 
 **Consultas web** (`/consultas`, en el menú para todo el equipo). Muestra lo que
-llegó de los formularios, de a un formulario por vez. Arriba, los contadores
-(como en el tablero) son el selector: *contacto* y un *avisame* por programa.
-Dentro de cada uno se filtra por fechas (desde / hasta) y, en Contacto, también
-por empresa y por unidad de negocio (se combinan): "Avisame" no pide ninguna de
-las dos. Las opciones de empresa y unidad salen de lo que llegó, no de una lista
-fija. Los contadores respetan las fechas.
+llegó de los formularios, de a un formulario por vez. A la izquierda, una barra
+lateral fija con los formularios en dos grupos, cada uno con su contador:
+**Consultas** (Contacto, Formación In Company, Analizar mi empresa: hay que
+responderlas) y **Avisame** (uno por programa: listas de interesados). En celular
+la barra pasa a un desplegable arriba (`<details>`, sin JS; la lista es el parcial
+`inquiries/partials/nav`). Arriba del listado, el total ("7 consultas") y la fecha de
+cada consulta a la derecha de la tarjeta. Dentro de cada uno se filtra por fechas
+(desde / hasta) y, según el formulario: Contacto por empresa y unidad de negocio,
+In Company por empresa y cantidad de colaboradores, Analizar mi empresa por empresa
+y desafío (se combinan). "Avisame" solo por fechas. Las opciones de cada filtro
+salen de lo que llegó, no de una lista fija. Los contadores respetan las fechas.
+
+- **In Company** muestra empresa y cargo, colaboradores, áreas de interés (etiquetas),
+  el desafío y la modalidad. **Analizar mi empresa**, empresa y cargo, el desafío
+  elegido y qué quiere conseguir. Los desafíos (clave que manda el sitio => texto)
+  están en `WebForms::CHALLENGES`; uno nuevo se ve pasado en limpio.
 
 - **Los programas** y sus títulos están en `App\Support\WebForms::PROGRAMS`
   (etiqueta interna que manda el sitio => título en la web). Uno nuevo que no
@@ -153,6 +171,11 @@ fija. Los contadores respetan las fechas.
   muestra y filtra por día en hora argentina (`WebForms::TIMEZONE`, trait
   `ReceivedFromWeb`). Si no, una consulta de las 22 h caería al día siguiente.
 - **Filtrar con botón**, sin `onchange`: la CSP bloquea los manejadores en línea.
+- **Idioma de cada consulta.** El sitio es trilingüe (español, inglés, portugués) y cada
+  formulario manda `locale` (`es`, `en` o `pt`). Se guarda en la columna `locale` de cada
+  tabla y se muestra como etiqueta (ES / EN / PT) en cada consulta. Un valor desconocido no
+  rechaza la consulta: se guarda sin idioma. País, unidad y "No estoy seguro" llegan siempre en
+  español aunque el sitio los muestre traducidos, así los filtros no se parten por idioma.
 
 ---
 
@@ -213,8 +236,10 @@ inmediato y cargar al resto del equipo desde *Equipo*.
 | `user_avatars` | Foto de perfil: `user_id`, `mime`, `image` (MEDIUMBLOB). |
 | `project_user` | Colaboradores además del responsable. |
 | `project_updates` | Historial: autor, comentario, `status_from`, `status_to`. |
-| `contact_messages` | Consultas del formulario de contacto del sitio: datos de contacto, empresa, país, unidad (texto), mensaje, página de origen, `consented_at` e IP. |
-| `leads` | Pedidos de "Avisame": datos de contacto, `newsletter`, `program` (ej. `workshop-consorcios`), `source` (ej. `academy`), página, `consented_at` e IP. |
+| `contact_messages` | Consultas del formulario de contacto del sitio: datos de contacto, empresa, país, unidad (texto), mensaje, página de origen, `locale` (idioma del sitio), `consented_at` e IP. |
+| `in_company_requests` | Formación In Company: nombre, cargo, empresa, contacto, `team_size` (texto), `areas` (JSON), `modality`, `message` (desafío), `newsletter`, página, `locale`, `consented_at` e IP. |
+| `consulting_requests` | Analizar mi empresa: `challenge` (clave), `goal`, nombre, cargo, empresa, contacto, `newsletter`, página, `locale`, `consented_at` e IP. |
+| `leads` | Pedidos de "Avisame": datos de contacto, `newsletter`, `program` (ej. `workshop-consorcios`), `source` (ej. `academy`), página, `locale` (idioma del sitio), `consented_at` e IP. |
 
 Los archivados no son otra tabla: son filas de `projects` con `deleted_at` cargado.
 
@@ -232,7 +257,7 @@ app/Http/Controllers/ ProjectController, MemberController, ProfileController,
                       ThemeController, Auth/LoginController,
                       InquiryController, Api/ContactMessageController,
                       Api/LeadController
-routes/api.php        Formularios del sitio (POST /api/contacto, /api/avisame)
+routes/api.php        Formularios del sitio (POST /api/contacto, /api/avisame, /api/in-company, /api/analizar-empresa)
 config/cors.php       Orígenes permitidos para la API
 app/Http/Middleware/  EnsureUserIsAdmin, EnsureUserIsActive, SecurityHeaders
 app/Policies/         ProjectPolicy, ProjectUpdatePolicy

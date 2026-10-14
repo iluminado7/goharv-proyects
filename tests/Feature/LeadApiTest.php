@@ -39,6 +39,13 @@ class LeadApiTest extends TestCase
         $this->assertNotNull($lead->consented_at);
     }
 
+    public function test_guarda_el_idioma_del_sitio(): void
+    {
+        $this->postJson(route('api.leads.store'), $this->payload(['locale' => 'en']))->assertCreated();
+
+        $this->assertSame('en', Lead::sole()->locale);
+    }
+
     public function test_sin_la_casilla_de_novedades_queda_en_falso(): void
     {
         $this->postJson(route('api.leads.store'), $this->payload(['newsletter' => false]))
