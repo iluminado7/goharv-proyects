@@ -198,11 +198,20 @@ suma `toMail()` y `'mail'` al `via()`: los lugares que disparan el aviso no se
 tocan. Los datos del proyecto y del actor se guardan congelados en el payload,
 así que un aviso viejo se sigue leyendo aunque el proyecto ya no exista.
 
+Las consultas del sitio también avisan: cuando llega un formulario, el equipo
+activo entero recibe una notificación y queda el registro en la bitácora. Se
+engancha en el trait `ReceivedFromWeb` y no en los cuatro controladores de la
+API, así ninguno se olvida y un formulario nuevo queda cubierto por existir.
+Nada de eso puede voltear el envío: del otro lado hay alguien esperando el
+"¡Gracias!", y perder la consulta sería peor que perder el aviso.
+
 **Bitácora.** `activity_logs` registra accesos (ingreso, salida, clave
 incorrecta, correo inexistente, intento con cuenta de baja) y lo que pasa con
 los proyectos (alta, cambio de estado, cambio de prioridad, nota nueva,
-archivado, restaurado, eliminado). Guarda quién, cuándo, desde qué IP y el
-detalle del cambio. Se lee en `/actividad`, solo para responsables del panel.
+archivado, restaurado, eliminado) y lo que entra del sitio institucional. Guarda
+quién, cuándo, desde qué IP y el detalle del cambio. Se lee en `/actividad`,
+solo para responsables del panel, con filtros por accesos, fallidos, proyectos
+y sitio web.
 
 Son tres cosas distintas y conviene no mezclarlas: `project_updates` es el
 historial visible de cada proyecto y parte de la herramienta; la **bitácora** es
@@ -285,7 +294,7 @@ Los archivados no son otra tabla: son filas de `projects` con `deleted_at` carga
 ```
 app/Enums/            ProjectStatus, ProjectPriority, UserRole, ActivityAction,
                       NotificationType
-app/Notifications/    ProjectEvent
+app/Notifications/    ProjectEvent, InquiryReceived
 app/Models/           Project, ProjectLink, ProjectUpdate, User, UserAvatar,
                       Activity, ContactMessage, Lead
 app/Models/Concerns/  ReceivedFromWeb (fecha en hora argentina, filtro por días)
@@ -366,7 +375,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 183 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 246 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.
