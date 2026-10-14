@@ -71,6 +71,11 @@ quien está metido en él —responsable o colaborador— más los responsables 
 panel. El resto del equipo lo ve, pero no lo toca. Archivar queda para el
 responsable del proyecto y los del panel.
 
+La **prioridad** es la excepción: ordena el tablero de todo el equipo, así que
+la decide el responsable del proyecto, no quien colabora. Se cambia desde la
+ficha, y el formulario de edición respeta la misma regla —a quien no puede, el
+campo se le muestra como texto y el servidor descarta lo que llegue por él—.
+
 **Mi perfil.** Cada uno cambia su nombre, su correo, su clave (pidiendo la
 actual) y su **foto**. Quien no sube ninguna queda con un círculo de iniciales
 en un color derivado de su nombre, así que nunca hay un hueco.
@@ -97,8 +102,10 @@ instalarla solo, y desde iPhone se agrega con Compartir → Agregar a inicio.
 Queda con ícono propio y abre a pantalla completa. Sin conexión muestra una
 pantalla propia en vez del error del navegador.
 
-**Menú y fondo.** Header con Proyectos, Equipo (solo responsables) y Mi perfil,
-marcando en cuál se está parado. El botón ☀/☾ alterna entre fondo negro y claro:
+**Menú y fondo.** Header con Proyectos, Equipo, Actividad (solo responsables) y
+Mi perfil, marcando en cuál se está parado. En pantallas chicas los botones se
+colapsan detrás de un botón de menú, hecho con un checkbox y CSS: el mismo HTML
+sirve para las dos pantallas y decide la media query. El botón ☀/☾ alterna entre fondo negro y claro:
 la preferencia va en una cookie y el tema lo escribe el servidor en el `<html>`,
 así que no hay JS ni parpadeo al cargar.
 
@@ -176,6 +183,32 @@ salen de lo que llegó, no de una lista fija. Los contadores respetan las fechas
   tabla y se muestra como etiqueta (ES / EN / PT) en cada consulta. Un valor desconocido no
   rechaza la consulta: se guarda sin idioma. País, unidad y "No estoy seguro" llegan siempre en
   español aunque el sitio los muestre traducidos, así los filtros no se parten por idioma.
+**Campana de notificaciones.** Avisa cuatro cosas, y solo cuando te las hizo
+otro en un proyecto donde estás: te asignaron como responsable, te sumaron como
+colaborador, comentaron, o movieron el estado. Nunca tus propias acciones,
+nunca proyectos ajenos, nunca a cuentas dadas de baja.
+
+Se abre en un cuadro desde la campana del header, hecho con `<details>` —un
+desplegable nativo de HTML, sin JavaScript—. Muestra las últimas seis y enlaza
+a `/notificaciones`, que tiene la lista completa con paginado.
+
+Usa la tabla `notifications` del framework con una sola clase, `ProjectEvent`,
+que distingue los casos por un enum. El día que haya correo configurado se le
+suma `toMail()` y `'mail'` al `via()`: los lugares que disparan el aviso no se
+tocan. Los datos del proyecto y del actor se guardan congelados en el payload,
+así que un aviso viejo se sigue leyendo aunque el proyecto ya no exista.
+
+**Bitácora.** `activity_logs` registra accesos (ingreso, salida, clave
+incorrecta, correo inexistente, intento con cuenta de baja) y lo que pasa con
+los proyectos (alta, cambio de estado, cambio de prioridad, nota nueva,
+archivado, restaurado, eliminado). Guarda quién, cuándo, desde qué IP y el
+detalle del cambio. Se lee en `/actividad`, solo para responsables del panel.
+
+Son tres cosas distintas y conviene no mezclarlas: `project_updates` es el
+historial visible de cada proyecto y parte de la herramienta; la **bitácora** es
+para auditar el panel entero y la mira un responsable cuando quiere; la
+**campana** es personal y trae solo lo que pide tu atención. Si un evento no
+cumple "otro te lo hizo y podés hacer algo", va a la bitácora y no a la campana.
 
 ---
 
@@ -234,6 +267,8 @@ inmediato y cargar al resto del equipo desde *Equipo*.
 | `projects` | Nombre, slug, detalle, `client`, estado, prioridad, `owner_id`, `due_date`, `started_at`, `completed_at`. Con `softDeletes` e índice fulltext sobre nombre, detalle y empresa. |
 | `project_links` | Enlaces del proyecto: `label`, `url`, `position`. |
 | `user_avatars` | Foto de perfil: `user_id`, `mime`, `image` (MEDIUMBLOB). |
+| `notifications` | La del framework. Avisos personales, con estado de leído. |
+| `activity_logs` | Bitácora: `user_id`, `action`, `project_id`, `subject`, `detail`, `ip`, `created_at`. Append-only, sin `updated_at`. |
 | `project_user` | Colaboradores además del responsable. |
 | `project_updates` | Historial: autor, comentario, `status_from`, `status_to`. |
 | `contact_messages` | Consultas del formulario de contacto del sitio: datos de contacto, empresa, país, unidad (texto), mensaje, página de origen, `locale` (idioma del sitio), `consented_at` e IP. |
@@ -248,11 +283,13 @@ Los archivados no son otra tabla: son filas de `projects` con `deleted_at` carga
 ## Mapa de archivos
 
 ```
-app/Enums/            ProjectStatus, ProjectPriority, UserRole
+app/Enums/            ProjectStatus, ProjectPriority, UserRole, ActivityAction,
+                      NotificationType
+app/Notifications/    ProjectEvent
 app/Models/           Project, ProjectLink, ProjectUpdate, User, UserAvatar,
-                      ContactMessage, Lead
-app/Support/          AvatarImage, Assets, WebForms
+                      Activity, ContactMessage, Lead
 app/Models/Concerns/  ReceivedFromWeb (fecha en hora argentina, filtro por días)
+app/Support/          AvatarImage, Assets, WebForms
 app/Http/Controllers/ ProjectController, MemberController, ProfileController,
                       ThemeController, Auth/LoginController,
                       InquiryController, Api/ContactMessageController,
@@ -291,8 +328,10 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 
 5. **Adjuntos.** Subir archivos al proyecto (`spatie/laravel-medialibrary` o
    storage nativo).
-6. **Notificaciones.** Avisar al responsable cuando le asignan un proyecto o
-   cuando se vence una fecha de entrega.
+6. **Avisos por correo y por vencimiento.** La campana ya avisa dentro del
+   panel. Falta que esos mismos avisos salgan por mail (depende del punto 2) y
+   que haya uno por fecha de entrega próxima, que necesita una tarea programada
+   —hoy no hay ninguna configurada, y ningún proyecto tiene fecha cargada—.
 7. **Tablero por columnas.** El listado ordenado funciona bien, pero una vista
    tipo kanban con las cuatro columnas puede leerse más rápido. Requiere JS,
    así que va contra la decisión de Blade puro: evaluarlo antes.
@@ -303,6 +342,10 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 10. **Ordenar los enlaces a mano.** La columna `position` está, pero el orden
     hoy es el de carga en el formulario. Reordenar sin JS implica flechas
     arriba/abajo con un POST por clic.
+
+11. **Limpieza de la bitácora.** `activity_logs` crece y nada la purga. Con
+    cinco personas tarda años en pesar, pero en algún momento va a querer un
+    comando que borre lo anterior a X meses.
 
 ### Decisiones a tomar
 
@@ -323,7 +366,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 146 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 183 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.
@@ -383,16 +426,20 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   `App\Enums`.
 - Los cambios de estado van por `Project::moveTo()`, nunca con un `update()`
   directo sobre la columna `status`, o se pierde el historial.
+- Anotar en la bitácora va siempre por `Activity::anotar()`, que traga sus
+  propios errores: un log roto nunca puede voltear la acción que lo originó.
 - Los permisos van por `ProjectPolicy` (`$this->authorize(...)` en el controlador,
   `@can` en las vistas), no con `abort_unless` sueltos.
 - Nada de SQL propio de un motor. Si hace falta ordenar por una secuencia, va un
   `CASE WHEN` armado desde el enum.
-- El JavaScript del panel son tres partials y nada más: `pwa-register` (registra
-  el service worker), `password-toggle` (el ojito de la clave) y
-  `avatar-cropper` (encuadrar la foto). Los tres hacen cosas que el servidor no
-  puede hacer, y los tres degradan bien si el JS no corre. Si aparece la
-  tentación de sumar un cuarto, revisar primero si se puede resolver con un
-  formulario.
+- El JavaScript del panel son cuatro partials chicos: `pwa-register` (registra
+  el service worker), `password-toggle` (el ojito de la clave),
+  `avatar-cropper` (encuadrar la foto) y `dropdown-close` (cerrar la campana y
+  el menú del celular al tocar afuera). Los cuatro hacen cosas que el servidor no puede hacer y los
+  cuatro degradan bien si el JS no corre. La regla ya no es "nada de JS" sino
+  **nada que el HTML o un formulario puedan resolver solos**: antes de sumar
+  otro, buscar el elemento nativo —`<details>`, `<datalist>`— que haga el
+  trabajo.
 - Todo lo que el navegador pueda cachear lleva su versión en la URL: el CSS con
   `Assets::versioned()` y las fotos con `?v=` + la fecha de la foto. Si algún
   día se suma otro archivo así, que siga la misma regla: sin versión en la URL,
@@ -401,6 +448,9 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   Ctrl+clic ni explicación.
 - Cualquier `<script>` nuevo necesita `nonce="{{ $cspNonce }}"` o la CSP lo
   bloquea sin decir nada en pantalla.
+- Tres fuentes y cada una con su trabajo: Playfair Display para títulos y el
+  wordmark, Inter para el resto del texto, y Montserrat para los números, vía
+  la variable `--fuente-numeros`.
 - Los colores salen de las variables CSS (`--bg`, `--panel`, `--line`, `--ink`,
   `--muted`, `--faint`, `--track`), nunca de un hex suelto, o el fondo claro se
   rompe.

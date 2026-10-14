@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ThemeController;
@@ -34,6 +36,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/proyectos/{project}/editar', [ProjectController::class, 'edit'])->name('projects.edit');
     Route::put('/proyectos/{project}', [ProjectController::class, 'update'])->name('projects.update');
     Route::patch('/proyectos/{project}/estado', [ProjectController::class, 'moveStatus'])->name('projects.status');
+    Route::patch('/proyectos/{project}/prioridad', [ProjectController::class, 'changePriority'])
+        ->name('projects.priority');
     Route::post('/proyectos/{project}/comentarios', [ProjectController::class, 'comment'])
         ->middleware('throttle:30,1')
         ->name('projects.comment');
@@ -56,6 +60,9 @@ Route::middleware('auth')->group(function () {
     // Lo que llega de los formularios del sitio (se guarda por routes/api.php).
     Route::get('/consultas', [InquiryController::class, 'index'])->name('inquiries.index');
 
+    Route::get('/notificaciones', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notificaciones/leidas', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+
     Route::get('/perfil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/perfil/foto', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
     Route::delete('/perfil/foto', [ProfileController::class, 'destroyAvatar'])->name('profile.avatar.destroy');
@@ -72,6 +79,7 @@ Route::middleware('auth')->group(function () {
 
     // Sumar gente, cambiar permisos y dar de baja siguen siendo de admins.
     Route::middleware('admin')->group(function () {
+        Route::get('/actividad', [ActivityController::class, 'index'])->name('activity.index');
         Route::post('/equipo', [MemberController::class, 'store'])->name('members.store');
         Route::patch('/equipo/{user}', [MemberController::class, 'update'])->name('members.update');
     });

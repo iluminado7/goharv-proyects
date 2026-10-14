@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ActivityAction;
+use App\Enums\NotificationType;
 use App\Enums\ProjectPriority;
 use App\Enums\ProjectStatus;
+use App\Models\Activity;
 use App\Models\Project;
 use App\Models\ProjectUpdate;
 use App\Models\User;
+use App\Notifications\ProjectEvent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -89,14 +95,18 @@ class ProjectController extends Controller
         $data = $this->validated($request);
 
         $project = Project::create($data);
-        $project->collaborators()->sync($request->input('collaborators', []));
+        $sync = $project->collaborators()->sync($request->input('collaborators', []));
         $project->syncLinks($request->input('links', []));
+
+        $this->avisarAsignaciones($project, $request->user(), $sync['attached'], null);
 
         $project->updates()->create([
             'user_id'   => $request->user()->id,
             'body'      => 'Proyecto creado.',
             'status_to' => $project->status->value,
         ]);
+
+        Activity::anotar(ActivityAction::ProyectoCreado, $request->user(), $project);
 
         return redirect()
             ->route('projects.show', $project)
@@ -108,8 +118,9 @@ class ProjectController extends Controller
         $project->load(['owner', 'collaborators', 'links', 'updates.author']);
 
         return view('projects.show', [
-            'project'  => $project,
-            'statuses' => ProjectStatus::cases(),
+            'project'    => $project,
+            'statuses'   => ProjectStatus::cases(),
+            'priorities' => ProjectPriority::cases(),
         ]);
     }
 
@@ -135,9 +146,29 @@ class ProjectController extends Controller
         $newState = ProjectStatus::from($data['status']);
         unset($data['status']);
 
+        $prioridadAnterior = $project->priority;
+        $duenioAnterior    = $project->owner_id;
+
+        // Misma regla que el atajo de la ficha: si no puede cambiar la
+        // prioridad, lo que venga en el formulario se descarta. Esconder el
+        // campo en la vista no alcanza.
+        if ($request->user()->cannot('changePriority', $project)) {
+            unset($data['priority']);
+        }
+
         $project->update($data);
-        $project->collaborators()->sync($request->input('collaborators', []));
+
+        if ($project->priority !== $prioridadAnterior) {
+            Activity::anotar(
+                ActivityAction::PrioridadCambiada, $request->user(), $project,
+                detail: $prioridadAnterior->label().' → '.$project->priority->label(),
+            );
+        }
+        $sync = $project->collaborators()->sync($request->input('collaborators', []));
         $project->syncLinks($request->input('links', []));
+
+        $this->avisarAsignaciones($project, $request->user(), $sync['attached'], $duenioAnterior);
+
         $project->moveTo($newState, $request->user());
 
         return redirect()
@@ -160,6 +191,32 @@ class ProjectController extends Controller
         return back()->with('ok', 'Estado actualizado.');
     }
 
+    /** Atajo desde la ficha: cambiar la prioridad sin abrir el formulario. */
+    public function changePriority(Request $request, Project $project): RedirectResponse
+    {
+        $this->authorize('changePriority', $project);
+
+        $data = $request->validate([
+            'priority' => ['required', Rule::in(ProjectPriority::values())],
+        ]);
+
+        $nueva = ProjectPriority::from($data['priority']);
+
+        if ($nueva === $project->priority) {
+            return back();
+        }
+
+        $anterior = $project->priority;
+        $project->update(['priority' => $nueva]);
+
+        Activity::anotar(
+            ActivityAction::PrioridadCambiada, $request->user(), $project,
+            detail: $anterior->label().' → '.$nueva->label(),
+        );
+
+        return back()->with('ok', 'Prioridad actualizada: '.mb_strtolower($nueva->label()).'.');
+    }
+
     /** Una nota en el historial, sin tocar el estado del proyecto. */
     public function comment(Request $request, Project $project): RedirectResponse
     {
@@ -173,6 +230,15 @@ class ProjectController extends Controller
         ]);
 
         $project->comment($request->user(), $data['body']);
+
+        $resumen = Str::limit($data['body'], 120);
+
+        Activity::anotar(ActivityAction::NotaNueva, $request->user(), $project, detail: $resumen);
+
+        Notification::send(
+            $project->interesados($request->user()),
+            new ProjectEvent(NotificationType::Comentario, $project, $request->user(), $resumen),
+        );
 
         return back()->with('ok', 'Comentario agregado.');
     }
@@ -200,6 +266,8 @@ class ProjectController extends Controller
             'status_to'   => $project->status->value,
         ]);
 
+        Activity::anotar(ActivityAction::ProyectoArchivado, $request->user(), $project);
+
         $project->delete();
 
         return redirect()
@@ -219,6 +287,8 @@ class ProjectController extends Controller
             'status_from' => $project->status->value,
             'status_to'   => $project->status->value,
         ]);
+
+        Activity::anotar(ActivityAction::ProyectoRestaurado, $request->user(), $project);
 
         return redirect()
             ->route('projects.show', $project)
@@ -253,6 +323,13 @@ class ProjectController extends Controller
 
         $nombre = $project->name;
 
+        // Se anota antes de borrar: despues el proyecto ya no esta, y este es
+        // justamente el registro que no puede faltar.
+        Activity::anotar(
+            ActivityAction::ProyectoEliminado, $request->user(), $project,
+            detail: 'Con su historial, enlaces y colaboradores.',
+        );
+
         // En cascada se van el historial, los enlaces y los colaboradores.
         $project->forceDelete();
 
@@ -265,6 +342,29 @@ class ProjectController extends Controller
     private function soloArchivados(Project $project): void
     {
         abort_unless($project->trashed(), 404, 'Solo se puede borrar un proyecto que ya está archivado.');
+    }
+
+    /**
+     * Avisa a quien acaba de quedar a cargo y a los colaboradores recién
+     * sumados. Solo a los nuevos: `sync()` devuelve los que se agregaron en
+     * esta pasada, así que guardar sin tocar la lista no molesta a nadie.
+     */
+    private function avisarAsignaciones(Project $project, User $actor, array $sumados, ?int $duenioAnterior): void
+    {
+        if ($project->owner_id && $project->owner_id !== $duenioAnterior && $project->owner_id !== $actor->id) {
+            $project->owner?->notify(
+                new ProjectEvent(NotificationType::TeAsignaron, $project, $actor)
+            );
+        }
+
+        $nuevos = User::whereIn('id', $sumados)
+            ->whereKeyNot($actor->id)
+            // Al responsable ya se le avisó arriba: no se le manda dos veces.
+            ->when($project->owner_id, fn ($q) => $q->whereKeyNot($project->owner_id))
+            ->where('is_active', true)
+            ->get();
+
+        Notification::send($nuevos, new ProjectEvent(NotificationType::TeSumaron, $project, $actor));
     }
 
     private function activeMembers()

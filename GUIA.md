@@ -41,6 +41,9 @@ navegador.
 Necesita internet para funcionar: el panel lee los proyectos del servidor. Sin
 señal vas a ver una pantalla que te avisa, en vez del error del navegador.
 
+En el celular las secciones viven detrás del **botón de menú** (las tres rayas,
+al lado del logo). La campana, el fondo y Salir quedan siempre a mano.
+
 ---
 
 ## El tablero
@@ -175,6 +178,11 @@ La **prioridad** (alta, media, baja) no cambia nada del funcionamiento: cambia e
 orden en que aparecen. Con el orden por defecto, primero salen las altas, y
 dentro de cada grupo, las que tienen entrega más cercana.
 
+Se cambia desde la ficha del proyecto, abajo del cambio de estado. **Solo la
+toca el responsable del proyecto** (y los responsables del panel, en cualquiera):
+como ordena el tablero que mira todo el equipo, no es algo que convenga que
+cambie cualquiera que colabore.
+
 ---
 
 ## Archivar, restaurar y borrar
@@ -215,6 +223,7 @@ Para un miembro, lo que puede hacer depende de su relación con cada proyecto:
 | Ver la ficha y el historial | Sí | Sí | Sí |
 | Dejar notas | Sí | Sí | Sí |
 | Editar datos y enlaces | Sí | Sí | No |
+| Cambiar la prioridad | Sí | **No** | No |
 | Cambiar el estado | Sí | Sí | No |
 | Archivar y restaurar | Sí | No | No |
 | Borrar para siempre | No | No | No |
@@ -266,6 +275,43 @@ afuera del panel. Se puede reactivar cuando quieras.
 
 El panel no te va a dejar dar de baja al último responsable activo. Si lo
 intentás, te lo dice.
+
+---
+
+## La campana
+
+Arriba a la derecha, al lado de tu nombre. El número rojo son los avisos sin
+leer. Tocala y se abre un cuadro con los últimos; para cerrarlo, tocá afuera o
+volvé a tocar la campana. Desde ahí, *Ver todas* lleva a la lista completa. Te avisa cuatro cosas, siempre sobre proyectos donde estás y siempre
+cuando las hizo otro:
+
+- Te asignaron como responsable de un proyecto
+- Te sumaron como colaborador
+- Alguien dejó una nota
+- Alguien movió el estado
+
+**No te avisa de lo que hacés vos**, ni de proyectos en los que no participás.
+Es a propósito: una campana que suena por todo se termina ignorando.
+
+Los avisos sin leer quedan resaltados. Con *Marcar todas como leídas* se limpia
+el contador; los avisos no se borran.
+
+Por ahora los avisos viven dentro del panel: **no llega nada por correo**.
+
+---
+
+## Actividad
+
+Solo para responsables del panel, en **Actividad**. Es el registro de todo lo
+que pasa: quién entró, quién intentó entrar sin lograrlo, qué proyectos se
+crearon, se movieron de estado o se archivaron, y quién borró qué.
+
+Arriba hay cuatro botones para filtrar —*Todo*, *Accesos*, *Fallidos*,
+*Proyectos*— y se puede acotar por acción o por persona. Si ves muchos
+**intentos fallidos** seguidos de un mismo correo, puede ser alguien que se
+olvidó la clave… o alguien probando.
+
+El registro no se puede editar ni borrar desde el panel: solo se escribe.
 
 ---
 
