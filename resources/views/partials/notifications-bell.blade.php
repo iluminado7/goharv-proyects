@@ -33,14 +33,20 @@
         <div class="campana-lista">
             @forelse ($ultimas as $n)
                 @php
-                    $tipo    = \App\Enums\NotificationType::tryFrom($n->data['tipo'] ?? '');
-                    $destino = ($n->data['project_id'] ?? null)
-                        ? \App\Models\Project::find($n->data['project_id'])
-                        : null;
+                    $tipo = \App\Enums\NotificationType::tryFrom($n->data['tipo'] ?? '');
+
+                    // Las consultas del sitio traen su propia url; los avisos
+                    // de proyecto se resuelven buscando el proyecto.
+                    $destino = $n->data['url'] ?? null;
+
+                    if (! $destino && ($n->data['project_id'] ?? null)) {
+                        $proyecto = \App\Models\Project::find($n->data['project_id']);
+                        $destino  = $proyecto ? route('projects.show', $proyecto) : null;
+                    }
                 @endphp
 
                 <a class="campana-item {{ $n->read_at ? '' : 'sin-leer' }}"
-                   href="{{ $destino ? route('projects.show', $destino) : route('notifications.index') }}">
+                   href="{{ $destino ?? route('notifications.index') }}">
                     <span class="aviso-punto" style="background:{{ $tipo?->color() ?? 'var(--muted)' }}"></span>
                     <span>
                         <strong>{{ $tipo?->label() ?? 'Novedad' }}</strong>

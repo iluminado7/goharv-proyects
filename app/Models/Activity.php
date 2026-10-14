@@ -79,6 +79,8 @@ class Activity extends Model
                     ActivityAction::CorreoInexistente->value,
                     ActivityAction::CuentaDeBaja->value,
                 ]))
+            ->when(($filters['tipo'] ?? null) === 'sitio',
+                fn ($q) => $q->whereIn('action', array_column(ActivityAction::sitio(), 'value')))
             ->when(($filters['tipo'] ?? null) === 'proyectos',
                 fn ($q) => $q->whereIn('action', array_column(ActivityAction::proyectos(), 'value')));
     }

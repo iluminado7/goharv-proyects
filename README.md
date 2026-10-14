@@ -116,6 +116,73 @@ esconder el formulario nunca es la defensa. A quien no administra se le muestran
 solo las cuentas activas. Hay una validación que impide dejar el panel sin
 ningún responsable activo, y nadie puede sacarse a sí mismo.
 
+**Formularios del sitio.** El panel recibe los formularios de goharv.com.ar
+(un sitio estático, sin backend propio) por una API mínima en `routes/api.php`:
+
+| Ruta | Formulario | Tabla |
+|---|---|---|
+| `POST /api/contacto` | Contacto (home y /contacto) | `contact_messages` |
+| `POST /api/avisame` | "Avisame" de los programas en desarrollo | `leads` |
+| `POST /api/in-company` | Formación In Company (/academy/formacion-in-company) | `in_company_requests` |
+| `POST /api/analizar-empresa` | "Quiero analizar mi empresa" (/consulting) | `consulting_requests` |
+
+Llegan como JSON desde otro dominio y sin sesión, así que no pasan por el grupo
+`web`: ni CSRF, ni CSP, ni el chequeo de cuentas de baja. A cambio:
+
+- **Validación propia**, con las mismas reglas que el navegador del sitio
+  (celular de 8 a 15 dígitos, mensaje de hasta 500, aceptación obligatoria): la
+  del navegador la saltea cualquiera que mande el POST a mano. Unidad y país se
+  guardan como texto, no contra una lista: si el sitio suma una opción, el panel
+  la acepta en vez de perder la consulta.
+- **Siempre JSON**, también en los errores (`shouldRenderJsonWhen` en
+  `bootstrap/app.php`). El sitio no manda `Accept: application/json` y, sin esa
+  regla, un error de validación sería una redirección que el `fetch` sigue hasta
+  un 200: el visitante vería "¡Gracias!" sin que se guardara nada.
+- **Campo trampa** (`website`): si llega completo, responde OK sin guardar.
+- **5 envíos por minuto por IP** (`throttle:5,1`).
+- **CORS** solo para los orígenes de `CORS_ALLOWED_ORIGINS` (`config/cors.php`).
+  Sin la variable no se acepta ninguno.
+- **"Analizar mi empresa" sin JavaScript.** Ese formulario también funciona sin JS:
+  el navegador manda el `<form>` común (`application/x-www-form-urlencoded`,
+  `consent=on`, `newsletter=on` solo si se marcó). En ese caso el panel guarda y
+  redirige (303) a la página de origen del sitio con `?consulta=enviada#hablemos`,
+  solo si el `Referer` es uno de los orígenes de `CORS_ALLOWED_ORIGINS` (no redirige
+  a dominios ajenos). Con JS contesta JSON, como los demás.
+
+Se registra a mano en `bootstrap/app.php` y no con `php artisan install:api`,
+que suma Sanctum: acá no hay tokens ni sesiones.
+
+**Consultas web** (`/consultas`, en el menú para todo el equipo). Muestra lo que
+llegó de los formularios, de a un formulario por vez. A la izquierda, una barra
+lateral fija con los formularios en dos grupos, cada uno con su contador:
+**Consultas** (Contacto, Formación In Company, Analizar mi empresa: hay que
+responderlas) y **Avisame** (uno por programa: listas de interesados). En celular
+la barra pasa a un desplegable arriba (`<details>`, sin JS; la lista es el parcial
+`inquiries/partials/nav`). Arriba del listado, el total ("7 consultas") y la fecha de
+cada consulta a la derecha de la tarjeta. Dentro de cada uno se filtra por fechas
+(desde / hasta) y, según el formulario: Contacto por empresa y unidad de negocio,
+In Company por empresa y cantidad de colaboradores, Analizar mi empresa por empresa
+y desafío (se combinan). "Avisame" solo por fechas. Las opciones de cada filtro
+salen de lo que llegó, no de una lista fija. Los contadores respetan las fechas.
+
+- **In Company** muestra empresa y cargo, colaboradores, áreas de interés (etiquetas),
+  el desafío y la modalidad. **Analizar mi empresa**, empresa y cargo, el desafío
+  elegido y qué quiere conseguir. Los desafíos (clave que manda el sitio => texto)
+  están en `WebForms::CHALLENGES`; uno nuevo se ve pasado en limpio.
+
+- **Los programas** y sus títulos están en `App\Support\WebForms::PROGRAMS`
+  (etiqueta interna que manda el sitio => título en la web). Uno nuevo que no
+  esté en la lista aparece igual, con la etiqueta pasada en limpio
+  (`workshop-nuevo` → "Workshop Nuevo"), hasta que se sume ahí.
+- **Hora de Argentina.** La base guarda en UTC (`config/app.php`); esta sección
+  muestra y filtra por día en hora argentina (`WebForms::TIMEZONE`, trait
+  `ReceivedFromWeb`). Si no, una consulta de las 22 h caería al día siguiente.
+- **Filtrar con botón**, sin `onchange`: la CSP bloquea los manejadores en línea.
+- **Idioma de cada consulta.** El sitio es trilingüe (español, inglés, portugués) y cada
+  formulario manda `locale` (`es`, `en` o `pt`). Se guarda en la columna `locale` de cada
+  tabla y se muestra como etiqueta (ES / EN / PT) en cada consulta. Un valor desconocido no
+  rechaza la consulta: se guarda sin idioma. País, unidad y "No estoy seguro" llegan siempre en
+  español aunque el sitio los muestre traducidos, así los filtros no se parten por idioma.
 **Campana de notificaciones.** Avisa cuatro cosas, y solo cuando te las hizo
 otro en un proyecto donde estás: te asignaron como responsable, te sumaron como
 colaborador, comentaron, o movieron el estado. Nunca tus propias acciones,
@@ -131,11 +198,20 @@ suma `toMail()` y `'mail'` al `via()`: los lugares que disparan el aviso no se
 tocan. Los datos del proyecto y del actor se guardan congelados en el payload,
 así que un aviso viejo se sigue leyendo aunque el proyecto ya no exista.
 
+Las consultas del sitio también avisan: cuando llega un formulario, el equipo
+activo entero recibe una notificación y queda el registro en la bitácora. Se
+engancha en el trait `ReceivedFromWeb` y no en los cuatro controladores de la
+API, así ninguno se olvida y un formulario nuevo queda cubierto por existir.
+Nada de eso puede voltear el envío: del otro lado hay alguien esperando el
+"¡Gracias!", y perder la consulta sería peor que perder el aviso.
+
 **Bitácora.** `activity_logs` registra accesos (ingreso, salida, clave
 incorrecta, correo inexistente, intento con cuenta de baja) y lo que pasa con
 los proyectos (alta, cambio de estado, cambio de prioridad, nota nueva,
-archivado, restaurado, eliminado). Guarda quién, cuándo, desde qué IP y el
-detalle del cambio. Se lee en `/actividad`, solo para responsables del panel.
+archivado, restaurado, eliminado) y lo que entra del sitio institucional. Guarda
+quién, cuándo, desde qué IP y el detalle del cambio. Se lee en `/actividad`,
+solo para responsables del panel, con filtros por accesos, fallidos, proyectos
+y sitio web.
 
 Son tres cosas distintas y conviene no mezclarlas: `project_updates` es el
 historial visible de cada proyecto y parte de la herramienta; la **bitácora** es
@@ -165,6 +241,8 @@ DB_USERNAME=
 DB_PASSWORD=
 APP_LOCALE=es
 APP_TIMEZONE=America/Argentina/Buenos_Aires
+# Desde dónde se aceptan los formularios del sitio (separados por coma)
+CORS_ALLOWED_ORIGINS=http://localhost:4321,https://goharv.com.ar
 ```
 
 Registrar el middleware de administrador en `bootstrap/app.php`:
@@ -202,6 +280,10 @@ inmediato y cargar al resto del equipo desde *Equipo*.
 | `activity_logs` | Bitácora: `user_id`, `action`, `project_id`, `subject`, `detail`, `ip`, `created_at`. Append-only, sin `updated_at`. |
 | `project_user` | Colaboradores además del responsable. |
 | `project_updates` | Historial: autor, comentario, `status_from`, `status_to`. |
+| `contact_messages` | Consultas del formulario de contacto del sitio: datos de contacto, empresa, país, unidad (texto), mensaje, página de origen, `locale` (idioma del sitio), `consented_at` e IP. |
+| `in_company_requests` | Formación In Company: nombre, cargo, empresa, contacto, `team_size` (texto), `areas` (JSON), `modality`, `message` (desafío), `newsletter`, página, `locale`, `consented_at` e IP. |
+| `consulting_requests` | Analizar mi empresa: `challenge` (clave), `goal`, nombre, cargo, empresa, contacto, `newsletter`, página, `locale`, `consented_at` e IP. |
+| `leads` | Pedidos de "Avisame": datos de contacto, `newsletter`, `program` (ej. `workshop-consorcios`), `source` (ej. `academy`), página, `locale` (idioma del sitio), `consented_at` e IP. |
 
 Los archivados no son otra tabla: son filas de `projects` con `deleted_at` cargado.
 
@@ -212,21 +294,26 @@ Los archivados no son otra tabla: son filas de `projects` con `deleted_at` carga
 ```
 app/Enums/            ProjectStatus, ProjectPriority, UserRole, ActivityAction,
                       NotificationType
-app/Notifications/    ProjectEvent
+app/Notifications/    ProjectEvent, InquiryReceived
 app/Models/           Project, ProjectLink, ProjectUpdate, User, UserAvatar,
-                      Activity
-app/Support/          AvatarImage, Assets
+                      Activity, ContactMessage, Lead
+app/Models/Concerns/  ReceivedFromWeb (fecha en hora argentina, filtro por días)
+app/Support/          AvatarImage, Assets, WebForms
 app/Http/Controllers/ ProjectController, MemberController, ProfileController,
-                      ThemeController, Auth/LoginController
+                      ThemeController, Auth/LoginController,
+                      InquiryController, Api/ContactMessageController,
+                      Api/LeadController
+routes/api.php        Formularios del sitio (POST /api/contacto, /api/avisame, /api/in-company, /api/analizar-empresa)
+config/cors.php       Orígenes permitidos para la API
 app/Http/Middleware/  EnsureUserIsAdmin, EnsureUserIsActive, SecurityHeaders
 app/Policies/         ProjectPolicy, ProjectUpdatePolicy
-resources/views/      layouts/app, auth/login, projects/*, members/index,
+resources/views/      layouts/app, auth/login, projects/*, members/index, inquiries/index,
                       profile/edit, partials/theme-toggle, pagination/goharv
 public/css/           goharv.css
 public/                manifest.webmanifest, sw.js, offline.html, icons/
 tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
                       Menu, Theme, ProjectComment, ArchivedProject, ProxyUrl,
-                      Pwa
+                      Pwa, ContactApi, LeadApi, Inquiry
 ```
 
 ---
@@ -258,7 +345,10 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
    tipo kanban con las cuatro columnas puede leerse más rápido. Requiere JS,
    así que va contra la decisión de Blade puro: evaluarlo antes.
 8. **Exportar.** Un CSV del estado de todos los proyectos para reportes.
-9. **Ordenar los enlaces a mano.** La columna `position` está, pero el orden
+9. **Consultas web: lo que falta.** El listado y los filtros están. Faltan el
+    estado de cada consulta (nueva / respondida / archivada), exportar a CSV y
+    un mail al equipo por cada consulta nueva, que depende del punto 2.
+10. **Ordenar los enlaces a mano.** La columna `position` está, pero el orden
     hoy es el de carga en el formulario. Reordenar sin JS implica flechas
     arriba/abajo con un POST por clic.
 
@@ -268,7 +358,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 
 ### Decisiones a tomar
 
-10. **Qué pasa con un proyecto terminado.** ¿Se archiva solo a los X días? ¿Queda
+11. **Qué pasa con un proyecto terminado.** ¿Se archiva solo a los X días? ¿Queda
     en el tablero para siempre? Sin una regla, el listado se llena de terminados.
     Ahora que archivar y restaurar es un clic, la salida barata es archivarlos a
     mano hasta decidir si conviene automatizarlo.
@@ -285,7 +375,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 183 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 246 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.

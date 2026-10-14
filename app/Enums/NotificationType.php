@@ -13,6 +13,7 @@ enum NotificationType: string
     case TeSumaron     = 'te_sumaron';
     case Comentario    = 'comentario';
     case CambioEstado  = 'cambio_estado';
+    case ConsultaWeb   = 'consulta_web';
 
     public function label(): string
     {
@@ -21,6 +22,7 @@ enum NotificationType: string
             self::TeSumaron    => 'Te sumaron a un proyecto',
             self::Comentario   => 'Nueva nota',
             self::CambioEstado => 'Cambio de estado',
+            self::ConsultaWeb  => 'Consulta del sitio',
         };
     }
 
@@ -31,6 +33,7 @@ enum NotificationType: string
             self::TeSumaron    => '#6BA5E7',
             self::Comentario   => '#4FA97C',
             self::CambioEstado => '#A585D8',
+            self::ConsultaWeb  => '#49A8A0',
         };
     }
 }

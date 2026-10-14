@@ -18,6 +18,7 @@
             'acceso' => 'Accesos',
             'fallos' => 'Fallidos',
             'proyectos' => 'Proyectos',
+            'sitio' => 'Sitio web',
         ] as $valor => $texto)
             @php ($activo = ($filters['tipo'] ?? '') === $valor)
             <a class="tally-item {{ $activo ? 'on' : '' }}"

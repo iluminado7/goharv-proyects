@@ -20,6 +20,9 @@ enum ActivityAction: string
     case PrioridadCambiada  = 'prioridad_cambiada';
     case NotaNueva          = 'nota_nueva';
 
+    // Sitio institucional
+    case ConsultaRecibida = 'consulta_recibida';
+
     public function label(): string
     {
         return match ($this) {
@@ -35,6 +38,7 @@ enum ActivityAction: string
             self::EstadoCambiado     => 'Cambio de estado',
             self::PrioridadCambiada  => 'Cambio de prioridad',
             self::NotaNueva          => 'Nota nueva',
+            self::ConsultaRecibida   => 'Consulta del sitio',
         };
     }
 
@@ -56,6 +60,7 @@ enum ActivityAction: string
             self::ProyectoCreado     => '#4FA97C',
             self::EstadoCambiado     => '#E0A33E',
             self::PrioridadCambiada  => '#E0A33E',
+            self::ConsultaRecibida   => '#49A8A0',
             self::ProyectoArchivado  => '#7E838C',
             self::Salida             => '#7E838C',
             default                  => '#6BA5E7',
@@ -68,13 +73,21 @@ enum ActivityAction: string
         return [self::Ingreso, self::ClaveIncorrecta, self::CorreoInexistente, self::CuentaDeBaja, self::Salida];
     }
 
+    /** Lo que entra por los formularios de goharv.com.ar. */
+    public static function sitio(): array
+    {
+        return [self::ConsultaRecibida];
+    }
+
     public static function proyectos(): array
     {
         // array_diff() compara convirtiendo a texto y un enum no se deja:
         // hay que filtrar comparando los casos en si.
+        $otros = array_merge(self::acceso(), self::sitio());
+
         return array_values(array_filter(
             self::cases(),
-            fn (self $caso) => ! in_array($caso, self::acceso(), true),
+            fn (self $caso) => ! in_array($caso, $otros, true),
         ));
     }
 

@@ -289,6 +289,8 @@ cuando las hizo otro:
 - Te sumaron como colaborador
 - Alguien dejó una nota
 - Alguien movió el estado
+- **Llegó una consulta por el sitio institucional** (esta le llega a todo el
+  equipo: no tiene responsable asignado y la atiende quien pueda)
 
 **No te avisa de lo que hacés vos**, ni de proyectos en los que no participás.
 Es a propósito: una campana que suena por todo se termina ignorando.
