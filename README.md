@@ -125,6 +125,7 @@ ningún responsable activo, y nadie puede sacarse a sí mismo.
 | `POST /api/avisame` | "Avisame" de los programas en desarrollo | `leads` |
 | `POST /api/in-company` | Formación In Company (/academy/formacion-in-company) | `in_company_requests` |
 | `POST /api/analizar-empresa` | "Quiero analizar mi empresa" (/consulting) | `consulting_requests` |
+| `POST /api/quiero-fortalecer-mi-empresa` | "Quiero fortalecer mi empresa" (/compliance) | `compliance_requests` |
 
 Llegan como JSON desde otro dominio y sin sesión, así que no pasan por el grupo
 `web`: ni CSRF, ni CSP, ni el chequeo de cuentas de baja. A cambio:
@@ -142,7 +143,8 @@ Llegan como JSON desde otro dominio y sin sesión, así que no pasan por el grup
 - **5 envíos por minuto por IP** (`throttle:5,1`).
 - **CORS** solo para los orígenes de `CORS_ALLOWED_ORIGINS` (`config/cors.php`).
   Sin la variable no se acepta ninguno.
-- **"Analizar mi empresa" sin JavaScript.** Ese formulario también funciona sin JS:
+- **"Analizar mi empresa" y "Fortalecer mi empresa" sin JavaScript.** Esos formularios también funcionan sin JS
+  (`ComplianceRequestController` extiende `ConsultingRequestController` y solo cambia el modelo):
   el navegador manda el `<form>` común (`application/x-www-form-urlencoded`,
   `consent=on`, `newsletter=on` solo si se marcó). En ese caso el panel guarda y
   redirige (303) a la página de origen del sitio con `?consulta=enviada#hablemos`,
@@ -155,20 +157,21 @@ que suma Sanctum: acá no hay tokens ni sesiones.
 **Consultas web** (`/consultas`, en el menú para todo el equipo). Muestra lo que
 llegó de los formularios, de a un formulario por vez. A la izquierda, una barra
 lateral fija con los formularios en dos grupos, cada uno con su contador:
-**Consultas** (Contacto, Formación In Company, Analizar mi empresa: hay que
+**Consultas** (Contacto, Formación In Company, Analizar mi empresa, Fortalecer mi empresa: hay que
 responderlas) y **Avisame** (uno por programa: listas de interesados). En celular
 la barra pasa a un desplegable arriba (`<details>`, sin JS; la lista es el parcial
 `inquiries/partials/nav`). Arriba del listado, el total ("7 consultas") y la fecha de
 cada consulta a la derecha de la tarjeta. Dentro de cada uno se filtra por fechas
 (desde / hasta) y, según el formulario: Contacto por empresa y unidad de negocio,
-In Company por empresa y cantidad de colaboradores, Analizar mi empresa por empresa
-y desafío (se combinan). "Avisame" solo por fechas. Las opciones de cada filtro
+In Company por empresa y cantidad de colaboradores, Analizar mi empresa y Fortalecer
+mi empresa por empresa y desafío (se combinan). "Avisame" solo por fechas. Las opciones de cada filtro
 salen de lo que llegó, no de una lista fija. Los contadores respetan las fechas.
 
 - **In Company** muestra empresa y cargo, colaboradores, áreas de interés (etiquetas),
   el desafío y la modalidad. **Analizar mi empresa**, empresa y cargo, el desafío
   elegido y qué quiere conseguir. Los desafíos (clave que manda el sitio => texto)
-  están en `WebForms::CHALLENGES`; uno nuevo se ve pasado en limpio.
+  están en `WebForms::CHALLENGES`; uno nuevo se ve pasado en limpio. **Fortalecer mi
+  empresa** (/compliance) se ve igual, con sus desafíos en `WebForms::COMPLIANCE_CHALLENGES`.
 
 - **Los programas** y sus títulos están en `App\Support\WebForms::PROGRAMS`
   (etiqueta interna que manda el sitio => título en la web). Uno nuevo que no
@@ -283,6 +286,7 @@ inmediato y cargar al resto del equipo desde *Equipo*.
 | `contact_messages` | Consultas del formulario de contacto del sitio: datos de contacto, empresa, país, unidad (texto), mensaje, página de origen, `locale` (idioma del sitio), `consented_at` e IP. |
 | `in_company_requests` | Formación In Company: nombre, cargo, empresa, contacto, `team_size` (texto), `areas` (JSON), `modality`, `message` (desafío), `newsletter`, página, `locale`, `consented_at` e IP. |
 | `consulting_requests` | Analizar mi empresa: `challenge` (clave), `goal`, nombre, cargo, empresa, contacto, `newsletter`, página, `locale`, `consented_at` e IP. |
+| `compliance_requests` | Fortalecer mi empresa (/compliance): las mismas columnas que `consulting_requests`. |
 | `leads` | Pedidos de "Avisame": datos de contacto, `newsletter`, `program` (ej. `workshop-consorcios`), `source` (ej. `academy`), página, `locale` (idioma del sitio), `consented_at` e IP. |
 
 Los archivados no son otra tabla: son filas de `projects` con `deleted_at` cargado.
@@ -303,7 +307,7 @@ app/Http/Controllers/ ProjectController, MemberController, ProfileController,
                       ThemeController, Auth/LoginController,
                       InquiryController, Api/ContactMessageController,
                       Api/LeadController
-routes/api.php        Formularios del sitio (POST /api/contacto, /api/avisame, /api/in-company, /api/analizar-empresa)
+routes/api.php        Formularios del sitio (POST /api/contacto, /api/avisame, /api/in-company, /api/analizar-empresa, /api/quiero-fortalecer-mi-empresa)
 config/cors.php       Orígenes permitidos para la API
 app/Http/Middleware/  EnsureUserIsAdmin, EnsureUserIsActive, SecurityHeaders
 app/Policies/         ProjectPolicy, ProjectUpdatePolicy

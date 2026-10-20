@@ -20,6 +20,14 @@ use Illuminate\Http\Request;
  */
 class ConsultingRequestController extends Controller
 {
+    /**
+     * Donde se guarda. "Quiero fortalecer mi empresa" (/compliance) usa el mismo
+     * formulario y cambia solo esto (ComplianceRequestController).
+     *
+     * @var class-string<\Illuminate\Database\Eloquent\Model>
+     */
+    protected string $model = ConsultingRequest::class;
+
     public function store(Request $request): JsonResponse|RedirectResponse
     {
         // Campo trampa: se contesta como si todo saliera bien, sin guardar.
@@ -43,7 +51,7 @@ class ConsultingRequestController extends Controller
             'locale'    => ['nullable', 'string', 'max:5'],
         ]);
 
-        ConsultingRequest::create([
+        $this->model::create([
             ...collect($data)->except('consent')->all(),
             // Sin validar: "on" (envio sin JS) no pasa la regla `boolean`.
             'newsletter'   => $request->boolean('newsletter'),

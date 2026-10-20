@@ -11,7 +11,8 @@
         $hayFiltros = collect($filters)->filter()->isNotEmpty();
         $contacto   = $kind === 'contacto';
         $inCompany  = $kind === 'in-company';
-        $consulting = $kind === 'analizar-empresa';
+        // Consulting y Compliance: el mismo formulario de tres pasos (desafío, objetivo y contacto).
+        $consulting = in_array($kind, ['analizar-empresa', 'fortalecer-empresa'], true);
         $avisame    = $kind === 'avisame';
 
         $link = fn (string $key) => route('inquiries.index', $key === WebForms::CONTACT ? $base : array_merge($base, ['form' => $key]));
@@ -23,6 +24,7 @@
                 ['key' => WebForms::CONTACT, 'label' => 'Contacto', 'count' => $contactCount],
                 ['key' => WebForms::IN_COMPANY, 'label' => 'Formación In Company', 'count' => $inCompanyCount],
                 ['key' => WebForms::CONSULTING, 'label' => 'Analizar mi empresa', 'count' => $consultingCount],
+                ['key' => WebForms::COMPLIANCE, 'label' => 'Fortalecer mi empresa', 'count' => $complianceCount],
             ],
             'Avisame' => $programs->map(fn ($p) => [
                 'key' => $p, 'label' => WebForms::programLabel($p), 'count' => $leadCounts[$p] ?? 0,
@@ -34,6 +36,7 @@
             'contacto'         => ['Contacto', 'Consultas del formulario de contacto del sitio (home y /contacto).'],
             'in-company'       => ['Formación In Company', 'Empresas que quieren diseñar un programa de formación a medida (/academy/formacion-in-company).'],
             'analizar-empresa' => ['Analizar mi empresa', 'Consultas de “Quiero analizar mi empresa” de GoHarv Consulting (/consulting).'],
+            'fortalecer-empresa' => ['Fortalecer mi empresa', 'Consultas de “Quiero fortalecer mi empresa” de GoHarv Compliance (/compliance).'],
             'avisame'          => [WebForms::programLabel($form), 'Pedidos de “Avisame cuando abra la inscripción”: gente que quiere saber cuándo abre este programa.'],
         };
         $total = $items->total();
@@ -114,7 +117,7 @@
                         <select name="desafio">
                             <option value="">Todos los desafíos</option>
                             @foreach ($desafios as $d)
-                                <option value="{{ $d }}" @selected($filters['desafio'] === $d)>{{ WebForms::challengeLabel($d) }}</option>
+                                <option value="{{ $d }}" @selected($filters['desafio'] === $d)>{{ WebForms::challengeLabel($d, $form) }}</option>
                             @endforeach
                         </select>
                     </label>
@@ -150,7 +153,7 @@
                                         <span class="msg-tag">{{ $item->team_size }} colaboradores</span>
                                     @endif
                                     @if ($consulting)
-                                        <span class="msg-tag msg-tag-strong">{{ WebForms::challengeLabel($item->challenge) }}</span>
+                                        <span class="msg-tag msg-tag-strong">{{ WebForms::challengeLabel($item->challenge, $form) }}</span>
                                     @endif
                                     {{-- Idioma del sitio desde el que llegó (las anteriores al cambio no lo tienen) --}}
                                     @if ($item->locale)

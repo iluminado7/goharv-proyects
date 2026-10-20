@@ -23,6 +23,9 @@ final class WebForms
     /** Valor de `?form=` para "Quiero analizar mi empresa" de /consulting. */
     public const CONSULTING = 'analizar-empresa';
 
+    /** Valor de `?form=` para "Quiero fortalecer mi empresa" de /compliance. */
+    public const COMPLIANCE = 'fortalecer-empresa';
+
     /**
      * Desafio que elige la persona en "Quiero analizar mi empresa" (clave que
      * manda el sitio => texto del sitio). Una clave nueva igual se guarda y se
@@ -39,6 +42,20 @@ final class WebForms
         'impuestos-finanzas'    => 'Impuestos/Finanzas',
         'franquicias'           => 'Franquicias',
         'otro'                  => 'Otro',
+    ];
+
+    /** Lo mismo para "Quiero fortalecer mi empresa" (/compliance). */
+    public const COMPLIANCE_CHALLENGES = [
+        'programa-de-integridad'    => 'Programa de Integridad',
+        'revisar-programa'          => 'Revisar un Programa existente',
+        'codigo-de-etica-politicas' => 'Código de Ética y políticas',
+        'canal-de-denuncias'        => 'Canal de Denuncias',
+        'due-diligence-terceros'    => 'Due Diligence de terceros',
+        'investigacion-interna'     => 'Investigación interna',
+        'capacitacion'              => 'Capacitación',
+        'controles-seguimiento'     => 'Controles y seguimiento',
+        'ia-ai-governance'          => 'Inteligencia Artificial y AI Governance',
+        'otro'                      => 'Otro',
     ];
 
     /**
@@ -69,8 +86,11 @@ final class WebForms
         return self::PROGRAMS[$program] ?? Str::headline($program);
     }
 
-    public static function challengeLabel(string $challenge): string
+    /** Las opciones del paso 1 dependen del formulario ("analizar-empresa" o "fortalecer-empresa"). */
+    public static function challengeLabel(string $challenge, string $form = self::CONSULTING): string
     {
-        return self::CHALLENGES[$challenge] ?? Str::headline($challenge);
+        $labels = $form === self::COMPLIANCE ? self::COMPLIANCE_CHALLENGES : self::CHALLENGES;
+
+        return $labels[$challenge] ?? Str::headline($challenge);
     }
 }

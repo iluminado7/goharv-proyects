@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ComplianceRequest;
 use App\Models\ConsultingRequest;
 use App\Models\ContactMessage;
 use App\Models\InCompanyRequest;
@@ -12,8 +13,9 @@ use Illuminate\View\View;
 
 /**
  * Consultas web: lo que llega de los formularios del sitio. Se ve de a un
- * formulario por vez (Contacto, Formacion In Company, Analizar mi empresa o el
- * "Avisame" de cada programa) y dentro de cada uno se filtra por fecha y,
+ * formulario por vez (Contacto, Formacion In Company, Analizar mi empresa,
+ * Fortalecer mi empresa o el "Avisame" de cada programa) y dentro de cada uno
+ * se filtra por fecha y,
  * segun el formulario, por empresa, unidad, cantidad de colaboradores o desafio.
  */
 class InquiryController extends Controller
@@ -55,6 +57,7 @@ class InquiryController extends Controller
             $form === WebForms::CONTACT    => 'contacto',
             $form === WebForms::IN_COMPANY => 'in-company',
             $form === WebForms::CONSULTING => 'analizar-empresa',
+            $form === WebForms::COMPLIANCE => 'fortalecer-empresa',
             $programs->contains($form)     => 'avisame',
             default                        => abort(404),
         };
@@ -64,13 +67,16 @@ class InquiryController extends Controller
         $empresa = $kind !== 'avisame' ? ($filters['empresa'] ?? null) : null;
         $unidad  = $kind === 'contacto' ? ($filters['unidad'] ?? null) : null;
         $tamano  = $kind === 'in-company' ? ($filters['tamano'] ?? null) : null;
-        $desafio = $kind === 'analizar-empresa' ? ($filters['desafio'] ?? null) : null;
+        // Los dos formularios de tres pasos (Consulting y Compliance) tienen desafio.
+        $conDesafio = in_array($kind, ['analizar-empresa', 'fortalecer-empresa'], true);
+        $desafio = $conDesafio ? ($filters['desafio'] ?? null) : null;
 
         $model = match ($kind) {
-            'contacto'         => ContactMessage::class,
-            'in-company'       => InCompanyRequest::class,
-            'analizar-empresa' => ConsultingRequest::class,
-            'avisame'          => Lead::class,
+            'contacto'           => ContactMessage::class,
+            'in-company'         => InCompanyRequest::class,
+            'analizar-empresa'   => ConsultingRequest::class,
+            'fortalecer-empresa' => ComplianceRequest::class,
+            'avisame'            => Lead::class,
         };
 
         $items = $model::receivedBetween($desde, $hasta)
@@ -91,12 +97,13 @@ class InquiryController extends Controller
             'contactCount'    => ContactMessage::receivedBetween($desde, $hasta)->count(),
             'inCompanyCount'  => InCompanyRequest::receivedBetween($desde, $hasta)->count(),
             'consultingCount' => ConsultingRequest::receivedBetween($desde, $hasta)->count(),
+            'complianceCount' => ComplianceRequest::receivedBetween($desde, $hasta)->count(),
             'leadCounts'      => $leadCounts,
             'programs'        => $programs,
             'empresas'        => $kind !== 'avisame' ? $distinct('company') : collect(),
             'unidades'        => $kind === 'contacto' ? $distinct('unit') : collect(),
             'tamanos'         => $kind === 'in-company' ? $distinct('team_size') : collect(),
-            'desafios'        => $kind === 'analizar-empresa' ? $distinct('challenge') : collect(),
+            'desafios'        => $conDesafio ? $distinct('challenge') : collect(),
             'filters'         => [
                 'desde'   => $desde,
                 'hasta'   => $hasta,

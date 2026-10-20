@@ -4,6 +4,7 @@ namespace App\Models\Concerns;
 
 use App\Enums\ActivityAction;
 use App\Models\Activity;
+use App\Models\ComplianceRequest;
 use App\Models\ConsultingRequest;
 use App\Models\ContactMessage;
 use App\Models\InCompanyRequest;
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\Notification;
 trait ReceivedFromWeb
 {
     /**
-     * Avisar va en el trait y no en los cuatro controladores de la API: asi
+     * Avisar va en el trait y no en los controladores de la API: asi
      * ninguno se olvida, y un formulario nuevo queda cubierto por existir.
      */
     public static function bootReceivedFromWeb(): void
@@ -68,6 +69,7 @@ trait ReceivedFromWeb
             ContactMessage::class    => WebForms::CONTACT,
             InCompanyRequest::class  => WebForms::IN_COMPANY,
             ConsultingRequest::class => WebForms::CONSULTING,
+            ComplianceRequest::class => WebForms::COMPLIANCE,
             // Los "avisame" se listan por programa, no todos juntos.
             Lead::class              => (string) $this->program,
         };
@@ -79,6 +81,7 @@ trait ReceivedFromWeb
             ContactMessage::class    => 'Contacto',
             InCompanyRequest::class  => 'Formación In Company',
             ConsultingRequest::class => 'Quiero analizar mi empresa',
+            ComplianceRequest::class => 'Quiero fortalecer mi empresa',
             Lead::class              => 'Avisame: '.(WebForms::PROGRAMS[$this->program] ?? $this->program),
         };
     }
