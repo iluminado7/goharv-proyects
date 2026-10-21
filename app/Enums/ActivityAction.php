@@ -20,6 +20,7 @@ enum ActivityAction: string
     case PrioridadCambiada  = 'prioridad_cambiada';
     case NotaNueva          = 'nota_nueva';
     case TareaCreada        = 'tarea_creada';
+    case TareaEditada       = 'tarea_editada';
     case TareaCompletada    = 'tarea_completada';
     case TareaReabierta     = 'tarea_reabierta';
     case TareaEliminada     = 'tarea_eliminada';
@@ -40,6 +41,7 @@ enum ActivityAction: string
             self::PrioridadCambiada  => 'Cambio de prioridad',
             self::NotaNueva          => 'Nota nueva',
             self::TareaCreada        => 'Tarea creada',
+            self::TareaEditada       => 'Tarea editada',
             self::TareaCompletada    => 'Tarea completada',
             self::TareaReabierta     => 'Tarea reabierta',
             self::TareaEliminada     => 'Tarea eliminada',

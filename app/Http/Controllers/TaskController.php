@@ -26,13 +26,13 @@ class TaskController extends Controller
         $this->authorize('move', $project);
 
         $data = $request->validate([
-            'title'       => ['required', 'string', 'max:160'],
+            'title'       => ['required', 'string', 'max:500'],
             'due_date'    => ['nullable', 'date'],
             'assignees'   => ['array'],
             'assignees.*' => ['integer', 'exists:users,id'],
         ], [
             'title.required' => 'Escribí qué hay que hacer.',
-            'title.max'      => 'El título no puede pasar de 160 caracteres.',
+            'title.max'      => 'El título no puede pasar de 500 caracteres.',
         ]);
 
         $task = $project->tasks()->create([
@@ -57,6 +57,48 @@ class TaskController extends Controller
         );
 
         return back()->with('ok', 'Tarea agregada.');
+    }
+
+    /**
+     * Cambiar el texto, la fecha o a quién le toca. Antes la única salida era
+     * eliminar y volver a crear, perdiendo quién la pidió y cuándo.
+     */
+    public function update(Request $request, Project $project, Task $task): RedirectResponse
+    {
+        $this->authorize('update', $task);
+
+        $data = $request->validate([
+            'title'       => ['required', 'string', 'max:500'],
+            'due_date'    => ['nullable', 'date'],
+            'assignees'   => ['array'],
+            'assignees.*' => ['integer', 'exists:users,id'],
+        ], [
+            'title.required' => 'La tarea necesita un título.',
+            'title.max'      => 'El título no puede pasar de 500 caracteres.',
+        ]);
+
+        $antes = $task->assignees->pluck('id');
+
+        $task->update([
+            'title'    => $data['title'],
+            'due_date' => $data['due_date'] ?? null,
+        ]);
+
+        $task->assignTo($data['assignees'] ?? []);
+
+        Activity::anotar(ActivityAction::TareaEditada, $request->user(), $project, detail: $task->title);
+
+        // Solo a los que no estaban antes: guardar sin tocar la lista no tiene
+        // por qué volver a avisarle a nadie.
+        $this->avisar(
+            $task->load('assignees')->assignees->reject(fn (User $u) => $antes->contains($u->id)),
+            $request->user(),
+            NotificationType::TareaAsignada,
+            $project,
+            $task->title,
+        );
+
+        return back()->with('ok', 'Tarea actualizada.');
     }
 
     /** Marca o desmarca. El mismo boton sirve para los dos sentidos. */

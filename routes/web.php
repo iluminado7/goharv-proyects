@@ -44,6 +44,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/proyectos/{project}/tareas/{task}', [TaskController::class, 'toggle'])
         ->scopeBindings()
         ->name('tasks.toggle');
+    Route::put('/proyectos/{project}/tareas/{task}', [TaskController::class, 'update'])
+        ->scopeBindings()
+        ->name('tasks.update');
     Route::delete('/proyectos/{project}/tareas/{task}', [TaskController::class, 'destroy'])
         ->scopeBindings()
         ->name('tasks.destroy');

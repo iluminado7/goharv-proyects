@@ -28,11 +28,26 @@ class TaskPolicy
     }
 
     /**
+     * Editar cambia lo que otro tiene que hacer —el texto, la fecha, a quién
+     * le toca—, así que no es lo mismo que tildar un casillero.
+     */
+    public function update(User $user, Task $task): bool
+    {
+        return $this->decide($user, $task);
+    }
+
+    /**
      * Borrar no se deshace, así que es más cerrado: quien la creó —se subió
      * por error— o el responsable del proyecto, que es quien decide si algo
      * deja de hacer falta.
      */
     public function delete(User $user, Task $task): bool
+    {
+        return $this->decide($user, $task);
+    }
+
+    /** Quien la pidio, o quien manda en el proyecto. */
+    private function decide(User $user, Task $task): bool
     {
         return $task->created_by === $user->id
             || $task->project->owner_id === $user->id;

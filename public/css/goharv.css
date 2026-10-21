@@ -252,7 +252,21 @@ h2.section{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-siz
 .tarea-pie{margin:3px 0 0;font-size:12px;color:var(--faint)}
 .tarea-pie .late{color:#E05C4B;font-weight:600}
 .tarea-gente{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+/* Editar y Eliminar en su propia fila: asi el formulario puede abrirse a lo
+   ancho sin quedar encajonado al lado de los avatares. */
+.tarea-acts{grid-column:1 / -1;display:flex;justify-content:flex-end;align-items:flex-start;gap:12px;flex-wrap:wrap}
 .tarea-nueva{margin-top:14px}
+
+/* El formulario de edicion se despliega en la misma fila, con <details>. */
+.tarea-editar>summary{list-style:none;cursor:pointer}
+.tarea-editar>summary::-webkit-details-marker{display:none}
+/* Cerrado ocupa lo que mide "Editar"; abierto se queda con toda la fila. */
+.tarea-editar[open]{flex:1 1 100%}
+.tarea-editar[open]>summary{color:var(--ink)}
+.tarea-editar form{margin-top:12px;padding:14px;background:var(--bg);border:1px solid var(--line);border-radius:9px}
+.tarea-editar textarea{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 11px;resize:vertical;font:inherit;font-size:14px}
+.tarea-editar input[type=date]{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 11px;font:inherit;font-size:14px}
+.tarea-editar .form-acts{margin-top:14px}
 
 
 .links-grid{display:grid;grid-template-columns:170px 1fr;gap:8px}

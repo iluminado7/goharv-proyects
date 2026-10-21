@@ -121,9 +121,11 @@ va dirigida a una o varias personas del proyecto.
 
 - **El cuadradito de la izquierda** la marca como completada. Se puede volver
   atrás tocándolo de nuevo, así que no hay drama si te equivocaste.
+- **Editar** abre un formulario ahí mismo para corregir el texto, cambiar la
+  fecha o pasársela a otra persona. Si sumás a alguien, le llega el aviso.
 - **Eliminar** sirve para la que se cargó por error o ya no hace falta. Eso sí
-  no se deshace, y solo lo puede hacer quien la creó o el responsable del
-  proyecto.
+  no se deshace. Editar y eliminar los puede hacer quien pidió la tarea o el
+  responsable del proyecto; marcarla como hecha, cualquiera del proyecto.
 - Las que **vencieron** y siguen pendientes aparecen en rojo.
 - Arriba del título dice cuántas quedan pendientes.
 

@@ -136,6 +136,48 @@
                     @foreach ($task->assignees as $quien)
                         <x-avatar :user="$quien" :size="24" />
                     @endforeach
+                </div>
+
+                <div class="tarea-acts">
+                    @can('update', $task)
+                        <details class="tarea-editar">
+                            <summary class="borrar-nota">Editar</summary>
+
+                            <form method="POST" action="{{ route('tasks.update', [$project, $task]) }}">
+                                @csrf @method('PUT')
+
+                                <div class="field">
+                                    <label for="t{{ $task->id }}-title">Qué hay que hacer</label>
+                                    <textarea id="t{{ $task->id }}-title" name="title" rows="2"
+                                              maxlength="500" required>{{ old('title', $task->title) }}</textarea>
+                                </div>
+
+                                <div class="field">
+                                    <label for="t{{ $task->id }}-due">Fecha límite</label>
+                                    <input id="t{{ $task->id }}-due" name="due_date" type="date"
+                                           value="{{ old('due_date', $task->due_date?->format('Y-m-d')) }}">
+                                </div>
+
+                                <div class="field">
+                                    <label>Para quién</label>
+                                    @php ($puestos = $task->assignees->pluck('id')->all())
+                                    <div class="picker">
+                                        @foreach ($candidatos as $quien)
+                                            <label class="pick">
+                                                <input type="checkbox" name="assignees[]" value="{{ $quien->id }}"
+                                                       @checked(in_array($quien->id, $puestos))>
+                                                <span>{{ $quien->name }}</span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <div class="form-acts">
+                                    <button class="btn btn-sm">Guardar cambios</button>
+                                </div>
+                            </form>
+                        </details>
+                    @endcan
 
                     @can('delete', $task)
                         <form method="POST" action="{{ route('tasks.destroy', [$project, $task]) }}"
