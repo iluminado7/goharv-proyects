@@ -109,6 +109,11 @@ class Project extends Model
         return $this->hasMany(ProjectLink::class)->orderBy('position')->orderBy('id');
     }
 
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class)->sorted();
+    }
+
     /** El primero de la lista: es el que va en el boton "Abrir" del tablero. */
     public function primaryLink(): ?ProjectLink
     {

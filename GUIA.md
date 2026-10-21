@@ -113,6 +113,23 @@ Si te equivocaste, cada nota tiene un **Borrar** chiquito al lado de la fecha.
 Solo aparece en las tuyas —los responsables del panel pueden borrar cualquiera—
 y no se puede deshacer.
 
+### Las tareas
+
+Cada proyecto tiene su lista de tareas, en su propia ficha. Una tarea es algo
+concreto que hay que hacer: lleva un título, opcionalmente una fecha límite, y
+va dirigida a una o varias personas del proyecto.
+
+- **El cuadradito de la izquierda** la marca como completada. Se puede volver
+  atrás tocándolo de nuevo, así que no hay drama si te equivocaste.
+- **Eliminar** sirve para la que se cargó por error o ya no hace falta. Eso sí
+  no se deshace, y solo lo puede hacer quien la creó o el responsable del
+  proyecto.
+- Las que **vencieron** y siguen pendientes aparecen en rojo.
+- Arriba del título dice cuántas quedan pendientes.
+
+Para que alguien pueda recibir una tarea tiene que estar en el proyecto. Si no
+aparece en la lista, sumalo primero como colaborador desde *Editar*.
+
 ### El historial
 
 Abajo de todo está la línea de tiempo, de lo más nuevo a lo más viejo. Cada

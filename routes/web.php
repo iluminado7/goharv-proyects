@@ -6,6 +6,7 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\ThemeController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +38,16 @@ Route::middleware('auth')->group(function () {
     Route::patch('/proyectos/{project}/estado', [ProjectController::class, 'moveStatus'])->name('projects.status');
     Route::patch('/proyectos/{project}/prioridad', [ProjectController::class, 'changePriority'])
         ->name('projects.priority');
+    // Las tareas cuelgan siempre del proyecto: con scopeBindings, una tarea
+    // de otro proyecto en la URL da 404 en vez de dejarse tocar.
+    Route::post('/proyectos/{project}/tareas', [TaskController::class, 'store'])->name('tasks.store');
+    Route::patch('/proyectos/{project}/tareas/{task}', [TaskController::class, 'toggle'])
+        ->scopeBindings()
+        ->name('tasks.toggle');
+    Route::delete('/proyectos/{project}/tareas/{task}', [TaskController::class, 'destroy'])
+        ->scopeBindings()
+        ->name('tasks.destroy');
+
     Route::post('/proyectos/{project}/comentarios', [ProjectController::class, 'comment'])
         ->middleware('throttle:30,1')
         ->name('projects.comment');

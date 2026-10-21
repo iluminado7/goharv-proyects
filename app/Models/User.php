@@ -96,6 +96,12 @@ class User extends Authenticatable
         return $this->hasMany(Project::class, 'owner_id');
     }
 
+    /** Tareas que le asignaron, de cualquier proyecto. */
+    public function tasks(): BelongsToMany
+    {
+        return $this->belongsToMany(Task::class)->withTimestamps();
+    }
+
     /** Proyectos donde colabora sin ser el responsable. */
     public function projects(): BelongsToMany
     {

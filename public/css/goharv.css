@@ -237,7 +237,23 @@ p.page-sub{color:var(--muted);margin:0 0 24px;font-size:14px}
 .me:hover strong{text-decoration:underline}
 
 .hint{color:var(--faint);font-size:12.5px;margin:0 0 10px}
-h2.section{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:20px;margin:36px 0 14px}
+h2.section{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:20px;margin:36px 0 14px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.pendientes-n{font-family:var(--fuente-numeros);font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+
+.tarea{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;padding:12px 0;border-bottom:1px solid var(--line)}
+.tarea:last-child{border-bottom:0}
+.tarea-check{width:21px;height:21px;margin-top:1px;padding:0;flex:none;border:1.5px solid var(--line);border-radius:6px;background:var(--bg);color:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.tarea-check:hover{border-color:var(--muted)}
+.tarea-check svg{width:14px;height:14px}
+.tarea-check.sin-permiso{cursor:default}
+.tarea.hecha .tarea-check{background:#4FA97C;border-color:#4FA97C;color:#fff}
+.tarea-titulo{margin:0;font-size:14.5px;line-height:1.4}
+.tarea.hecha .tarea-titulo{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--faint)}
+.tarea-pie{margin:3px 0 0;font-size:12px;color:var(--faint)}
+.tarea-pie .late{color:#E05C4B;font-weight:600}
+.tarea-gente{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.tarea-nueva{margin-top:14px}
+
 
 .links-grid{display:grid;grid-template-columns:170px 1fr;gap:8px}
 .links-grid input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 12px}
@@ -268,6 +284,8 @@ h2.section{font-family:'Playfair Display',Georgia,serif;font-weight:600;font-siz
   .menu .btn{flex:1;text-align:center}
   .row-2{grid-template-columns:1fr}
   .links-grid{grid-template-columns:1fr}
+  .tarea{grid-template-columns:auto 1fr}
+  .tarea-gente{grid-column:2;justify-content:flex-start}
 }
 /* --- Telefonos --------------------------------------------------------- */
 

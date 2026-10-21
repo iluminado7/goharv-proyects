@@ -115,12 +115,14 @@ class ProjectController extends Controller
 
     public function show(Project $project): View
     {
-        $project->load(['owner', 'collaborators', 'links', 'updates.author']);
+        $project->load(['owner', 'collaborators', 'links', 'updates.author', 'tasks.assignees']);
 
         return view('projects.show', [
             'project'    => $project,
             'statuses'   => ProjectStatus::cases(),
             'priorities' => ProjectPriority::cases(),
+            // Quiénes pueden recibir una tarea de este proyecto.
+            'candidatos' => $project->interesados(),
         ]);
     }
 

@@ -43,6 +43,20 @@ lista es el que abre el botón del tablero. Archivar no borra: la tabla usa
 de avance de cuatro tramos en el tablero. Los estados son enums de PHP, así que
 sumar uno nuevo se hace en un solo archivo.
 
+**Tareas por proyecto.** Cada proyecto tiene su lista, dentro de su ficha. Una
+tarea lleva título, fecha límite opcional y una o varias personas a cargo, y
+tiene dos estados: pendiente o completada. El estado se guarda como
+`completed_at` nullable —vacío es pendiente— y de paso queda cuándo y quién la
+completó.
+
+Solo se puede asignar a gente del proyecto: `Task::assignTo()` cruza contra los
+participantes y descarta el resto. Las rutas cuelgan del proyecto y usan
+`scopeBindings`, así que una tarea de otro proyecto en la URL da 404.
+
+Completar lo puede hacer cualquiera del proyecto y se deshace con un clic.
+Borrar no se deshace, así que queda para quien la creó o el responsable del
+proyecto.
+
 **Historial por proyecto.** Todo cambio de estado pasa por `Project::moveTo()`
 y queda registrado en `project_updates` con autor, fecha, estado anterior y
 comentario. No hay manera de mover un proyecto sin dejar rastro.
@@ -196,6 +210,8 @@ inmediato y cargar al resto del equipo desde *Equipo*.
 |---|---|
 | `users` | Se le agregan `role` (admin/member) e `is_active`. |
 | `projects` | Nombre, slug, detalle, `client`, estado, prioridad, `owner_id`, `due_date`, `started_at`, `completed_at`. Con `softDeletes` e índice fulltext sobre nombre, detalle y empresa. |
+| `tasks` | Tareas del proyecto: `title`, `due_date`, `completed_at`, `completed_by`, `created_by`. |
+| `task_user` | A quiénes va dirigida cada tarea. |
 | `project_links` | Enlaces del proyecto: `label`, `url`, `position`. |
 | `user_avatars` | Foto de perfil: `user_id`, `mime`, `image` (MEDIUMBLOB). |
 | `notifications` | La del framework. Avisos personales, con estado de leído. |
@@ -213,13 +229,13 @@ Los archivados no son otra tabla: son filas de `projects` con `deleted_at` carga
 app/Enums/            ProjectStatus, ProjectPriority, UserRole, ActivityAction,
                       NotificationType
 app/Notifications/    ProjectEvent
-app/Models/           Project, ProjectLink, ProjectUpdate, User, UserAvatar,
-                      Activity
+app/Models/           Project, ProjectLink, ProjectUpdate, Task, User,
+                      UserAvatar, Activity
 app/Support/          AvatarImage, Assets
 app/Http/Controllers/ ProjectController, MemberController, ProfileController,
                       ThemeController, Auth/LoginController
 app/Http/Middleware/  EnsureUserIsAdmin, EnsureUserIsActive, SecurityHeaders
-app/Policies/         ProjectPolicy, ProjectUpdatePolicy
+app/Policies/         ProjectPolicy, ProjectUpdatePolicy, TaskPolicy
 resources/views/      layouts/app, auth/login, projects/*, members/index,
                       profile/edit, partials/theme-toggle, pagination/goharv
 public/css/           goharv.css
@@ -285,7 +301,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 183 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 216 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.
