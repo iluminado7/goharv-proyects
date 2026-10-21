@@ -127,6 +127,9 @@ va dirigida a una o varias personas del proyecto.
 - Las que **vencieron** y siguen pendientes aparecen en rojo.
 - Arriba del título dice cuántas quedan pendientes.
 
+Cuando le asignás una tarea a alguien, le llega el aviso a su campana. Y cuando
+alguien completa una, se enteran los demás que la tenían y quien la pidió.
+
 Para que alguien pueda recibir una tarea tiene que estar en el proyecto. Si no
 aparece en la lista, sumalo primero como colaborador desde *Editar*.
 
@@ -306,6 +309,8 @@ cuando las hizo otro:
 - Te sumaron como colaborador
 - Alguien dejó una nota
 - Alguien movió el estado
+- Te asignaron una tarea en un proyecto
+- Completaron una tarea que te tocaba, o una que vos pediste
 
 **No te avisa de lo que hacés vos**, ni de proyectos en los que no participás.
 Es a propósito: una campana que suena por todo se termina ignorando.

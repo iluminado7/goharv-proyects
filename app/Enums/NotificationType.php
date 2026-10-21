@@ -13,6 +13,8 @@ enum NotificationType: string
     case TeSumaron     = 'te_sumaron';
     case Comentario    = 'comentario';
     case CambioEstado  = 'cambio_estado';
+    case TareaAsignada = 'tarea_asignada';
+    case TareaHecha    = 'tarea_hecha';
 
     public function label(): string
     {
@@ -21,6 +23,8 @@ enum NotificationType: string
             self::TeSumaron    => 'Te sumaron a un proyecto',
             self::Comentario   => 'Nueva nota',
             self::CambioEstado => 'Cambio de estado',
+            self::TareaAsignada => 'Te asignaron una tarea',
+            self::TareaHecha    => 'Completaron una tarea',
         };
     }
 
@@ -31,6 +35,8 @@ enum NotificationType: string
             self::TeSumaron    => '#6BA5E7',
             self::Comentario   => '#4FA97C',
             self::CambioEstado => '#A585D8',
+            self::TareaAsignada => '#E0A33E',
+            self::TareaHecha    => '#4FA97C',
         };
     }
 }

@@ -19,6 +19,10 @@ enum ActivityAction: string
     case EstadoCambiado     = 'estado_cambiado';
     case PrioridadCambiada  = 'prioridad_cambiada';
     case NotaNueva          = 'nota_nueva';
+    case TareaCreada        = 'tarea_creada';
+    case TareaCompletada    = 'tarea_completada';
+    case TareaReabierta     = 'tarea_reabierta';
+    case TareaEliminada     = 'tarea_eliminada';
 
     public function label(): string
     {
@@ -35,6 +39,10 @@ enum ActivityAction: string
             self::EstadoCambiado     => 'Cambio de estado',
             self::PrioridadCambiada  => 'Cambio de prioridad',
             self::NotaNueva          => 'Nota nueva',
+            self::TareaCreada        => 'Tarea creada',
+            self::TareaCompletada    => 'Tarea completada',
+            self::TareaReabierta     => 'Tarea reabierta',
+            self::TareaEliminada     => 'Tarea eliminada',
         };
     }
 
@@ -56,6 +64,9 @@ enum ActivityAction: string
             self::ProyectoCreado     => '#4FA97C',
             self::EstadoCambiado     => '#E0A33E',
             self::PrioridadCambiada  => '#E0A33E',
+            self::TareaCompletada    => '#4FA97C',
+            self::TareaEliminada     => '#E05C4B',
+            self::TareaReabierta     => '#E0A33E',
             self::ProyectoArchivado  => '#7E838C',
             self::Salida             => '#7E838C',
             default                  => '#6BA5E7',

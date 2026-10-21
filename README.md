@@ -57,6 +57,11 @@ Completar lo puede hacer cualquiera del proyecto y se deshace con un clic.
 Borrar no se deshace, así que queda para quien la creó o el responsable del
 proyecto.
 
+Las cuatro acciones —crear, completar, reabrir, eliminar— quedan en la
+bitácora con el título de la tarea. La campana avisa dos: cuando te asignan
+una, y cuando completan una que te tocaba o que pediste. Reabrir y eliminar no
+avisan: pasan poco y no piden que hagas nada.
+
 **Historial por proyecto.** Todo cambio de estado pasa por `Project::moveTo()`
 y queda registrado en `project_updates` con autor, fecha, estado anterior y
 comentario. No hay manera de mover un proyecto sin dejar rastro.
@@ -301,7 +306,7 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 - **`ProjectPolicy`.** La autorización salió de los `abort_unless` sueltos y
   quedó en un solo archivo; las vistas esconden lo que no se puede tocar. Se
   descubre sola por convención, no hace falta registrarla.
-- **Tests.** 216 casos sobre login y bloqueos, alta y edición de proyectos,
+- **Tests.** 226 casos sobre login y bloqueos, alta y edición de proyectos,
   enlaces, colaboradores, permisos, perfil, menú, fondo, URLs detrás de un proxy
   archivados, comentarios, borrado definitivo y —sobre todo— que `moveTo()`
   escriba el historial.
