@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        // Lo que reciben los formularios del sitio. Registrada a mano y no con
+        // `install:api`, que suma Sanctum: aca no hay tokens ni sesiones.
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
@@ -39,5 +42,11 @@ return Application::configure(basePath: dirname(__DIR__))
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // La API contesta siempre en JSON, mande o no `Accept: application/json`.
+        // Si no, un error de validacion responde con una redireccion: el fetch
+        // del sitio la sigue, cae en el login con un 200 y le muestra
+        // "¡Gracias!" a alguien cuya consulta nunca se guardo.
+        $exceptions->shouldRenderJsonWhen(
+            fn (Request $request) => $request->is('api/*') || $request->expectsJson()
+        );
     })->create();

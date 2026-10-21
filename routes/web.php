@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
@@ -55,6 +56,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/proyectos/{project}/definitivo', [ProjectController::class, 'forceDestroy'])
         ->withTrashed()
         ->name('projects.force-destroy');
+
+    // Lo que llega de los formularios del sitio (se guarda por routes/api.php).
+    Route::get('/consultas', [InquiryController::class, 'index'])->name('inquiries.index');
 
     Route::get('/notificaciones', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notificaciones/leidas', [NotificationController::class, 'readAll'])->name('notifications.read-all');
