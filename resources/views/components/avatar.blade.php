@@ -7,5 +7,5 @@
          style="width:{{ $size }}px;height:{{ $size }}px">
 @else
     <span class="avatar avatar-txt" aria-hidden="true"
-          style="width:{{ $size }}px;height:{{ $size }}px;background:{{ $user?->avatarColor() ?? 'var(--line)' }};font-size:{{ max(10, (int) round($size * 0.38)) }}px">{{ $user?->initials() ?? '?' }}</span>
+          style="width:{{ $size }}px;height:{{ $size }}px;font-size:{{ max(10, (int) round($size * 0.38)) }}px">{{ $user?->initials() ?? '?' }}</span>
 @endif

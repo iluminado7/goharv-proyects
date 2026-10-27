@@ -24,6 +24,7 @@ class MemberController extends Controller
                 ->withCount('ownedProjects')
                 ->get(),
             'administra' => $administra,
+            'roles'      => UserRole::cases(),
         ]);
     }
 
@@ -33,18 +34,18 @@ class MemberController extends Controller
             'name'     => ['required', 'string', 'max:80'],
             'email'    => ['required', 'email', 'max:120', 'unique:users,email'],
             'password' => ['required', 'string', Password::defaults()],
-            'role'     => ['required', Rule::in(['admin', 'member'])],
+            'role'     => ['required', Rule::in(UserRole::values())],
         ]);
 
         User::create($data);
 
-        return back()->with('ok', 'Miembro agregado.');
+        return back()->with('ok', 'Cuenta creada.');
     }
 
     public function update(Request $request, User $user): RedirectResponse
     {
         $data = $request->validate([
-            'role'      => ['required', Rule::in(['admin', 'member'])],
+            'role'      => ['required', Rule::in(UserRole::values())],
             'is_active' => ['required', 'boolean'],
         ]);
 
@@ -72,6 +73,6 @@ class MemberController extends Controller
 
         $user->update($data);
 
-        return back()->with('ok', 'Miembro actualizado.');
+        return back()->with('ok', 'Cuenta actualizada.');
     }
 }

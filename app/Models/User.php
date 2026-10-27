@@ -74,20 +74,24 @@ class User extends Authenticatable
         return $primera.Str::upper(Str::substr(end($palabras), 0, 1));
     }
 
-    /**
-     * Color estable sacado del nombre: la misma persona siempre tiene el mismo,
-     * y no hace falta guardarlo ni elegirlo. Son tonos de la paleta del panel.
-     */
-    public function avatarColor(): string
-    {
-        $tonos = ['#6BA5E7', '#E0A33E', '#4FA97C', '#E05C4B', '#A585D8', '#49A8A0', '#C9A227'];
-
-        return $tonos[crc32(Str::lower($this->name ?: '?')) % count($tonos)];
-    }
 
     public function isAdmin(): bool
     {
         return $this->role === UserRole::Admin;
+    }
+
+    /**
+     * El profesional externo no es del equipo: solo ve y gestiona los
+     * proyectos que le delegaron, y no entra a Equipo ni a Actividad.
+     */
+    public function isExternal(): bool
+    {
+        return $this->role === UserRole::External;
+    }
+
+    public function isInternal(): bool
+    {
+        return $this->role->isInternal();
     }
 
     /** Proyectos donde figura como responsable. */

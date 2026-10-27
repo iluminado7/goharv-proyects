@@ -26,9 +26,9 @@ enum ProjectPriority: string
     public function color(): string
     {
         return match ($this) {
-            self::Alta  => '#E05C4B',
-            self::Media => '#C9A227',
-            self::Baja  => '#5F6169',
+            self::Alta  => 'var(--error)',
+            self::Media => 'var(--warning)',
+            self::Baja  => 'var(--text-muted)',
         };
     }
 

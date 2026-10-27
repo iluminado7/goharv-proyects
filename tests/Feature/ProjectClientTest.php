@@ -69,7 +69,10 @@ class ProjectClientTest extends TestCase
         Project::factory()->forClient('Alfa SRL')->create();
         Project::factory()->forClient(null)->create();
 
-        $this->assertSame(['Alfa SRL', 'Zeta SA'], Project::clientes()->all());
+        $this->assertSame(
+            ['Alfa SRL', 'Zeta SA'],
+            Project::clientes(User::factory()->create())->all()
+        );
     }
 
     /** Lo que evita que la misma empresa entre como dos. */
@@ -85,7 +88,7 @@ class ProjectClientTest extends TestCase
         $project = Project::factory()->forClient('   ')->create();
 
         $this->assertNull($project->fresh()->client);
-        $this->assertCount(0, Project::clientes());
+        $this->assertCount(0, Project::clientes(User::factory()->create()));
     }
 
     public function test_el_buscador_encuentra_por_empresa(): void

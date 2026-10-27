@@ -33,10 +33,10 @@ enum ProjectStatus: string
     public function color(): string
     {
         return match ($this) {
-            self::Nuevo        => '#7E838C',
-            self::Inicio       => '#6BA5E7',
-            self::EnDesarrollo => '#E0A33E',
-            self::Terminado    => '#4FA97C',
+            self::Nuevo        => 'var(--text-muted)',
+            self::Inicio       => 'var(--accent)',
+            self::EnDesarrollo => 'var(--warning)',
+            self::Terminado    => 'var(--success)',
         };
     }
 

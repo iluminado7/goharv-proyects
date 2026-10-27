@@ -9,6 +9,11 @@ use App\Models\User;
  * Regla del equipo: el proyecto lo edita quien esta metido en el proyecto.
  * El resto lo ve, pero no lo toca. Archivar y restaurar quedan para el
  * responsable del proyecto y los responsables del panel.
+ *
+ * El profesional externo juega aparte: para el, "el resto" no existe. Solo ve
+ * los proyectos en los que participa, y adentro de ellos puede hacer todo lo
+ * que haria un socio menos una cosa: mover gente. No suma colaboradores ni le
+ * pasa el proyecto a otro, porque quien entra al panel lo decide el equipo.
  */
 class ProjectPolicy
 {
@@ -29,12 +34,26 @@ class ProjectPolicy
 
     public function view(User $user, Project $project): bool
     {
-        return true;
+        return $user->isInternal() || $this->involved($user, $project);
     }
 
+    /**
+     * Los proyectos del externo se los delega alguien de adentro: no los crea
+     * el. Si pudiera, el panel se llenaria de trabajo que el equipo no pidio.
+     */
     public function create(User $user): bool
     {
-        return true;
+        return $user->isInternal();
+    }
+
+    /**
+     * Cambiar el responsable del proyecto o sumar colaboradores. Es lo unico
+     * que el externo no puede hacer en un proyecto suyo: decidir quien mas
+     * entra es del equipo, no de quien recibe el encargo.
+     */
+    public function delegate(User $user, Project $project): bool
+    {
+        return $user->isInternal();
     }
 
     public function update(User $user, Project $project): bool
@@ -55,7 +74,7 @@ class ProjectPolicy
      */
     public function comment(User $user, Project $project): bool
     {
-        return true;
+        return $user->isInternal() || $this->involved($user, $project);
     }
 
     /**

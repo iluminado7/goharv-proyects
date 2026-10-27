@@ -15,8 +15,8 @@ class MenuTest extends TestCase
         $this->actingAs(User::factory()->create())
             ->get(route('profile.edit'))
             ->assertOk()
-            ->assertSee('>Proyectos</a>', escape: false)
-            ->assertSee('>Mi perfil</a>', escape: false);
+            ->assertSee('>Proyectos</span>', escape: false)
+            ->assertSee('>Mi perfil</span>', escape: false);
     }
 
     /**
@@ -29,16 +29,16 @@ class MenuTest extends TestCase
         foreach ([User::factory()->create(), User::factory()->admin()->create()] as $quien) {
             $html = $this->actingAs($quien)->get(route('projects.index'))->getContent();
 
-            foreach (['>Proyectos</a>', '>Equipo</a>', '>Mi perfil</a>'] as $boton) {
+            foreach (['>Proyectos</span>', '>Equipo</span>', '>Mi perfil</span>'] as $boton) {
                 $this->assertStringContainsString($boton, $html);
             }
         }
     }
 
     /**
-     * En el celular los cuatro botones ocupaban media pantalla. Se colapsan
-     * detras de un boton que es CSS puro: el mismo HTML sirve para las dos
-     * pantallas y la media query decide.
+     * En pantallas angostas la barra lateral se abre sobre el contenido con
+     * un boton que es CSS puro: el mismo HTML sirve para las dos pantallas y
+     * la media query decide cual de las dos formas se usa.
      */
     public function test_el_menu_del_celular_sale_en_el_mismo_html(): void
     {
@@ -52,20 +52,25 @@ class MenuTest extends TestCase
 
         // Los enlaces estan en el HTML siempre: el boton solo los esconde con
         // CSS en pantallas chicas, no cambia lo que se manda.
-        $this->assertStringContainsString('>Proyectos</a>', $html);
-        $this->assertStringContainsString('>Mi perfil</a>', $html);
+        $this->assertStringContainsString('>Proyectos</span>', $html);
+        $this->assertStringContainsString('>Mi perfil</span>', $html);
     }
 
-    public function test_el_rol_ya_no_esta_en_el_header_sino_en_el_perfil(): void
+    /**
+     * El rol vive al pie de la barra lateral, debajo del nombre, como pide la
+     * Marca Madre. En la topbar va solo el avatar.
+     */
+    public function test_el_rol_va_al_pie_de_la_barra_y_tambien_en_el_perfil(): void
     {
         $miembro = User::factory()->create();
 
         $this->actingAs($miembro)
             ->get(route('projects.index'))
-            ->assertDontSee('class="rol"', escape: false);
+            ->assertSee('class="rol"', escape: false)
+            ->assertSee('Socio');
 
         $this->actingAs($miembro)
             ->get(route('profile.edit'))
-            ->assertSee('Miembro');
+            ->assertSee('Socio');
     }
 }

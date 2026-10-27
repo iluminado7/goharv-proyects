@@ -92,6 +92,6 @@ class TeamVisibilityTest extends TestCase
     {
         $this->actingAs(User::factory()->create())
             ->get(route('projects.index'))
-            ->assertSee('>Equipo</a>', escape: false);
+            ->assertSee('>Equipo</span>', escape: false);
     }
 }

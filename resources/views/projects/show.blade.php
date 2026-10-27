@@ -21,7 +21,7 @@
 
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
             @foreach ($project->links as $link)
-                <a class="btn {{ $loop->first ? '' : 'btn-ghost' }}" href="{{ $link->url }}"
+                <a class="btn btn-ghost" href="{{ $link->url }}"
                    target="_blank" rel="noopener" title="{{ $link->host() }}">{{ $link->label }}</a>
             @endforeach
             @can('update', $project)
@@ -173,7 +173,7 @@
                                 </div>
 
                                 <div class="form-acts">
-                                    <button class="btn btn-sm">Guardar cambios</button>
+                                    <button class="btn btn-ghost btn-sm">Guardar cambios</button>
                                 </div>
                             </form>
                         </details>
@@ -227,7 +227,7 @@
             </div>
 
             <div class="form-acts">
-                <button class="btn btn-sm">Agregar tarea</button>
+                <button class="btn btn-ghost btn-sm">Agregar tarea</button>
             </div>
         </form>
     @endcan
@@ -242,7 +242,7 @@
                       placeholder="Dejá una nota: qué falta, qué trabaste, qué averiguaste. No mueve el estado.">{{ old('body') }}</textarea>
             @error('body') <p class="err">{{ $message }}</p> @enderror
             <div class="comment-acts">
-                <button class="btn btn-sm">Comentar</button>
+                <button class="btn btn-ghost btn-sm">Comentar</button>
             </div>
         </form>
     @endcan

@@ -6,7 +6,8 @@
     (function () {
         var campana = document.querySelector('.campana-caja');
         var menu    = document.getElementById('abrir-menu');
-        var navZona = document.querySelector('.mast-nav');
+        var barra   = document.querySelector('.barra');
+        var abridor = document.querySelector('.hamburguesa');
 
         function cerrarTodo() {
             if (campana) campana.open = false;
@@ -15,7 +16,8 @@
 
         document.addEventListener('click', function (e) {
             var enCampana = campana && campana.contains(e.target);
-            var enMenu    = navZona && navZona.contains(e.target);
+            var enMenu    = (barra && barra.contains(e.target))
+                         || (abridor && abridor.contains(e.target));
 
             if (campana && campana.open && !enCampana) {
                 campana.open = false;

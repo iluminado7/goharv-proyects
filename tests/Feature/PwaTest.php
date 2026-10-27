@@ -39,11 +39,11 @@ class PwaTest extends TestCase
 
     public function test_el_color_de_la_barra_sigue_al_tema_elegido(): void
     {
-        $this->get('/login')->assertSee('content="#000000"', escape: false);
+        $this->get('/login')->assertSee('content="#0B0B0B"', escape: false);
 
         $this->withCookie(\App\Http\Controllers\ThemeController::COOKIE, 'claro')
             ->get('/login')
-            ->assertSee('content="#FAF9F7"', escape: false);
+            ->assertSee('content="#FFFFFF"', escape: false);
     }
 
     public function test_estan_los_archivos_que_pide_el_navegador(): void

@@ -30,8 +30,9 @@
                           style="display:flex;gap:8px;align-items:center">
                         @csrf @method('PATCH')
                         <select name="role">
-                            <option value="member" @selected($m->role->value === 'member')>Miembro</option>
-                            <option value="admin"  @selected($m->role->value === 'admin')>Responsable</option>
+                            @foreach ($roles as $rol)
+                                <option value="{{ $rol->value }}" @selected($m->role === $rol)>{{ $rol->label() }}</option>
+                            @endforeach
                         </select>
                         <select name="is_active">
                             <option value="1" @selected($m->is_active)>Activo</option>
@@ -70,9 +71,14 @@
                 <div class="field">
                     <label for="new-role">Permisos</label>
                     <select id="new-role" name="role">
-                        <option value="member">Miembro</option>
-                        <option value="admin">Responsable</option>
+                        @foreach ($roles as $rol)
+                            <option value="{{ $rol->value }}" @selected(old('role') === $rol->value)>{{ $rol->label() }}</option>
+                        @endforeach
                     </select>
+                    <p class="hint" style="margin-top:7px">
+                        El profesional externo solo entra a los proyectos que le deleguen:
+                        no ve el tablero completo, ni esta pantalla, ni la actividad.
+                    </p>
                 </div>
             </div>
             <button class="btn">Sumar al equipo</button>

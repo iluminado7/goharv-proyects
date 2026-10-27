@@ -1,6 +1,6 @@
 {{-- Todo relativo a asset(): el panel funciona igual colgando de la raiz del
      dominio (Laravel Cloud) que de una subcarpeta (XAMPP). --}}
-<meta name="theme-color" content="{{ ($tema ?? 'oscuro') === 'claro' ? '#FAF9F7' : '#000000' }}">
+<meta name="theme-color" content="{{ ($tema ?? 'oscuro') === 'claro' ? '#FFFFFF' : '#0B0B0B' }}">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">

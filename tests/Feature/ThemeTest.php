@@ -41,6 +41,36 @@ class ThemeTest extends TestCase
             ->assertCookie(ThemeController::COOKIE, 'oscuro');
     }
 
+    /**
+     * Cambiar el fondo no deberia costar una recarga. El formulario sigue ahi
+     * para cuando el JS no corre; con JS el script mueve el data-theme del
+     * <html> y manda el mismo POST por atras para guardar la cookie.
+     */
+    public function test_se_cambia_sin_recargar_y_el_form_queda_de_respaldo(): void
+    {
+        $html = $this->actingAs(User::factory()->create())
+            ->get(route('projects.index'))
+            ->getContent();
+
+        $this->assertStringContainsString('action="'.route('theme.toggle').'"', $html);
+        $this->assertStringContainsString('data-tema', $html);
+        $this->assertStringContainsString('documentElement.dataset.theme', $html);
+    }
+
+    /** Los dos iconos viajan siempre: el CSS muestra el que toca. */
+    public function test_los_dos_iconos_estan_en_el_html(): void
+    {
+        foreach (['oscuro', 'claro'] as $fondo) {
+            $html = $this->actingAs(User::factory()->create())
+                ->withCookie(ThemeController::COOKIE, $fondo)
+                ->get(route('projects.index'))
+                ->getContent();
+
+            $this->assertStringContainsString('class="icono-sol"', $html);
+            $this->assertStringContainsString('class="icono-luna"', $html);
+        }
+    }
+
     public function test_el_fondo_tambien_se_cambia_desde_el_login(): void
     {
         $this->get('/login')->assertOk()->assertSee('data-theme="oscuro"', escape: false);

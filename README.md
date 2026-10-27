@@ -13,9 +13,11 @@ está la [Guía del panel](GUIA.md), que explica cómo se usa sin hablar de cód
 
 ## Qué hace hoy
 
-**Acceso por miembro.** Login con correo y clave, sesión propia, límite de 5
-intentos fallidos por minuto y bloqueo de cuentas dadas de baja. Dos niveles:
-*responsable* (administra el equipo) y *miembro*.
+**Acceso por cuenta.** Login con correo y clave, sesión propia, límite de 5
+intentos fallidos por minuto y bloqueo de cuentas dadas de baja. Tres roles:
+*responsable* (administra el equipo), *socio* (ve todo el tablero) y
+*profesional externo*, que solo ve los proyectos que le delegaron y no entra ni
+a Equipo ni a Actividad.
 
 **Archivar y restaurar.** Archivar saca el proyecto del tablero sin borrar nada.
 Los archivados tienen su pantalla en `/proyectos/archivados`, con buscador, y
@@ -218,7 +220,7 @@ inmediato y cargar al resto del equipo desde *Equipo*.
 
 | Tabla | Para qué |
 |---|---|
-| `users` | Se le agregan `role` (admin/member) e `is_active`. |
+| `users` | Se le agregan `role` (admin/member/external) e `is_active`. |
 | `projects` | Nombre, slug, detalle, `client`, estado, prioridad, `owner_id`, `due_date`, `started_at`, `completed_at`. Con `softDeletes` e índice fulltext sobre nombre, detalle y empresa. |
 | `tasks` | Tareas del proyecto: `title`, `due_date`, `completed_at`, `completed_by`, `created_by`. |
 | `task_user` | A quiénes va dirigida cada tarea. |
@@ -377,11 +379,12 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   `@can` en las vistas), no con `abort_unless` sueltos.
 - Nada de SQL propio de un motor. Si hace falta ordenar por una secuencia, va un
   `CASE WHEN` armado desde el enum.
-- El JavaScript del panel son cuatro partials chicos: `pwa-register` (registra
+- El JavaScript del panel son cinco partials chicos: `pwa-register` (registra
   el service worker), `password-toggle` (el ojito de la clave),
-  `avatar-cropper` (encuadrar la foto) y `dropdown-close` (cerrar la campana y
-  el menú del celular al tocar afuera). Los cuatro hacen cosas que el servidor no puede hacer y los
-  cuatro degradan bien si el JS no corre. La regla ya no es "nada de JS" sino
+  `avatar-cropper` (encuadrar la foto), `dropdown-close` (cerrar la campana y
+  la barra del celular al tocar afuera) e `instant-toggles` (plegar la barra y
+  cambiar el fondo sin recargar). Los cinco hacen cosas que el servidor no
+  puede hacer y los cinco degradan bien si el JS no corre. La regla ya no es "nada de JS" sino
   **nada que el HTML o un formulario puedan resolver solos**: antes de sumar
   otro, buscar el elemento nativo —`<details>`, `<datalist>`— que haga el
   trabajo.
@@ -393,9 +396,39 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   Ctrl+clic ni explicación.
 - Cualquier `<script>` nuevo necesita `nonce="{{ $cspNonce }}"` o la CSP lo
   bloquea sin decir nada en pantalla.
-- Tres fuentes y cada una con su trabajo: Playfair Display para títulos y el
-  wordmark, Inter para el resto del texto, y Montserrat para los números, vía
-  la variable `--fuente-numeros`.
-- Los colores salen de las variables CSS (`--bg`, `--panel`, `--line`, `--ink`,
-  `--muted`, `--faint`, `--track`), nunca de un hex suelto, o el fondo claro se
-  rompe.
+- El diseño lo manda la **Marca Madre GoHarv** (skill `goharv-design`), que
+  gana sobre cualquier estilo que ya existiera acá. De ahí salen: dos fuentes y
+  nada más —Montserrat para títulos, etiquetas, botones y números
+  (`--fuente-titulo`, `--fuente-numeros`), Roboto para el texto corrido
+  (`--fuente-cuerpo`)—, el dorado `#BFAE76` como único acento, `border-radius: 0`
+  en todo salvo los avatares y el punto de estado, y nada de sombras ni
+  gradientes: lo que separa son bordes de 1px.
+- Los colores salen de los roles de la guía (`--text`, `--text-muted`, `--label`,
+  `--accent`, `--accent-soft`, `--surface`, `--border`, `--success`, `--error`,
+  `--warning`), nunca de un hex suelto. Los nombres cortos (`--bg`, `--panel`,
+  `--line`, `--ink`, `--muted`, `--faint`, `--track`) siguen existiendo como
+  alias de esos roles para las reglas viejas; en lo nuevo van los roles.
+- El armazón es el de la guía: topbar de lado a lado arriba, barra lateral a la
+  izquierda y lienzo con pie. Lo pone `layouts/app`, así que una vista nueva no
+  tiene que armar nada: solo `@section('content')`, y `@section('banda')` si
+  quiere la franja de encabezado.
+- La barra lateral se pliega con una **cookie** (`SidebarController`), igual que
+  el tema: con un checkbox volvería a abrirse en cada navegación. El botón es un
+  `<form>` que postea, y `partials/instant-toggles` lo intercepta para mover la
+  clase en el acto y mandar ese mismo POST por atrás, así no hay recarga. Sin JS
+  el form sigue andando con su viaje al servidor. El botón de fondo claro/oscuro
+  usa ese mismo partial: los dos íconos viajan siempre en el HTML y el CSS
+  muestra el que corresponde al `data-theme`, así cambiarlo es cambiar un
+  atributo.
+- El checkbox queda solo para abrir la barra sobre el contenido en pantallas de
+  menos de 1024px, donde es algo de un momento y no una preferencia.
+- Plegada, los nombres siguen en el HTML: los esconde el CSS. El servidor manda
+  siempre lo mismo, y cada ítem lleva `title` y `aria-label` para cuando solo se
+  ve el ícono.
+- Los íconos son Lucide con trazo 1.5, todos en `<x-icon name="..." />`. No se
+  mezclan sets ni se suman emojis.
+- Un solo botón primario por pantalla: `btn` es el dorado y todo lo demás es
+  `btn btn-ghost`. Si una vista necesita dos, una de las dos no era la acción
+  principal.
+- Los números de las métricas nunca van pintados: el estado se distingue por la
+  etiqueta, no por el color de la cifra.

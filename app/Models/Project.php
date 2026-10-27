@@ -53,9 +53,28 @@ class Project extends Model
     }
 
     /** Las empresas ya cargadas, para el filtro y el autocompletado. */
-    public static function clientes(): \Illuminate\Support\Collection
+    /**
+     * El tablero del profesional externo son sus proyectos y nada mas. Va como
+     * scope y no como filtro en el controlador para que valga igual en el
+     * tablero, en los archivados, en los contadores y en la lista de empresas:
+     * si se olvidara en uno solo, ahi se filtra todo lo demas.
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        if ($user->isInternal()) {
+            return $query;
+        }
+
+        return $query->where(fn (Builder $q) => $q
+            ->where('owner_id', $user->id)
+            ->orWhereHas('collaborators', fn (Builder $c) => $c->whereKey($user->id)));
+    }
+
+    /** Para el filtro de empresas del tablero: solo las que esa persona ve. */
+    public static function clientes(User $user): \Illuminate\Support\Collection
     {
         return static::query()
+            ->visibleTo($user)
             ->whereNotNull('client')
             ->distinct()
             ->orderBy('client')

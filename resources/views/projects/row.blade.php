@@ -40,7 +40,7 @@
     <div class="acts">
         @php ($link = $project->primaryLink())
         @if ($link)
-            <a class="btn btn-sm" href="{{ $link->url }}" target="_blank" rel="noopener">URL</a>
+            <a class="btn btn-ghost btn-sm" href="{{ $link->url }}" target="_blank" rel="noopener">URL</a>
             @if ($project->links->count() > 1)
                 <span class="more-links">+{{ $project->links->count() - 1 }}</span>
             @endif

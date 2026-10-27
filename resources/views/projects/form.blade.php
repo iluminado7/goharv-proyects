@@ -94,15 +94,23 @@
         </div>
 
         <div class="row-2">
-            <div class="field">
-                <label for="owner_id">Responsable</label>
-                <select id="owner_id" name="owner_id">
-                    <option value="">Sin asignar</option>
-                    @foreach ($members as $m)
-                        <option value="{{ $m->id }}" @selected(old('owner_id', $project->owner_id) == $m->id)>{{ $m->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+            @can('delegate', $project)
+                <div class="field">
+                    <label for="owner_id">Responsable</label>
+                    <select id="owner_id" name="owner_id">
+                        <option value="">Sin asignar</option>
+                        @foreach ($members as $m)
+                            <option value="{{ $m->id }}" @selected(old('owner_id', $project->owner_id) == $m->id)>{{ $m->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @else
+                <div class="field">
+                    <label>Responsable</label>
+                    <p class="solo-lectura">{{ $project->owner?->name ?? 'Sin asignar' }}</p>
+                    <p class="hint">Lo define el equipo. Si hay que cambiarlo, pedíselo a quien te delegó el proyecto.</p>
+                </div>
+            @endcan
             <div class="field">
                 <label for="due_date">Fecha de entrega</label>
                 <input id="due_date" name="due_date" type="date"
@@ -110,6 +118,7 @@
             </div>
         </div>
 
+        @can('delegate', $project)
         <div class="field">
             <label>Quiénes más lo tocan</label>
             <p class="hint">Además del responsable. Los marcados pueden editarlo y moverlo de estado.</p>
@@ -134,6 +143,7 @@
             </div>
             @error('collaborators.*') <p class="err">{{ $message }}</p> @enderror
         </div>
+        @endcan
 
         <div class="form-acts">
             @if ($project->exists && auth()->user()->can('delete', $project))

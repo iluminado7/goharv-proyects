@@ -26,7 +26,7 @@
                         @csrf
                         <label for="avatar" class="sr-only">Foto de perfil</label>
                         <input id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/webp" required>
-                        <button class="btn btn-sm">Subir</button>
+                        <button class="btn btn-ghost btn-sm">Subir</button>
                     </form>
 
                     @if ($user->hasAvatar())
@@ -91,7 +91,7 @@
         <p class="hint">Mínimo 8 caracteres.</p>
 
         <div class="form-acts">
-            <button class="btn">Cambiar clave</button>
+            <button class="btn btn-ghost">Cambiar clave</button>
         </div>
     </form>
 

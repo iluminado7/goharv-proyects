@@ -29,6 +29,7 @@ class ProjectController extends Controller
         $sort    = $request->string('sort', 'prioridad')->toString();
 
         $projects = Project::with(['owner', 'links'])
+            ->visibleTo($request->user())
             ->filtered($filters)
             ->sorted($sort)
             ->paginate(self::PER_PAGE)
@@ -37,7 +38,8 @@ class ProjectController extends Controller
         // Los contadores se calculan con todos los filtros MENOS el de estado:
         // asi el numero de cada estado no cambia al pararse sobre uno, que es
         // lo que permite saltar de un estado a otro sin perder la referencia.
-        $sinEstado = Project::filtered(collect($filters)->except('status')->all());
+        $sinEstado = Project::visibleTo($request->user())
+            ->filtered(collect($filters)->except('status')->all());
 
         $counts = (clone $sinEstado)
             ->selectRaw('status, count(*) as total')
@@ -48,13 +50,13 @@ class ProjectController extends Controller
             'projects'   => $projects,
             'counts'     => $counts,
             'total'      => (clone $sinEstado)->count(),
-            'archivados' => Project::onlyTrashed()->count(),
+            'archivados' => Project::onlyTrashed()->visibleTo($request->user())->count(),
             'filters'    => $filters,
             'sort'       => $sort,
             'statuses'   => ProjectStatus::cases(),
             'priorities' => ProjectPriority::cases(),
             'members'    => $this->activeMembers(),
-            'empresas'   => Project::clientes(),
+            'empresas'   => Project::clientes($request->user()),
         ]);
     }
 
@@ -62,6 +64,7 @@ class ProjectController extends Controller
     public function archived(Request $request): View
     {
         $projects = Project::onlyTrashed()
+            ->visibleTo($request->user())
             ->with(['owner', 'links'])
             ->when($request->string('q')->toString(), fn ($q, $term) => $q->search($term))
             ->orderByDesc('deleted_at')
@@ -84,7 +87,7 @@ class ProjectController extends Controller
             'statuses'   => ProjectStatus::cases(),
             'priorities' => ProjectPriority::cases(),
             'members'    => $this->activeMembers(),
-            'empresas'   => Project::clientes(),
+            'empresas'   => Project::clientes($request->user()),
         ]);
     }
 
@@ -115,6 +118,8 @@ class ProjectController extends Controller
 
     public function show(Project $project): View
     {
+        $this->authorize('view', $project);
+
         $project->load(['owner', 'collaborators', 'links', 'updates.author', 'tasks.assignees']);
 
         return view('projects.show', [
@@ -126,7 +131,7 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function edit(Project $project): View
+    public function edit(Request $request, Project $project): View
     {
         $this->authorize('update', $project);
 
@@ -136,7 +141,7 @@ class ProjectController extends Controller
             'statuses'   => ProjectStatus::cases(),
             'priorities' => ProjectPriority::cases(),
             'members'    => $this->activeMembers(),
-            'empresas'   => Project::clientes(),
+            'empresas'   => Project::clientes($request->user()),
         ]);
     }
 
@@ -158,6 +163,14 @@ class ProjectController extends Controller
             unset($data['priority']);
         }
 
+        // Y lo mismo con mover gente: el externo gestiona su proyecto, pero
+        // no decide quien mas entra ni a quien se lo pasa.
+        $puedeDelegar = $request->user()->can('delegate', $project);
+
+        if (! $puedeDelegar) {
+            unset($data['owner_id']);
+        }
+
         $project->update($data);
 
         if ($project->priority !== $prioridadAnterior) {
@@ -166,7 +179,9 @@ class ProjectController extends Controller
                 detail: $prioridadAnterior->label().' → '.$project->priority->label(),
             );
         }
-        $sync = $project->collaborators()->sync($request->input('collaborators', []));
+        $sync = $puedeDelegar
+            ? $project->collaborators()->sync($request->input('collaborators', []))
+            : ['attached' => []];
         $project->syncLinks($request->input('links', []));
 
         $this->avisarAsignaciones($project, $request->user(), $sync['attached'], $duenioAnterior);
@@ -369,8 +384,17 @@ class ProjectController extends Controller
         Notification::send($nuevos, new ProjectEvent(NotificationType::TeSumaron, $project, $actor));
     }
 
+    /**
+     * Para elegir responsable, colaboradores o filtrar el tablero. Al externo
+     * no se le manda: no puede sumar a nadie, y la lista del equipo es
+     * justamente lo que no tiene por que ver.
+     */
     private function activeMembers()
     {
+        if (! auth()->user()?->isInternal()) {
+            return collect();
+        }
+
         return User::where('is_active', true)->orderBy('name')->get();
     }
 

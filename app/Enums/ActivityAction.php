@@ -57,21 +57,21 @@ enum ActivityAction: string
     public function color(): string
     {
         if ($this->esFallo()) {
-            return '#E05C4B';
+            return 'var(--error)';
         }
 
         return match ($this) {
-            self::ProyectoEliminado  => '#E05C4B',
-            self::Ingreso            => '#4FA97C',
-            self::ProyectoCreado     => '#4FA97C',
-            self::EstadoCambiado     => '#E0A33E',
-            self::PrioridadCambiada  => '#E0A33E',
-            self::TareaCompletada    => '#4FA97C',
-            self::TareaEliminada     => '#E05C4B',
-            self::TareaReabierta     => '#E0A33E',
-            self::ProyectoArchivado  => '#7E838C',
-            self::Salida             => '#7E838C',
-            default                  => '#6BA5E7',
+            self::ProyectoEliminado  => 'var(--error)',
+            self::Ingreso            => 'var(--success)',
+            self::ProyectoCreado     => 'var(--success)',
+            self::EstadoCambiado     => 'var(--warning)',
+            self::PrioridadCambiada  => 'var(--warning)',
+            self::TareaCompletada    => 'var(--success)',
+            self::TareaEliminada     => 'var(--error)',
+            self::TareaReabierta     => 'var(--warning)',
+            self::ProyectoArchivado  => 'var(--text-muted)',
+            self::Salida             => 'var(--text-muted)',
+            default                  => 'var(--accent)',
         };
     }
 

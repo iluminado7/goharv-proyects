@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Controllers\SidebarController;
 use App\Http\Controllers\ThemeController;
 use Illuminate\Support\Facades\View;
 use Illuminate\Validation\Rules\Password;
@@ -28,7 +29,8 @@ class AppServiceProvider extends ServiceProvider
 
         // El fondo elegido lo necesitan las dos plantillas, la del panel y la del login.
         View::composer('*', function ($view) {
-            $view->with('tema', ThemeController::current(request()));
+            $view->with('tema', ThemeController::current(request()))
+                 ->with('barra', SidebarController::current(request()));
         });
     }
 }

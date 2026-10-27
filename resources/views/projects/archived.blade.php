@@ -43,7 +43,7 @@
                     @can('restore', $project)
                         <form method="POST" action="{{ route('projects.restore', $project) }}">
                             @csrf @method('PATCH')
-                            <button class="btn btn-sm">Restaurar</button>
+                            <button class="btn btn-ghost btn-sm">Restaurar</button>
                         </form>
                     @endcan
                     @can('forceDelete', $project)

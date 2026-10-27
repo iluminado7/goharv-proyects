@@ -229,16 +229,34 @@ archivarlo alcanza.
 
 ## Quién puede qué
 
-Hay dos tipos de cuenta.
+Hay tres tipos de cuenta.
 
 **Responsable del panel.** Administra el equipo: suma gente, cambia permisos y da
 de baja cuentas. Además puede editar, mover, archivar y borrar cualquier
 proyecto, participe o no.
 
-**Miembro.** Ve todo el tablero, pero solo modifica los proyectos donde está
+**Socio.** Ve todo el tablero, pero solo modifica los proyectos donde está
 metido.
 
-Para un miembro, lo que puede hacer depende de su relación con cada proyecto:
+**Profesional externo.** Gente de afuera a la que le encargamos un trabajo: un
+estudio contable, un diseñador, un instalador. No es del equipo. Solo ve los
+proyectos que un responsable o un socio le delegó —el tablero, los contadores,
+los archivados y el buscador le muestran esos y nada más— y no entra a **Equipo**
+ni a **Actividad**.
+
+Adentro de un proyecto suyo trabaja como cualquiera: mueve el estado, carga y
+completa tareas, deja notas, edita los datos y los enlaces. Si además quedó como
+responsable de ese proyecto, también cambia la prioridad y lo archiva.
+
+Lo que nunca puede hacer: **crear proyectos** y **mover gente**. No suma
+colaboradores ni le pasa el proyecto a otra persona, porque quién más entra lo
+decide el equipo. Tampoco ve la lista del equipo en ningún formulario.
+
+> Para delegarle un proyecto, un responsable o un socio lo pone como responsable
+> del proyecto o lo marca como colaborador en *Editar*. Desde ese momento le
+> aparece en su tablero.
+
+Para un socio, lo que puede hacer depende de su relación con cada proyecto:
 
 | | Es el responsable | Es colaborador | No participa |
 |---|---|---|---|
@@ -250,11 +268,14 @@ Para un miembro, lo que puede hacer depende de su relación con cada proyecto:
 | Archivar y restaurar | Sí | No | No |
 | Borrar para siempre | No | No | No |
 
-**Crear proyectos lo puede hacer cualquiera.**
+**Crear proyectos lo puede hacer cualquiera del equipo**, no el profesional
+externo.
 
-Dos detalles: todos pueden **ver** todo —el panel no esconde proyectos— y todos
-pueden **comentar** en cualquier proyecto, porque un comentario no cambia nada y
-sirve para avisar algo sin tener que pedir que te sumen.
+Dos detalles, y valen para el equipo: entre nosotros todos pueden **ver** todo
+—el panel no esconde proyectos— y todos pueden **comentar** en cualquier
+proyecto, porque un comentario no cambia nada y sirve para avisar algo sin tener
+que pedir que te sumen. Para el profesional externo las dos cosas se limitan a
+sus proyectos.
 
 ---
 

@@ -18,7 +18,7 @@
             <a class="tally-item {{ $activo ? 'on' : '' }}"
                href="{{ route('projects.index', array_merge($sinEstado, ['status' => $s->value])) }}"
                @if ($activo) aria-current="true" @endif>
-                <span class="n" style="color:{{ $s->color() }}">{{ $counts[$s->value] ?? 0 }}</span>
+                <span class="n">{{ $counts[$s->value] ?? 0 }}</span>
                 <span class="l">{{ mb_strtolower($s->label()) }}</span>
             </a>
         @endforeach
@@ -35,12 +35,14 @@
                 @endforeach
             </select>
         @endif
-        <select name="owner" onchange="this.form.submit()">
-            <option value="">Todo el equipo</option>
-            @foreach ($members as $m)
-                <option value="{{ $m->id }}" @selected(($filters['owner'] ?? null) == $m->id)>{{ $m->name }}</option>
-            @endforeach
-        </select>
+        @if ($members->isNotEmpty())
+            <select name="owner" onchange="this.form.submit()">
+                <option value="">Todo el equipo</option>
+                @foreach ($members as $m)
+                    <option value="{{ $m->id }}" @selected(($filters['owner'] ?? null) == $m->id)>{{ $m->name }}</option>
+                @endforeach
+            </select>
+        @endif
         <select name="sort" onchange="this.form.submit()">
             <option value="prioridad" @selected($sort === 'prioridad')>Ordenar por prioridad</option>
             <option value="estado"    @selected($sort === 'estado')>Ordenar por estado</option>
@@ -49,7 +51,9 @@
         </select>
         <input type="hidden" name="status" value="{{ $filters['status'] ?? '' }}">
         <button class="btn btn-ghost">Buscar</button>
-        <a class="btn" href="{{ route('projects.create') }}">Agregar proyecto</a>
+        @can('create', App\Models\Project::class)
+            <a class="btn" href="{{ route('projects.create') }}">Agregar proyecto</a>
+        @endcan
     </form>
 
     <div class="chips">
@@ -66,8 +70,12 @@
             @include('projects.row', ['project' => $project])
         @empty
             <div class="empty">
-                <p>{{ request()->hasAny(['q','status','owner']) ? 'Ningún proyecto coincide con ese filtro.' : 'Todavía no hay proyectos cargados. Empezá por el que más te apura.' }}</p>
-                <a class="btn" href="{{ route('projects.create') }}">Agregar proyecto</a>
+                @can('create', App\Models\Project::class)
+                    <p>{{ request()->hasAny(['q','status','owner']) ? 'Ningún proyecto coincide con ese filtro.' : 'Todavía no hay proyectos cargados. Empezá por el que más te apura.' }}</p>
+                    <a class="btn" href="{{ route('projects.create') }}">Agregar proyecto</a>
+                @else
+                    <p>{{ request()->hasAny(['q','status','owner']) ? 'Ningún proyecto coincide con ese filtro.' : 'Todavía no te delegaron ningún proyecto.' }}</p>
+                @endcan
             </div>
         @endforelse
     </div>

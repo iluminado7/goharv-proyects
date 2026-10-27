@@ -31,12 +31,12 @@ enum NotificationType: string
     public function color(): string
     {
         return match ($this) {
-            self::TeAsignaron  => '#E0A33E',
-            self::TeSumaron    => '#6BA5E7',
-            self::Comentario   => '#4FA97C',
-            self::CambioEstado => '#A585D8',
-            self::TareaAsignada => '#E0A33E',
-            self::TareaHecha    => '#4FA97C',
+            self::TeAsignaron  => 'var(--warning)',
+            self::TeSumaron    => 'var(--accent)',
+            self::Comentario   => 'var(--success)',
+            self::CambioEstado => 'var(--accent)',
+            self::TareaAsignada => 'var(--warning)',
+            self::TareaHecha    => 'var(--success)',
         };
     }
 }

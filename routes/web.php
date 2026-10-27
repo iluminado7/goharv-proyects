@@ -6,12 +6,14 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SidebarController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\ThemeController;
 use Illuminate\Support\Facades\Route;
 
 // Fuera de 'auth': el fondo tambien se cambia desde la pantalla de ingreso.
 Route::post('/tema', [ThemeController::class, 'toggle'])->name('theme.toggle');
+Route::post('/barra', [SidebarController::class, 'toggle'])->name('sidebar.toggle');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
@@ -85,7 +87,8 @@ Route::middleware('auth')->group(function () {
         ->name('profile.password');
 
     // La lista la ve todo el equipo: sirve para saber a quien pedirle algo.
-    Route::get('/equipo', [MemberController::class, 'index'])->name('members.index');
+    Route::get('/equipo', [MemberController::class, 'index'])
+        ->middleware('interno')->name('members.index');
 
     // Sumar gente, cambiar permisos y dar de baja siguen siendo de admins.
     Route::middleware('admin')->group(function () {

@@ -41,6 +41,12 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => ['role' => 'admin']);
     }
 
+    /** Profesional externo: solo entra a los proyectos que le delegan. */
+    public function external(): static
+    {
+        return $this->state(fn (array $attributes) => ['role' => 'external']);
+    }
+
     /** Cuenta dada de baja. */
     public function inactive(): static
     {
