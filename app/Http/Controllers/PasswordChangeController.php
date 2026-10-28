@@ -48,6 +48,6 @@ class PasswordChangeController extends Controller
 
         return redirect()
             ->route('projects.index')
-            ->with('ok', 'Listo, ya es tuya. Bienvenido al panel.');
+            ->with('ok', 'Listo. Bienvenido al panel.');
     }
 }

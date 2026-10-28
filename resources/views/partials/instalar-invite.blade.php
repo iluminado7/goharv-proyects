@@ -9,10 +9,9 @@
      forma de instalar es Compartir > Agregar a pantalla de inicio. Ahi el
      dialogo explica el paso en vez de mentir con un boton que no hace nada. --}}
 <dialog class="ofrecer" data-instalar>
-    <h2 class="ofrecer-titulo">¿Instalás el panel?</h2>
+    <h2 class="ofrecer-titulo">¿Desea instalar la app?</h2>
     <p class="ofrecer-texto" data-instalar-texto>
-        Queda con su ícono junto al resto de tus aplicaciones y abre a pantalla
-        completa, sin la barra del navegador.
+        Instale la aplicacion y acceda desde su movil.
     </p>
     <p class="hint" data-instalar-pasos hidden></p>
 
