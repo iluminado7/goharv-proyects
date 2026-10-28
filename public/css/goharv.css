@@ -514,3 +514,10 @@ h2.section{font-family:var(--fuente-titulo);font-weight:700;font-size:22px;line-
 .ofrecer-texto{margin:0 0 12px;color:var(--muted);font-size:14.5px;line-height:1.6}
 .ofrecer .hint{margin:0}
 .ofrecer-acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:22px}
+
+/* Texto que hay que copiar tal cual: ni mayusculas ni ligaduras ni nada que
+   lo muestre distinto de como esta guardado. */
+.copiar-exacto{margin:0 0 10px;padding:9px 12px;background:var(--accent-soft);
+  border-left:3px solid var(--accent);font-family:'Courier New',Courier,monospace;
+  font-size:15px;color:var(--ink);text-transform:none;word-break:break-word;
+  -webkit-user-select:all;user-select:all}

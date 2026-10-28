@@ -13,6 +13,7 @@
 </head>
 <body class="{{ $barra === 'angosta' ? 'barra-angosta' : '' }}">
 @auth
+    @include('partials.instalar-invite')
     @if (\App\Support\Avisos::hayPush())
         @include('partials.push-core')
     @endif

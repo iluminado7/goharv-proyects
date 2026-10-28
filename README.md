@@ -19,6 +19,14 @@ intentos fallidos por minuto y bloqueo de cuentas dadas de baja. Tres roles:
 *profesional externo*, que solo ve los proyectos que le delegaron y no entra ni
 a Equipo ni a Actividad.
 
+**Ofrecimiento de instalar.** Una vez por dispositivo, al entrar. En Android y
+escritorio usa `beforeinstallprompt` y muestra un botón real; en iPhone ese
+evento no existe, así que el cartel explica el paso manual. El oyente se
+registra antes del encabezado porque el evento se dispara apenas el navegador
+decide y, si nadie escucha, se pierde. Nunca se muestran dos carteles a la vez:
+`window.ghDialogo` hace que instalar y notificaciones se turnen, y el que no
+alcanza no se marca como ofrecido.
+
 **Avisos en el celular.** Notificaciones push web, los mismos tres avisos que
 el correo. Cada dispositivo es una suscripción aparte y se activa desde *Mi
 perfil*, y el panel lo ofrece una vez por dispositivo la primera vez que

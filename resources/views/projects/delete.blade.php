@@ -29,8 +29,17 @@
             @csrf @method('DELETE')
 
             <div class="field">
-                <label for="confirmacion">Escribí <strong>{{ $project->name }}</strong> para confirmar</label>
-                <input id="confirmacion" name="confirmacion" autocomplete="off" required>
+                <label for="confirmacion">Escribí el nombre del proyecto para confirmar</label>
+
+                {{-- El nombre va afuera de la etiqueta y con su propia clase:
+                     las etiquetas del panel van en mayúsculas, y acá hay que
+                     copiar el texto exacto. Mostrarlo transformado es pedir
+                     que adivinen y que el panel conteste «no coincide» sin
+                     manera de saber por qué. --}}
+                <p class="copiar-exacto">{{ $project->name }}</p>
+
+                <input id="confirmacion" name="confirmacion" autocomplete="off"
+                       autocapitalize="off" autocorrect="off" spellcheck="false" required>
                 @error('confirmacion') <p class="err">{{ $message }}</p> @enderror
             </div>
 

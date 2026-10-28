@@ -57,6 +57,10 @@
                 return;
             }
 
+            // Un solo cartel por carga: si el de instalar se adelanto, este
+            // espera a la proxima en vez de encimarse.
+            if (window.ghDialogo && ! window.ghDialogo.tomar()) return;
+
             dialogo.showModal();
 
             dialogo.querySelector('[data-push-no]').addEventListener('click', cerrar);

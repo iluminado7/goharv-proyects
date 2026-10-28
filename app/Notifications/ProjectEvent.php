@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Support\Avisos;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
 use NotificationChannels\WebPush\WebPushMessage;
 
 /**
@@ -41,8 +42,14 @@ class ProjectEvent extends Notification
 
         // Los tres canales llevan los mismos avisos: lo que merece sacarte del
         // panel merece sacarte del panel, por donde sea que estés mirando.
+        //
+        // Va la clase y no el string 'webpush': el paquete no registra ese
+        // alias, solo prepara las dependencias de la clase. Laravel resuelve
+        // un canal por nombre de clase cuando no conoce el nombre corto, y
+        // con el alias inventado tiraba «Driver not supported» —que Avisos se
+        // tragaba, asi que no llegaba nada y no se veia ningun error.
         if (Avisos::hayPush()) {
-            $canales[] = 'webpush';
+            $canales[] = WebPushChannel::class;
         }
 
         return $canales;

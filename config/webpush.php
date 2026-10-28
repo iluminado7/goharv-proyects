@@ -9,7 +9,13 @@ return [
      * These keys must be safely stored and should not change.
      */
     'vapid' => [
-        'subject' => env('VAPID_SUBJECT', env('APP_URL')),
+        /*
+         * Quien manda, para que Google y Apple sepan a quien reclamarle si
+         * algo sale mal. Tiene que ser mailto: o https://; con un
+         * http://localhost —que es lo que da APP_URL en desarrollo— el envio
+         * se rechaza. Por eso el respaldo es el correo del panel y no la URL.
+         */
+        'subject' => env('VAPID_SUBJECT') ?: 'mailto:'.env('MAIL_FROM_ADDRESS', 'panel@goharv.com.ar'),
         'public_key' => env('VAPID_PUBLIC_KEY'),
         'private_key' => env('VAPID_PRIVATE_KEY'),
         'pem_file' => env('VAPID_PEM_FILE'),

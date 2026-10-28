@@ -297,6 +297,21 @@ Además del aviso en la campana, te llega un mail cuando algo pasa a ser tuyo:
 Las notas, los cambios de estado y las tareas que otro completó **no** mandan
 correo: están en la campana. Si mandaran mail, en una semana nadie los leería.
 
+### Instalar el panel en el celular
+
+La primera vez que entrás, el panel te ofrece instalarse. Queda con su ícono
+junto al resto de tus apps y abre a pantalla completa, sin la barra del
+navegador. No ocupa casi nada: es el mismo sitio, no una descarga.
+
+En **Android** alcanza con tocar *Instalar*. En **iPhone** hay que hacerlo a
+mano —Apple no deja automatizarlo—: tocá Compartir y elegí *Agregar a pantalla
+de inicio*. El cartel te lo recuerda.
+
+Si decís que no, no vuelve a aparecer. Lo podés hacer igual cuando quieras
+desde el menú del navegador.
+
+> En iPhone, instalarlo es **obligatorio** si querés recibir avisos. Ver abajo.
+
 ### Avisos en el celular
 
 La primera vez que entrás después de esta actualización, el panel te pregunta

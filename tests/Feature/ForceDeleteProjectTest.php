@@ -125,4 +125,53 @@ class ForceDeleteProjectTest extends TestCase
             ->get(route('projects.archived'))
             ->assertDontSee('>Borrar</a>', escape: false);
     }
+
+    /**
+     * El nombre a copiar tiene que verse tal cual esta guardado.
+     *
+     * Estaba adentro de un <label>, y las etiquetas del panel van en
+     * mayusculas: se pedia copiar un texto cuya forma real no se podia leer.
+     * El panel contestaba «el nombre no coincide» sin manera de entender por
+     * que, sobre la unica accion que no se puede deshacer.
+     */
+    public function test_el_nombre_a_copiar_no_sale_transformado(): void
+    {
+        $admin   = User::factory()->admin()->create();
+        $project = Project::factory()->create(['name' => 'Prueba notificaciones']);
+        $project->delete();
+
+        $html = $this->actingAs($admin)
+            ->get(route('projects.delete.confirm', $project))
+            ->getContent();
+
+        // Fuera de la etiqueta, en el bloque que conserva el texto literal.
+        $this->assertStringContainsString(
+            '<p class="copiar-exacto">Prueba notificaciones</p>',
+            $html,
+        );
+        $this->assertStringNotContainsString(
+            '<label for="confirmacion">Escribí <strong>',
+            $html,
+        );
+    }
+
+    /** Lo que se ve es exactamente lo que el servidor espera recibir. */
+    public function test_copiar_lo_que_se_muestra_alcanza_para_borrar(): void
+    {
+        $admin   = User::factory()->admin()->create();
+        $project = Project::factory()->create(['name' => 'Prueba notificaciones']);
+        $project->delete();
+
+        $html = $this->actingAs($admin)
+            ->get(route('projects.delete.confirm', $project))
+            ->getContent();
+
+        preg_match('/<p class="copiar-exacto">(.*?)<\/p>/s', $html, $m);
+
+        $this->actingAs($admin)
+            ->delete(route('projects.force-destroy', $project), ['confirmacion' => html_entity_decode($m[1])])
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseMissing('projects', ['id' => $project->id]);
+    }
 }

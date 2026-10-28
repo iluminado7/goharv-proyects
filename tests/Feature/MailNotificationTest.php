@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Notifications\Bienvenida;
 use App\Notifications\ProjectEvent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Notifications\ChannelManager;
+use NotificationChannels\WebPush\WebPushChannel;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -20,6 +22,13 @@ use Tests\TestCase;
 class MailNotificationTest extends TestCase
 {
     use RefreshDatabase;
+
+    private function claveFalsa(int $bytes): string
+    {
+        $crudo = $bytes === 65 ? "".str_repeat("", 64) : str_repeat("", $bytes);
+
+        return rtrim(strtr(base64_encode($crudo), '+/', '-_'), '=');
+    }
 
     /**
      * Las claves VAPID se fijan a mano: si no, el resultado dependería de si
@@ -43,19 +52,49 @@ class MailNotificationTest extends TestCase
         }
     }
 
+    /**
+     * Que el canal exista de verdad.
+     *
+     * Comparar el array de via() contra los nombres que uno mismo escribio no
+     * prueba nada: si el nombre esta mal, el test pasa igual y el aviso nunca
+     * sale. Esto le pide a Laravel que resuelva cada canal, que es lo que
+     * hace al mandar. Con el string 'webpush' tiraba «Driver not supported»
+     * y Avisos se lo tragaba: no llegaba nada y no se veia ningun error.
+     */
+    public function test_los_canales_que_pide_via_existen_de_verdad(): void
+    {
+        // Claves con la forma que pide VAPID —65 bytes la publica, 32 la
+        // privada, en base64url— para que el canal llegue a construirse. No
+        // se manda nada: lo que se prueba es que Laravel sepa resolverlo.
+        config([
+            'webpush.vapid.public_key'  => $this->claveFalsa(65),
+            'webpush.vapid.private_key' => $this->claveFalsa(32),
+            'webpush.vapid.subject'     => 'mailto:panel@goharv.com.ar',
+        ]);
+
+        $canales = (new ProjectEvent(NotificationType::TeAsignaron, Project::factory()->create()))
+            ->via(User::factory()->make());
+
+        $manager = app(ChannelManager::class);
+
+        foreach ($canales as $canal) {
+            $this->assertNotNull($manager->driver($canal), $canal.' no se puede resolver');
+        }
+    }
+
     /** Los mismos tres van al celular cuando el push está configurado. */
     public function test_los_tres_tambien_van_al_celular(): void
     {
         foreach ([NotificationType::TeAsignaron, NotificationType::TeSumaron,
                   NotificationType::TareaAsignada] as $tipo) {
-            $this->assertSame(['database', 'mail', 'webpush'], $this->canales($tipo, true), $tipo->value);
+            $this->assertSame(['database', 'mail', WebPushChannel::class], $this->canales($tipo, true), $tipo->value);
         }
     }
 
     /** Sin claves VAPID el canal reventaría al construirse: no se suma. */
     public function test_sin_claves_vapid_no_se_intenta_el_push(): void
     {
-        $this->assertNotContains('webpush', $this->canales(NotificationType::TeAsignaron));
+        $this->assertNotContains(WebPushChannel::class, $this->canales(NotificationType::TeAsignaron));
     }
 
     public function test_los_informativos_tampoco_van_al_celular(): void

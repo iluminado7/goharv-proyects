@@ -142,6 +142,34 @@
             return estado;
         }
 
+        /*
+         * El navegador y el panel pueden quedar desalineados: si el guardado
+         * falla despues de suscribirse, queda una suscripcion que el panel no
+         * conoce. En ese estado todo dice «activadas» y no llega nada nunca,
+         * que es el peor de los casos porque no se nota.
+         *
+         * Al cargar se vuelve a mandar la que tenga el navegador. El panel la
+         * guarda con upsert, asi que repetirla no duplica nada y alcanza para
+         * que los dos lados vuelvan a coincidir solos.
+         */
+        function resincronizar() {
+            if (! soportado() || Notification.permission !== 'granted') return;
+
+            registroListo()
+                .then(function (registro) { return registro.pushManager.getSubscription(); })
+                .then(function (suscripcion) {
+                    if (! suscripcion) return;
+
+                    return avisarAlPanel(rutas.alta, 'POST', {
+                        endpoint: suscripcion.endpoint,
+                        keys: suscripcion.toJSON().keys,
+                    });
+                })
+                .catch(function () {});
+        }
+
+        resincronizar();
+
         return {
             soportado: soportado,
             alCambiar: function (cb) { document.addEventListener('gh:push', function (e) { cb(e.detail); }); },
