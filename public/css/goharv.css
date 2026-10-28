@@ -35,6 +35,11 @@
   --success:#2E6B47;--error:#A33A3A;--warning:#8A6A1F;
 }
 *{box-sizing:border-box}
+/* El navegador trae [hidden]{display:none}, pero cualquier regla de autor que
+   declare display le gana: .btn{display:inline-flex} dejaba visible un boton
+   escondido con boton.hidden = true, como un recuadro vacio. Esto hace que el
+   atributo valga siempre, que es lo que el HTML promete. */
+[hidden]{display:none!important}
 html,body{margin:0;padding:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--fuente-cuerpo);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -75,7 +80,6 @@ a{color:inherit;text-decoration:none}
 .barra .menu{display:flex;flex-direction:column;gap:2px;margin-top:10px}
 .barra-pie{margin-top:auto;padding-top:14px;border-top:1px solid var(--accent);
   display:flex;flex-direction:column;gap:2px}
-.barra form{display:block}
 
 /* Un solo aspecto para todo lo que se toca en la barra: enlaces y botones. */
 .barra-item{display:flex;align-items:center;gap:14px;width:100%;
@@ -262,7 +266,7 @@ a{color:inherit;text-decoration:none}
 .form-acts{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap}
 .form-acts .left{margin-right:auto}
 
-.flash{background:transparent;border:1px solid var(--success);color:var(--success);
+.flash{background: var(--success);border:1px solid var(--gh-white);color:var(--gh-white);
   padding:11px 15px;margin:18px 0;font-size:14px}
 
 .gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 20px}
@@ -332,7 +336,6 @@ p.page-sub{color:var(--muted);margin:0 0 24px;font-size:14px}
 /* Cuadro para encuadrar la foto. Lo arma el script; sin JS no existe. */
 .sin-scroll{overflow:hidden}
 .recorte-fondo{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.6)}
-.recorte-fondo[hidden]{display:none}
 .recorte-caja{background:var(--panel);border:1px solid var(--line);border-radius:0;padding:22px;max-width:380px;width:100%;max-height:100%;overflow:auto}
 .recorte-caja h2{margin:0 0 4px;font-family:var(--fuente-titulo);font-weight:600;font-size:19px}
 .recorte-caja .hint{margin:0 0 16px}
@@ -408,7 +411,16 @@ h2.section{font-family:var(--fuente-titulo);font-weight:700;font-size:22px;line-
 
   /* Fuera del flujo y corrida a la izquierda: entra deslizandose y nunca
      empuja el contenido, asi que no hay scroll horizontal de pagina. */
-  .barra{position:fixed;top:var(--topbar-h);left:0;bottom:0;height:auto;z-index:40;
+  /* Alto explicito en vez de top + bottom + height:auto. Lo segundo depende
+     de que el navegador resuelva la caja contenedora como la ventana, y en
+     celular eso se rompe con cualquier ancestro que tenga transform. Ademas
+     va en dvh: 100vh en el celular incluye la franja de la barra de
+     direcciones, que aparece y desaparece al scrollear, asi que el panel
+     quedaba mas alto o mas bajo que lo que se ve. La linea de vh queda
+     primero como respaldo para navegadores viejos, que ignoran la de dvh. */
+  .barra{position:fixed;top:var(--topbar-h);left:0;z-index:40;
+    height:calc(100vh - var(--topbar-h));
+    height:calc(100dvh - var(--topbar-h));
     width:var(--sidebar-w);transform:translateX(-100%);transition:transform .2s}
   .barra-angosta .barra{width:var(--sidebar-w)}
   .menu-switch:checked~.marco .barra{transform:none}
@@ -418,7 +430,10 @@ h2.section{font-family:var(--fuente-titulo);font-weight:700;font-size:22px;line-
   .barra-angosta .barra-txt{display:block}
   .barra-angosta .barra-yo .barra-txt{display:flex}
 
-  .barra-telon{position:fixed;inset:var(--topbar-h) 0 0;z-index:35;background:rgba(0,0,0,.5)}
+  .barra-telon{position:fixed;top:var(--topbar-h);left:0;right:0;z-index:35;
+    height:calc(100vh - var(--topbar-h));
+    height:calc(100dvh - var(--topbar-h));
+    background:rgba(0,0,0,.5)}
   .menu-switch:checked~.marco .barra-telon{display:block}
 }
 
@@ -484,9 +499,8 @@ h2.section{font-family:var(--fuente-titulo);font-weight:700;font-size:22px;line-
 .gh-footer{margin-top:48px;padding:22px 0;border-top:1px solid var(--accent)}
 
 /* --- Avisos en el dispositivo ------------------------------------------ */
-/* El bloque entero arranca oculto: lo muestra el script solo si el navegador
-   puede con las notificaciones. Sin JS no aparece y no se extraña nada. */
-.push-caja[hidden]{display:none}
+/* El bloque entero arranca oculto con el atributo hidden: lo muestra el
+   script solo si el navegador puede con las notificaciones. */
 .push-titulo{margin:0 0 6px;font-family:var(--fuente-titulo);font-weight:600;font-size:15px}
 .push-caja .hint{margin:0 0 14px;max-width:62ch}
 .push-caja .hint:last-child{margin:12px 0 0}

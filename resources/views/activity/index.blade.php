@@ -50,13 +50,13 @@
     <div class="card">
         @forelse ($activities as $a)
             <div class="log-fila">
-                <span class="log-punto" style="background:{{ $a->action->color() }}"></span>
+                <span class="log-punto" style="background:{{ $a->color() }}"></span>
 
                 <span class="log-cuerpo">
-                    <strong>{{ $a->action->label() }}</strong>
+                    <strong>{{ $a->etiqueta() }}</strong>
                     @if ($a->project)
                         · <a class="to-detail" href="{{ route('projects.show', $a->project) }}">{{ $a->project->name }}</a>
-                    @elseif ($a->subject && ! $a->action->esFallo())
+                    @elseif ($a->subject && ! $a->esFallo())
                         · {{ $a->subject }}
                     @endif
 

@@ -239,4 +239,44 @@ class ActivityLogTest extends TestCase
 
         $this->assertDatabaseHas('projects', ['name' => 'Se guarda igual']);
     }
+
+    /**
+     * Una fila con una accion que el enum ya no conoce no puede voltear la
+     * pantalla entera.
+     *
+     * Pasa de verdad: la bitacora guarda texto, el enum cambia, y basta una
+     * rama con una accion propia —o un renombre— para que queden filas
+     * huerfanas. Activity::anotar() ya tiene la regla de que un log roto
+     * nunca voltea la accion que lo origino; leerlo tiene que sostener lo
+     * mismo.
+     */
+    public function test_una_accion_desconocida_no_voltea_la_pantalla(): void
+    {
+        \Illuminate\Support\Facades\DB::table('activity_logs')->insert([
+            'action'     => 'algo_de_otra_rama',
+            'subject'    => 'Sir Sebastian Roses',
+            'detail'     => 'Quiero analizar mi empresa',
+            'created_at' => now(),
+        ]);
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->get(route('activity.index'))
+            ->assertOk()
+            // Se muestra tal cual en vez de esconderla: la bitacora esta para
+            // leerse, y un registro que no se entiende es mejor que ninguno.
+            ->assertSee('algo_de_otra_rama')
+            ->assertSee('Quiero analizar mi empresa');
+    }
+
+    public function test_una_accion_desconocida_no_cuenta_como_fallo(): void
+    {
+        \Illuminate\Support\Facades\DB::table('activity_logs')->insert([
+            'action' => 'algo_de_otra_rama', 'subject' => 'Alguien', 'created_at' => now(),
+        ]);
+
+        $log = Activity::latest('id')->firstOrFail();
+
+        $this->assertNull($log->action);
+        $this->assertSame('Alguien', $log->quien());
+    }
 }

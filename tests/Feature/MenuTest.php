@@ -60,6 +60,35 @@ class MenuTest extends TestCase
      * El rol vive al pie de la barra lateral, debajo del nombre, como pide la
      * Marca Madre. En la topbar va solo el avatar.
      */
+    /**
+     * Tocar la hamburguesa dispara dos clics: el del <label> y otro que arma
+     * el navegador sobre el <input>. El segundo tambien burbujea, y como el
+     * checkbox es hermano del topbar —no esta adentro de la barra— el script
+     * que cierra al tocar afuera lo tomaba como "clic afuera" y cerraba el
+     * menu en el mismo toque. Igual el telon, que es otro label del mismo
+     * checkbox: cerrarlo es trabajo suyo, no del script.
+     */
+    public function test_el_script_no_cierra_el_menu_al_abrirlo(): void
+    {
+        $html = $this->actingAs(User::factory()->create())
+            ->get(route('projects.index'))
+            ->getContent();
+
+        foreach (['nodo === menu', 'abridor.contains(nodo)', 'telon.contains(nodo)'] as $parte) {
+            $this->assertStringContainsString($parte, $html, 'Falta contemplar: '.$parte);
+        }
+    }
+
+    public function test_el_telon_y_la_hamburguesa_apuntan_al_mismo_checkbox(): void
+    {
+        $html = $this->actingAs(User::factory()->create())
+            ->get(route('projects.index'))
+            ->getContent();
+
+        $this->assertSame(2, substr_count($html, 'for="abrir-menu"'));
+        $this->assertStringContainsString('id="abrir-menu"', $html);
+    }
+
     public function test_el_rol_va_al_pie_de_la_barra_y_tambien_en_el_perfil(): void
     {
         $miembro = User::factory()->create();

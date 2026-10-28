@@ -49,7 +49,8 @@
         }
 
         window.ghPush.estado().then(function (estado) {
-            // A quien ya los tiene, o los bloqueó, no hay nada que ofrecerle.
+            // A quien ya los tiene, los bloqueó, o cuyo navegador no llegó a
+            // registrar el service worker, no hay nada que ofrecerle.
             if (estado !== 'inactivo') {
                 recordar();
 

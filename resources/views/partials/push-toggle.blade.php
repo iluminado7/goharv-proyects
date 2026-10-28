@@ -48,6 +48,16 @@
         caja.hidden = false;
 
         function pintar(estado) {
+            if (estado === 'sin-soporte') {
+                boton.hidden = true;
+                decir(
+                    'No se pudieron activar en este dispositivo.',
+                    'Probá recargar la página. Si sigue igual, puede ser que el navegador tenga bloqueado el almacenamiento del sitio.'
+                );
+
+                return;
+            }
+
             if (estado === 'bloqueado') {
                 boton.hidden = true;
                 decir(
@@ -68,6 +78,10 @@
         }
 
         window.ghPush.estado().then(pintar);
+
+        // Si se activan desde el ofrecimiento de la primera vez, el botón se
+        // entera: los dos tocan lo mismo y no pueden decir cosas distintas.
+        window.ghPush.alCambiar(pintar);
 
         boton.addEventListener('click', function () {
             boton.disabled = true;

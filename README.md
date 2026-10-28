@@ -450,6 +450,14 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   (`--fuente-cuerpo`)—, el dorado `#BFAE76` como único acento, `border-radius: 0`
   en todo salvo los avatares y el punto de estado, y nada de sombras ni
   gradientes: lo que separa son bordes de 1px.
+- **Para esconder algo, el selector va con una sola clase.** Dos veces se
+  escapó un elemento visible por especificidad, no por orden: `.btn` declara
+  `display:inline-flex` y le ganaba al `[hidden]` del navegador, y
+  `.barra form` (una clase + un elemento, 0-1-1) le ganaba al
+  `.barra-plegar{display:none}` del celular (0-1-0). Las media queries **no**
+  suman especificidad, así que estar más abajo en el archivo no alcanza. Hoy
+  `[hidden]{display:none!important}` cubre el caso del atributo; para el resto,
+  nada de `display` en selectores del tipo `.clase elemento`.
 - Los colores salen de los roles de la guía (`--text`, `--text-muted`, `--label`,
   `--accent`, `--accent-soft`, `--surface`, `--border`, `--success`, `--error`,
   `--warning`), nunca de un hex suelto. Los nombres cortos (`--bg`, `--panel`,

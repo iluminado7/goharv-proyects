@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\AccionDeBitacora;
 use App\Enums\ActivityAction;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,7 +24,7 @@ class Activity extends Model
     protected function casts(): array
     {
         return [
-            'action'     => ActivityAction::class,
+            'action'     => AccionDeBitacora::class,
             'created_at' => 'datetime',
         ];
     }
@@ -90,8 +91,32 @@ class Activity extends Model
             return $this->user->name;
         }
 
-        return $this->action->esFallo() && $this->subject
+        return $this->esFallo() && $this->subject
             ? $this->subject
             : 'Alguien';
+    }
+
+    /*
+     * Los tres de abajo son para la pantalla. Cada uno tiene que aguantar que
+     * action sea null, que es lo que devuelve el cast cuando la fila trae un
+     * valor que el enum ya no conoce.
+     */
+
+    /** Lo que se lee. Si el enum no lo conoce, el texto crudo de la columna. */
+    public function etiqueta(): string
+    {
+        return $this->action?->label()
+            ?? (string) ($this->attributes['action'] ?? 'Sin acción');
+    }
+
+    public function color(): string
+    {
+        return $this->action?->color() ?? 'var(--text-muted)';
+    }
+
+    /** Lo desconocido no se pinta de rojo: no sabemos si salió mal. */
+    public function esFallo(): bool
+    {
+        return $this->action?->esFallo() ?? false;
     }
 }

@@ -255,6 +255,20 @@ class PushSubscriptionTest extends TestCase
             ->assertDontSee('data-push-invite', escape: false);
     }
 
+    /**
+     * El atributo hidden tiene que ganar siempre.
+     *
+     * El navegador trae [hidden]{display:none}, pero cualquier regla de autor
+     * que declare display le gana: .btn{display:inline-flex} dejaba visible
+     * un botón escondido desde JS, como un recuadro vacío que no respondía.
+     */
+    public function test_el_css_hace_valer_el_atributo_hidden(): void
+    {
+        $css = file_get_contents(public_path('css/goharv.css'));
+
+        $this->assertStringContainsString('[hidden]{display:none!important}', $css);
+    }
+
     /** La clave privada no puede salir nunca del servidor. */
     public function test_la_clave_privada_no_llega_al_navegador(): void
     {

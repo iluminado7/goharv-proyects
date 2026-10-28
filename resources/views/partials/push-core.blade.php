@@ -36,6 +36,12 @@
             return bytes;
         }
 
+        /**
+         * fetch() solo rechaza si no hubo red: un 500 o un 422 le parecen
+         * respuestas perfectamente validas. Sin este chequeo el panel podia
+         * contestar que no y el boton igual decia «activados» — que es
+         * exactamente lo que paso cuando faltaba la tabla de suscripciones.
+         */
         function avisarAlPanel(url, metodo, cuerpo) {
             var token = document.querySelector('meta[name=csrf-token]');
 
@@ -43,20 +49,41 @@
                 method: metodo,
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': token ? token.content : '',
                 },
                 credentials: 'same-origin',
                 body: JSON.stringify(cuerpo),
+            }).then(function (respuesta) {
+                if (! respuesta.ok) throw new Error('el panel respondio ' + respuesta.status);
+
+                return respuesta;
             });
         }
 
-        /** 'bloqueado' | 'activo' | 'inactivo' */
+        /**
+         * serviceWorker.ready no resuelve nunca si el service worker no llego
+         * a registrarse: no falla, se queda esperando para siempre. Sin este
+         * limite la tarjeta de Mi perfil quedaba visible pero vacia y sin
+         * boton, sin un solo error en consola.
+         */
+        function registroListo() {
+            return Promise.race([
+                navigator.serviceWorker.ready,
+                new Promise(function (_, rechazar) {
+                    setTimeout(function () { rechazar(new Error('sin service worker')); }, 5000);
+                }),
+            ]);
+        }
+
+        /** 'bloqueado' | 'activo' | 'inactivo' | 'sin-soporte' */
         function estado() {
             if (Notification.permission === 'denied') return Promise.resolve('bloqueado');
 
-            return navigator.serviceWorker.ready
+            return registroListo()
                 .then(function (registro) { return registro.pushManager.getSubscription(); })
-                .then(function (suscripcion) { return suscripcion ? 'activo' : 'inactivo'; });
+                .then(function (suscripcion) { return suscripcion ? 'activo' : 'inactivo'; })
+                .catch(function () { return 'sin-soporte'; });
         }
 
         /**
@@ -66,9 +93,9 @@
          */
         function activar() {
             return Notification.requestPermission().then(function (permiso) {
-                if (permiso !== 'granted') return permiso === 'denied' ? 'bloqueado' : 'inactivo';
+                if (permiso !== 'granted') return avisarCambio(permiso === 'denied' ? 'bloqueado' : 'inactivo');
 
-                return navigator.serviceWorker.ready.then(function (registro) {
+                return registroListo().then(function (registro) {
                     return registro.pushManager.subscribe({
                         userVisibleOnly: true,
                         applicationServerKey: aBytes(clave),
@@ -77,27 +104,47 @@
                     return avisarAlPanel(rutas.alta, 'POST', {
                         endpoint: nueva.endpoint,
                         keys: nueva.toJSON().keys,
+                    }).then(function () {
+                        return avisarCambio('activo');
+                    }).catch(function (e) {
+                        // El navegador quedo suscripto pero el panel no se
+                        // entero. Sin deshacerlo, al recargar diria que estan
+                        // activadas y no llegaria nunca nada.
+                        return nueva.unsubscribe().then(function () { throw e; });
                     });
-                }).then(function () { return 'activo'; });
+                });
             });
         }
 
         function desactivar() {
-            return navigator.serviceWorker.ready
+            return registroListo()
                 .then(function (registro) { return registro.pushManager.getSubscription(); })
                 .then(function (suscripcion) {
-                    if (!suscripcion) return 'inactivo';
+                    if (!suscripcion) return avisarCambio('inactivo');
 
                     var endpoint = suscripcion.endpoint;
 
                     return suscripcion.unsubscribe()
                         .then(function () { return avisarAlPanel(rutas.baja, 'DELETE', {endpoint: endpoint}); })
-                        .then(function () { return 'inactivo'; });
+                        .then(function () { return avisarCambio('inactivo'); });
                 });
+        }
+
+        /*
+         * En Mi perfil conviven el boton y el ofrecimiento de la primera vez,
+         * y los dos cambian lo mismo. Sin esto, activar desde el dialogo
+         * dejaba al boton diciendo «Activar» sobre algo ya activo: tocarlo lo
+         * apagaba, y parecia que hacia lo contrario de lo que decia.
+         */
+        function avisarCambio(estado) {
+            document.dispatchEvent(new CustomEvent('gh:push', { detail: estado }));
+
+            return estado;
         }
 
         return {
             soportado: soportado,
+            alCambiar: function (cb) { document.addEventListener('gh:push', function (e) { cb(e.detail); }); },
             esIphoneSinInstalar: esIphoneSinInstalar,
             estado: estado,
             activar: activar,
