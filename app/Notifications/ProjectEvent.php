@@ -64,8 +64,12 @@ class ProjectEvent extends Notification
         return (new WebPushMessage)
             ->title($this->tipo->label())
             ->body($this->project->name.($this->detalle ? ' · '.$this->detalle : ''))
+            // El icono grande va a color; el badge NO. Android se queda solo
+            // con el canal alfa del badge y lo pinta de un color solido, asi
+            // que tiene que ser una silueta sobre fondo transparente: con un
+            // PNG opaco se veia un cuadrado blanco en la barra de estado.
             ->icon(asset('icons/icon-192.png'))
-            ->badge(asset('icons/icon-192.png'))
+            ->badge(asset('icons/badge-96.png'))
             // Un aviso por proyecto: si llegan tres seguidos del mismo, se
             // pisan en vez de apilarse.
             ->tag('proyecto-'.$this->project->getKey())

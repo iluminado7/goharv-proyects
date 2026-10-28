@@ -10,7 +10,7 @@
  * modificacion del archivo, asi que cada cambio es una direccion distinta.
  */
 
-const VERSION = 'goharv-v3';
+const VERSION = 'goharv-v4';
 
 // Rutas relativas al alcance del service worker, para que funcione tanto en la
 // raiz del dominio como colgando de una subcarpeta (XAMPP).
@@ -20,6 +20,7 @@ const VERSION = 'goharv-v3';
 const ESTATICOS = [
   'offline.html',
   'icons/icon-192.png',
+  'icons/badge-96.png',
   'icons/apple-touch-icon.png',
 ];
 

@@ -176,6 +176,49 @@ class PushSubscriptionTest extends TestCase
         $this->assertSame(route('projects.show', $project), $payload['data']['url']);
     }
 
+    /**
+     * El badge de la barra de estado tiene que ser una silueta.
+     *
+     * Android descarta los colores del badge y se queda con el canal alfa,
+     * que pinta de un color solido. Con el icono comun —opaco de punta a
+     * punta— se veia un cuadrado blanco. El archivo tiene que tener zonas
+     * transparentes o vuelve a pasar.
+     */
+    public function test_el_badge_es_una_silueta_y_no_un_cuadrado(): void
+    {
+        $quien   = User::factory()->create();
+        $project = Project::factory()->create();
+
+        $payload = (new ProjectEvent(NotificationType::TeAsignaron, $project))
+            ->toWebPush($quien, new ProjectEvent(NotificationType::TeAsignaron, $project))
+            ->toArray();
+
+        $this->assertStringContainsString('badge-96.png', $payload['badge']);
+        $this->assertStringNotContainsString('badge', $payload['icon'], 'El icono grande va a color');
+
+        $archivo = public_path('icons/badge-96.png');
+        $this->assertFileExists($archivo);
+
+        $png  = imagecreatefrompng($archivo);
+        $alfa = fn (int $x, int $y) => (imagecolorat($png, $x, $y) >> 24) & 0x7F;
+
+        $this->assertSame(127, $alfa(2, 2), 'La esquina tiene que ser transparente');
+
+        $opacos = 0;
+        for ($y = 0; $y < 96; $y += 2) {
+            for ($x = 0; $x < 96; $x += 2) {
+                if ($alfa($x, $y) < 64) {
+                    $opacos++;
+                }
+            }
+        }
+
+        $cobertura = $opacos / (48 * 48);
+
+        $this->assertGreaterThan(0.05, $cobertura, 'No se ve nada');
+        $this->assertLessThan(0.60, $cobertura, 'Es un bloque, no una letra');
+    }
+
     /** Tres avisos del mismo proyecto se pisan en vez de apilarse. */
     public function test_los_avisos_del_mismo_proyecto_comparten_etiqueta(): void
     {
