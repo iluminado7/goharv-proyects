@@ -482,3 +482,21 @@ h2.section{font-family:var(--fuente-titulo);font-weight:700;font-size:22px;line-
   letter-spacing:var(--tracking-label);color:var(--label)}
 .gh-label::before{content:"";width:40px;height:1px;background:var(--accent)}
 .gh-footer{margin-top:48px;padding:22px 0;border-top:1px solid var(--accent)}
+
+/* --- Avisos en el dispositivo ------------------------------------------ */
+/* El bloque entero arranca oculto: lo muestra el script solo si el navegador
+   puede con las notificaciones. Sin JS no aparece y no se extraña nada. */
+.push-caja[hidden]{display:none}
+.push-titulo{margin:0 0 6px;font-family:var(--fuente-titulo);font-weight:600;font-size:15px}
+.push-caja .hint{margin:0 0 14px;max-width:62ch}
+.push-caja .hint:last-child{margin:12px 0 0}
+
+/* El ofrecimiento de la primera vez. <dialog> nativo: trae el foco atrapado,
+   el Escape y el fondo sin que haya que escribirlos. */
+.ofrecer{max-width:440px;width:calc(100vw - 32px);padding:26px;border:1px solid var(--accent);
+  border-radius:0;background:var(--surface);color:var(--ink);font-family:var(--fuente-cuerpo)}
+.ofrecer::backdrop{background:rgba(0,0,0,.55)}
+.ofrecer-titulo{margin:0 0 12px;font-family:var(--fuente-titulo);font-weight:700;font-size:21px;line-height:1.2}
+.ofrecer-texto{margin:0 0 12px;color:var(--muted);font-size:14.5px;line-height:1.6}
+.ofrecer .hint{margin:0}
+.ofrecer-acts{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:22px}

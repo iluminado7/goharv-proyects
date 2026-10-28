@@ -13,6 +13,9 @@
 </head>
 <body class="{{ $barra === 'angosta' ? 'barra-angosta' : '' }}">
 @auth
+    @if (\App\Support\Avisos::hayPush())
+        @include('partials.push-core')
+    @endif
     @php
         $items = [
             ['proyectos', 'Proyectos', route('projects.index'), request()->routeIs('projects.*')],
@@ -117,6 +120,10 @@
             </footer>
         </div>
     </div>
+
+    @if (\App\Support\Avisos::hayPush())
+        @include('partials.push-invite')
+    @endif
 @endauth
 @include('partials.instant-toggles')
 @include('partials.dropdown-close')

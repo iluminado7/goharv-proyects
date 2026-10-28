@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PasswordChangeController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SidebarController;
@@ -88,6 +89,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/clave-nueva', [PasswordChangeController::class, 'show'])->name('password.change');
     Route::post('/clave-nueva', [PasswordChangeController::class, 'store'])
         ->middleware('throttle:6,1')->name('password.change.store');
+
+    // Alta y baja de la suscripcion de un celular. Las llama el JavaScript
+    // del boton de Mi perfil, no una pantalla.
+    Route::post('/avisos/push', [PushSubscriptionController::class, 'store'])
+        ->middleware('throttle:20,1')->name('push.store');
+    Route::delete('/avisos/push', [PushSubscriptionController::class, 'destroy'])
+        ->middleware('throttle:20,1')->name('push.destroy');
 
     Route::put('/perfil/clave', [ProfileController::class, 'updatePassword'])
         ->middleware('throttle:6,1')

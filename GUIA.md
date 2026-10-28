@@ -297,6 +297,31 @@ Además del aviso en la campana, te llega un mail cuando algo pasa a ser tuyo:
 Las notas, los cambios de estado y las tareas que otro completó **no** mandan
 correo: están en la campana. Si mandaran mail, en una semana nadie los leería.
 
+### Avisos en el celular
+
+La primera vez que entrás después de esta actualización, el panel te pregunta
+una vez si querés activarlos. Si decís que no, no vuelve a molestarte: los
+activás cuando quieras desde **Mi perfil → Notificaciones**, donde además están
+siempre para apagarlos. Desde ese
+momento te llega un aviso a la pantalla del teléfono —aunque no tengas el panel
+abierto— cuando te asignan un proyecto, te suman a uno o te asignan una tarea.
+Los mismos tres que el correo; las notas y los cambios de estado no suenan.
+
+Se activa **por dispositivo**: si lo prendés en el teléfono, la computadora
+sigue sin avisarte, y al revés.
+
+> **En iPhone hay un paso previo obligatorio.** Primero tenés que agregar el
+> panel a la pantalla de inicio: abrilo en Safari, tocá Compartir y elegí
+> *Agregar a pantalla de inicio*. Recién entrando desde ese ícono te va a
+> aparecer el botón. Desde una pestaña de Safari no funciona, y no es algo que
+> podamos arreglar: es así en todos los iPhone.
+>
+> En Android funciona directamente desde el navegador.
+
+Si alguna vez bloqueaste las notificaciones para el sitio, el panel no puede
+volver a preguntarte: hay que desbloquearlas desde la configuración del
+navegador.
+
 ### Editar una cuenta
 
 Solo el **responsable del panel**. Al lado de cada persona en *Equipo* hay un

@@ -19,6 +19,18 @@ intentos fallidos por minuto y bloqueo de cuentas dadas de baja. Tres roles:
 *profesional externo*, que solo ve los proyectos que le delegaron y no entra ni
 a Equipo ni a Actividad.
 
+**Avisos en el celular.** Notificaciones push web, los mismos tres avisos que
+el correo. Cada dispositivo es una suscripción aparte y se activa desde *Mi
+perfil*, y el panel lo ofrece una vez por dispositivo la primera vez que
+alguien entra (se recuerda en `localStorage`, no en la base, porque la decisión
+es por dispositivo). El permiso del navegador se pide **solo desde el clic**:
+pedirlo al cargar la página hace que Chrome y Firefox lo bloqueen solos y ya no
+se pueda volver a preguntar. Andan con el panel cerrado. En Android funciona desde el navegador;
+**en iPhone solo si la persona agregó el panel a la pantalla de inicio** — en
+una pestaña de Safari el permiso ni se puede pedir. Las suscripciones vencidas
+las borra solo el paquete cuando el envío devuelve 410. Si no hay claves VAPID
+cargadas, el canal no se suma y el panel funciona igual.
+
 **Correo.** Listo pero **apagado**: falta un dominio verificado en Resend
 (`goharv.com.ar` no está, y el dominio de Laravel Cloud no sirve porque su DNS
 no es nuestro). Mientras tanto corre con `MAIL_MAILER=log`: no sale nada, el
@@ -408,12 +420,18 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   `@can` en las vistas), no con `abort_unless` sueltos.
 - Nada de SQL propio de un motor. Si hace falta ordenar por una secuencia, va un
   `CASE WHEN` armado desde el enum.
-- El JavaScript del panel son cinco partials chicos: `pwa-register` (registra
-  el service worker), `password-toggle` (el ojito de la clave),
-  `avatar-cropper` (encuadrar la foto), `dropdown-close` (cerrar la campana y
-  la barra del celular al tocar afuera) e `instant-toggles` (plegar la barra y
-  cambiar el fondo sin recargar). Los cinco hacen cosas que el servidor no
-  puede hacer y los cinco degradan bien si el JS no corre. La regla ya no es "nada de JS" sino
+- El JavaScript del panel son ocho partials: `pwa-register` (registra el
+  service worker), `password-toggle` (el ojito de la clave), `avatar-cropper`
+  (encuadrar la foto), `dropdown-close` (cerrar la campana y la barra del
+  celular al tocar afuera), `instant-toggles` (plegar la barra y cambiar el
+  fondo sin recargar) y los tres de push: `push-core` (la lógica compartida),
+  `push-toggle` (el botón de Mi perfil) y `push-invite` (el ofrecimiento de la
+  primera vez). Todos hacen cosas que el servidor no puede hacer.
+- **Push es la única excepción a "degradar bien".** Los otros cinco funcionan
+  sin JavaScript en una versión reducida; push directamente no existe sin él.
+  Lo que sí hace es no romper nada: el marcado ni se manda si no hay claves
+  VAPID, y quien no tenga JS sigue viendo los avisos en la campana igual que
+  siempre. La regla ya no es "nada de JS" sino
   **nada que el HTML o un formulario puedan resolver solos**: antes de sumar
   otro, buscar el elemento nativo —`<details>`, `<datalist>`— que haga el
   trabajo.

@@ -95,6 +95,11 @@
         </div>
     </form>
 
+    @if (\App\Support\Avisos::hayPush())
+        <h2 class="section">Notificaciones</h2>
+        @include('partials.push-toggle')
+    @endif
+
     <div style="height:60px"></div>
 
     @include('partials.avatar-cropper')

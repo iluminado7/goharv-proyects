@@ -30,6 +30,17 @@ class Avisos
         return ! in_array(config('mail.default'), ['log', 'array', null], true);
     }
 
+    /**
+     * Si las notificaciones al celular estan configuradas. Sin las claves
+     * VAPID el canal revienta al construirse, asi que se pregunta antes de
+     * sumarlo: un panel recien clonado tiene que arrancar igual.
+     */
+    public static function hayPush(): bool
+    {
+        return filled(config('webpush.vapid.public_key'))
+            && filled(config('webpush.vapid.private_key'));
+    }
+
     public static function mandar(Collection|array $destinatarios, Notification $aviso): void
     {
         $destinatarios = $destinatarios instanceof Collection

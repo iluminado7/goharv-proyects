@@ -10,7 +10,7 @@
  * modificacion del archivo, asi que cada cambio es una direccion distinta.
  */
 
-const VERSION = 'goharv-v2';
+const VERSION = 'goharv-v3';
 
 // Rutas relativas al alcance del service worker, para que funcione tanto en la
 // raiz del dominio como colgando de una subcarpeta (XAMPP).
@@ -72,6 +72,61 @@ self.addEventListener('fetch', (evento) => {
         .catch(() => guardado);
 
       return guardado || desdeRed;
+    })
+  );
+});
+
+/*
+ * Notificaciones al celular.
+ *
+ * El navegador despierta al service worker con el aviso aunque el panel este
+ * cerrado. Aca no se guarda nada: el cuerpo viene cifrado en el propio push y
+ * se muestra tal cual, asi que un telefono prestado no deja rastro del aviso
+ * mas alla de la notificacion que el usuario ya ve.
+ */
+self.addEventListener('push', (evento) => {
+  if (!evento.data) return;
+
+  let aviso = {};
+
+  try {
+    aviso = evento.data.json();
+  } catch (e) {
+    aviso = { title: 'GoHarv', body: evento.data.text() };
+  }
+
+  evento.waitUntil(
+    self.registration.showNotification(aviso.title || 'GoHarv', {
+      body: aviso.body || '',
+      icon: aviso.icon,
+      badge: aviso.badge,
+      tag: aviso.tag,
+      data: aviso.data || {},
+    })
+  );
+});
+
+/*
+ * Tocar el aviso lleva al proyecto. Si ya hay una pestaña del panel abierta se
+ * reusa en vez de abrir otra: con tres avisos no se terminan tres pestañas.
+ */
+self.addEventListener('notificationclick', (evento) => {
+  evento.notification.close();
+
+  const destino = (evento.notification.data && evento.notification.data.url)
+    || self.registration.scope;
+
+  evento.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((ventanas) => {
+      for (const ventana of ventanas) {
+        if ('focus' in ventana) {
+          if ('navigate' in ventana) ventana.navigate(destino);
+
+          return ventana.focus();
+        }
+      }
+
+      return self.clients.openWindow(destino);
     })
   );
 });

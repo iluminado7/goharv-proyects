@@ -5,8 +5,10 @@ namespace App\Notifications;
 use App\Enums\NotificationType;
 use App\Models\Project;
 use App\Models\User;
+use App\Support\Avisos;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushMessage;
 
 /**
  * Una sola clase para los seis avisos: todos tienen la misma forma —alguien
@@ -27,11 +29,40 @@ class ProjectEvent extends Notification
 
     public function via(object $notifiable): array
     {
-        // La campana nunca falla y va primero: si el correo se cae, el aviso
-        // ya quedó guardado.
-        return $this->tipo->vaPorCorreo()
-            ? ['database', 'mail']
-            : ['database'];
+        // La campana nunca falla y va primero: si el correo o el push se caen,
+        // el aviso ya quedó guardado.
+        $canales = ['database'];
+
+        if (! $this->tipo->vaPorCorreo()) {
+            return $canales;
+        }
+
+        $canales[] = 'mail';
+
+        // Los tres canales llevan los mismos avisos: lo que merece sacarte del
+        // panel merece sacarte del panel, por donde sea que estés mirando.
+        if (Avisos::hayPush()) {
+            $canales[] = 'webpush';
+        }
+
+        return $canales;
+    }
+
+    /**
+     * El aviso que aparece en la pantalla del celular. Corto a propósito: un
+     * título que se lee de un vistazo y el nombre del proyecto.
+     */
+    public function toWebPush(object $notifiable, Notification $notification): WebPushMessage
+    {
+        return (new WebPushMessage)
+            ->title($this->tipo->label())
+            ->body($this->project->name.($this->detalle ? ' · '.$this->detalle : ''))
+            ->icon(asset('icons/icon-192.png'))
+            ->badge(asset('icons/icon-192.png'))
+            // Un aviso por proyecto: si llegan tres seguidos del mismo, se
+            // pisan en vez de apilarse.
+            ->tag('proyecto-'.$this->project->getKey())
+            ->data(['url' => route('projects.show', $this->project)]);
     }
 
     public function toMail(object $notifiable): MailMessage

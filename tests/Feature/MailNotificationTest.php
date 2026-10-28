@@ -21,8 +21,15 @@ class MailNotificationTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function canales(NotificationType $tipo): array
+    /**
+     * Las claves VAPID se fijan a mano: si no, el resultado dependería de si
+     * quien corre los tests las tiene cargadas en su .env.
+     */
+    private function canales(NotificationType $tipo, bool $conPush = false): array
     {
+        config(['webpush.vapid.public_key' => $conPush ? 'clave-publica' : null]);
+        config(['webpush.vapid.private_key' => $conPush ? 'clave-privada' : null]);
+
         $project = Project::factory()->create();
 
         return (new ProjectEvent($tipo, $project))->via(User::factory()->make());
@@ -34,6 +41,26 @@ class MailNotificationTest extends TestCase
                   NotificationType::TareaAsignada] as $tipo) {
             $this->assertSame(['database', 'mail'], $this->canales($tipo), $tipo->value);
         }
+    }
+
+    /** Los mismos tres van al celular cuando el push está configurado. */
+    public function test_los_tres_tambien_van_al_celular(): void
+    {
+        foreach ([NotificationType::TeAsignaron, NotificationType::TeSumaron,
+                  NotificationType::TareaAsignada] as $tipo) {
+            $this->assertSame(['database', 'mail', 'webpush'], $this->canales($tipo, true), $tipo->value);
+        }
+    }
+
+    /** Sin claves VAPID el canal reventaría al construirse: no se suma. */
+    public function test_sin_claves_vapid_no_se_intenta_el_push(): void
+    {
+        $this->assertNotContains('webpush', $this->canales(NotificationType::TeAsignaron));
+    }
+
+    public function test_los_informativos_tampoco_van_al_celular(): void
+    {
+        $this->assertSame(['database'], $this->canales(NotificationType::Comentario, true));
     }
 
     public function test_los_informativos_se_quedan_en_la_campana(): void
