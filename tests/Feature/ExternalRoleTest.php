@@ -119,12 +119,14 @@ class ExternalRoleTest extends TestCase
             ->assertOk();
 
         $this->actingAs($externo)
-            ->patch(route('projects.status', $project), ['status' => 'in_progress'])
-            ->assertRedirect();
+            ->patch(route('projects.status', $project), ['status' => 'en_desarrollo'])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('en_desarrollo', $project->fresh()->status->value);
 
         $this->actingAs($externo)
             ->post(route('projects.comment', $project), ['body' => 'Arranque con esto'])
-            ->assertRedirect();
+            ->assertSessionHasNoErrors();
 
         $this->actingAs($externo)
             ->post(route('tasks.store', $project), ['title' => 'Mandar el presupuesto'])
@@ -143,7 +145,7 @@ class ExternalRoleTest extends TestCase
 
         $this->actingAs($externo)
             ->post(route('projects.store'), [
-                'name' => 'Inventado', 'status' => 'new', 'priority' => 'medium',
+                'name' => 'Inventado', 'status' => 'nuevo', 'priority' => 'media',
             ])
             ->assertForbidden();
 

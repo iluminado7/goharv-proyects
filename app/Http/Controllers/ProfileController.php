@@ -116,7 +116,10 @@ class ProfileController extends Controller
             'password.confirmed'                => 'La repetición no coincide con la clave nueva.',
         ]);
 
-        $request->user()->update(['password' => $data['password']]);
+        $request->user()->update([
+            'password'             => $data['password'],
+            'must_change_password' => false,
+        ]);
         $request->session()->regenerate();
 
         return redirect()

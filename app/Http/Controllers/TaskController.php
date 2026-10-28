@@ -9,10 +9,10 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use App\Notifications\ProjectEvent;
+use App\Support\Avisos;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Notification;
 
 /**
  * Las tareas viven siempre dentro de un proyecto: todas las rutas cuelgan de
@@ -160,6 +160,6 @@ class TaskController extends Controller
             ->unique('id')
             ->reject(fn (User $u) => $u->id === $actor->id || ! $u->is_active);
 
-        Notification::send($destinatarios, new ProjectEvent($tipo, $project, $actor, $detalle));
+        Avisos::mandar($destinatarios, new ProjectEvent($tipo, $project, $actor, $detalle));
     }
 }

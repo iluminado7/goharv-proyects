@@ -4,6 +4,7 @@ use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PasswordChangeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SidebarController;
@@ -82,18 +83,30 @@ Route::middleware('auth')->group(function () {
     Route::get('/equipo/{user}/foto', [ProfileController::class, 'avatar'])->name('users.avatar');
     Route::put('/perfil', [ProfileController::class, 'update'])->name('profile.update');
     // Pide la clave actual: sin limite, una sesion ajena podria adivinarla.
+    // Primer paso de una cuenta nueva. Vive adentro de 'auth' pero el
+    // middleware que fuerza el cambio la deja pasar: es la unica salida.
+    Route::get('/clave-nueva', [PasswordChangeController::class, 'show'])->name('password.change');
+    Route::post('/clave-nueva', [PasswordChangeController::class, 'store'])
+        ->middleware('throttle:6,1')->name('password.change.store');
+
     Route::put('/perfil/clave', [ProfileController::class, 'updatePassword'])
         ->middleware('throttle:6,1')
         ->name('profile.password');
 
     // La lista la ve todo el equipo: sirve para saber a quien pedirle algo.
-    Route::get('/equipo', [MemberController::class, 'index'])
-        ->middleware('interno')->name('members.index');
+    // Dar de baja y reactivar tambien, porque un socio tiene que poder sacar
+    // del panel al profesional externo que contrato. Quien puede con quien lo
+    // decide UserPolicy.
+    Route::middleware('interno')->group(function () {
+        Route::get('/equipo', [MemberController::class, 'index'])->name('members.index');
+        Route::patch('/equipo/{user}/acceso', [MemberController::class, 'access'])->name('members.access');
+    });
 
-    // Sumar gente, cambiar permisos y dar de baja siguen siendo de admins.
+    // Sumar gente y cambiar permisos siguen siendo de admins.
     Route::middleware('admin')->group(function () {
         Route::get('/actividad', [ActivityController::class, 'index'])->name('activity.index');
         Route::post('/equipo', [MemberController::class, 'store'])->name('members.store');
+        Route::get('/equipo/{user}/editar', [MemberController::class, 'edit'])->name('members.edit');
         Route::patch('/equipo/{user}', [MemberController::class, 'update'])->name('members.update');
     });
 });

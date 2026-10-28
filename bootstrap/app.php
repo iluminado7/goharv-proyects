@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // pantalla nueva se olvida de expulsar a las cuentas dadas de baja.
         // Para las visitas sin sesion no hace nada.
         $middleware->appendToGroup('web', \App\Http\Middleware\EnsureUserIsActive::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\EnsurePasswordIsChanged::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\SecurityHeaders::class);
 
         // Detras de un proxy (Laravel Cloud, o un HTTPS por delante) Laravel ve

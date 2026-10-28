@@ -5,8 +5,8 @@
     <h1 class="page">Equipo</h1>
     <p class="page-sub">
         {{ $administra
-            ? 'Quiénes pueden entrar al panel y con qué permisos.'
-            : 'Quiénes están en el panel. Los permisos los maneja el responsable.' }}
+            ? 'Quiénes pueden entrar al panel. Los datos de una cuenta los edita un responsable.'
+            : 'Quiénes están en el panel. Los datos y los permisos los maneja el responsable.' }}
     </p>
 
     <div class="card" style="margin-bottom:28px">
@@ -17,7 +17,6 @@
                     <span>
                         {{ $m->name }}
                         <span class="rol">{{ $m->role->label() }}</span>
-                        @unless ($m->is_active) <span class="rol">de baja</span> @endunless
                         <br>
                         <span style="font-size:12.5px;color:var(--faint)">
                             {{ $m->email }} · {{ $m->owned_projects_count }} proyecto(s) a cargo
@@ -25,26 +24,63 @@
                     </span>
                 </span>
 
-                @if ($administra)
-                    <form method="POST" action="{{ route('members.update', $m) }}"
-                          style="display:flex;gap:8px;align-items:center">
-                        @csrf @method('PATCH')
-                        <select name="role">
-                            @foreach ($roles as $rol)
-                                <option value="{{ $rol->value }}" @selected($m->role === $rol)>{{ $rol->label() }}</option>
-                            @endforeach
-                        </select>
-                        <select name="is_active">
-                            <option value="1" @selected($m->is_active)>Activo</option>
-                            <option value="0" @selected(! $m->is_active)>De baja</option>
-                        </select>
-                        <button class="btn btn-ghost btn-sm">Guardar</button>
-                    </form>
-                @endif
+                <span class="member-acts">
+                    @if ($administra)
+                        <a class="btn btn-ghost btn-sm" href="{{ route('members.edit', $m) }}">Editar</a>
+                    @endif
+
+                    {{-- Dar de baja no borra nada: saca la cuenta del panel y de
+                         todos los desplegables. Por eso el aviso es explícito. --}}
+                    @can('setAccess', $m)
+                        <form method="POST" action="{{ route('members.access', $m) }}"
+                              onsubmit="return confirm('¿Dar de baja a {{ $m->name }}? Pierde el acceso al panel y no va a poder sumarse a proyectos nuevos. Lo que hizo queda donde está, y lo podés reactivar después.')">
+                            @csrf @method('PATCH')
+                            <input type="hidden" name="is_active" value="0">
+                            <button class="btn btn-danger btn-sm">Dar de baja</button>
+                        </form>
+                    @endcan
+                </span>
             </div>
         @endforeach
-        @error('role') <p class="err" style="color:#E05C4B;font-size:13px">{{ $message }}</p> @enderror
+        @error('is_active') <p class="err">{{ $message }}</p> @enderror
     </div>
+
+    @if ($bajas->isNotEmpty())
+        <h2 class="section">Dados de baja</h2>
+        <p class="hint">
+            No entran al panel ni aparecen al elegir responsable, colaboradores o a
+            quién asignarle una tarea. Lo que hicieron sigue en su lugar.
+        </p>
+
+        <div class="card" style="margin-bottom:28px">
+            @foreach ($bajas as $m)
+                <div class="member-row">
+                    <span class="member-id">
+                        <x-avatar :user="$m" :size="40" />
+                        <span>
+                            {{ $m->name }}
+                            <span class="rol">{{ $m->role->label() }}</span>
+                            <br>
+                            <span style="font-size:12.5px;color:var(--faint)">
+                                {{ $m->email }} · {{ $m->owned_projects_count }} proyecto(s) a cargo
+                            </span>
+                        </span>
+                    </span>
+
+                    <span class="member-acts">
+                        @if ($administra)
+                            <a class="btn btn-ghost btn-sm" href="{{ route('members.edit', $m) }}">Editar</a>
+                        @endif
+                        <form method="POST" action="{{ route('members.access', $m) }}">
+                            @csrf @method('PATCH')
+                            <input type="hidden" name="is_active" value="1">
+                            <button class="btn btn-ghost btn-sm">Reactivar</button>
+                        </form>
+                    </span>
+                </div>
+            @endforeach
+        </div>
+    @endif
 
     @if ($administra)
         <form method="POST" action="{{ route('members.store') }}" class="card">
@@ -85,8 +121,8 @@
         </form>
     @else
         <p class="hint">
-            Para sumar a alguien, cambiar permisos o dar de baja una cuenta, pedíselo
-            a un responsable del panel.
+            Podés dar de baja a un profesional externo cuando termine su trabajo. Para
+            sumar a alguien o cambiar permisos, pedíselo a un responsable del panel.
         </p>
     @endif
 

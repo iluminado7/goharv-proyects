@@ -256,6 +256,60 @@ decide el equipo. Tampoco ve la lista del equipo en ningún formulario.
 > del proyecto o lo marca como colaborador en *Editar*. Desde ese momento le
 > aparece en su tablero.
 
+### Cuando el trabajo termina
+
+En **Equipo**, al lado de cada profesional externo hay un botón **Dar de baja**.
+Lo puede usar cualquier socio o responsable: el que lo contrató es quien sabe
+cuándo dejó de trabajar con nosotros.
+
+Dar de baja **no borra nada**. La cuenta pierde el acceso en el acto —si estaba
+con la sesión abierta, se le corta ahí mismo— y desaparece de todos los
+desplegables: responsable, colaboradores y a quién asignarle una tarea. O sea,
+no puede sumarse a ningún proyecto nuevo.
+
+Lo que hizo queda intacto: sus proyectos siguen a su nombre, sus notas, sus
+tareas y la bitácora no se tocan.
+
+Abajo de la lista aparece **Dados de baja**, con un botón para reactivar por si
+hay que volver a trabajar con esa persona. Un socio ve ahí solo a los
+profesionales externos; un responsable ve todas las cuentas.
+
+### Cuando te creamos la cuenta
+
+> **Por ahora el panel no manda correos**: falta terminar de configurar el
+> dominio. Hasta entonces, quien te crea la cuenta te pasa el usuario y la
+> clave por otro medio. Todo lo demás de esta sección funciona igual.
+
+Te llega un correo con tu usuario y una clave provisoria. Al entrar por primera
+vez el panel te va a pedir que elijas una clave tuya, y recién después se abre.
+Desde ese momento la del correo deja de servir y podés borrar el mensaje.
+
+Lo mismo pasa si un responsable te resetea la clave porque la olvidaste.
+
+### Qué te llega por correo
+
+Además del aviso en la campana, te llega un mail cuando algo pasa a ser tuyo:
+
+- **Te asignaron un proyecto** (quedaste como responsable)
+- **Te sumaron a un proyecto** (como colaborador)
+- **Te asignaron una tarea**
+
+Las notas, los cambios de estado y las tareas que otro completó **no** mandan
+correo: están en la campana. Si mandaran mail, en una semana nadie los leería.
+
+### Editar una cuenta
+
+Solo el **responsable del panel**. Al lado de cada persona en *Equipo* hay un
+botón **Editar** que lleva a una pantalla con el nombre, el correo y los
+permisos.
+
+Ahí también está **Clave nueva**, que sirve para cuando alguien se olvida la
+suya: mientras el panel no mande correos, es la única forma de que vuelva a
+entrar. Si dejás el campo vacío, la clave no se toca. Después avisale por otro
+medio y pedile que se la cambie desde *Mi perfil*.
+
+Cada edición queda en la bitácora, diciendo qué se cambió.
+
 Para un socio, lo que puede hacer depende de su relación con cada proyecto:
 
 | | Es el responsable | Es colaborador | No participa |

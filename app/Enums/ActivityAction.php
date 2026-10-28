@@ -25,6 +25,11 @@ enum ActivityAction: string
     case TareaReabierta     = 'tarea_reabierta';
     case TareaEliminada     = 'tarea_eliminada';
 
+    // Cuentas
+    case CuentaDadaDeBaja   = 'cuenta_dada_de_baja';
+    case CuentaReactivada   = 'cuenta_reactivada';
+    case CuentaEditada      = 'cuenta_editada';
+
     public function label(): string
     {
         return match ($this) {
@@ -45,6 +50,9 @@ enum ActivityAction: string
             self::TareaCompletada    => 'Tarea completada',
             self::TareaReabierta     => 'Tarea reabierta',
             self::TareaEliminada     => 'Tarea eliminada',
+            self::CuentaDadaDeBaja   => 'Cuenta dada de baja',
+            self::CuentaReactivada   => 'Cuenta reactivada',
+            self::CuentaEditada      => 'Datos de cuenta editados',
         };
     }
 
@@ -69,6 +77,8 @@ enum ActivityAction: string
             self::TareaCompletada    => 'var(--success)',
             self::TareaEliminada     => 'var(--error)',
             self::TareaReabierta     => 'var(--warning)',
+            self::CuentaDadaDeBaja   => 'var(--error)',
+            self::CuentaReactivada   => 'var(--success)',
             self::ProyectoArchivado  => 'var(--text-muted)',
             self::Salida             => 'var(--text-muted)',
             default                  => 'var(--accent)',

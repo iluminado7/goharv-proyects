@@ -42,6 +42,7 @@ class TeamVisibilityTest extends TestCase
     public function test_el_responsable_sigue_viendo_todo(): void
     {
         $admin = User::factory()->admin()->create();
+        User::factory()->create(['name' => 'Alguien Mas']);
 
         $html = $this->actingAs($admin)->get(route('members.index'))->getContent();
 

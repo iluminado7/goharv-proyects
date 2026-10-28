@@ -107,12 +107,16 @@ class SecurityHardeningTest extends TestCase
         User::factory()->admin()->create(); // Otro activo: no es el "ultimo responsable".
 
         $this->actingAs($admin)
-            ->patch(route('members.update', $admin), ['role' => 'member', 'is_active' => 1])
+            ->patch(route('members.update', $admin), [
+                'name' => $admin->name, 'email' => $admin->email, 'role' => 'member',
+            ])
             ->assertSessionHasErrors('role');
 
+        // Darse de baja a uno mismo ni siquiera llega al controlador: lo frena
+        // la Policy, que no tiene atajo de admin justamente por esto.
         $this->actingAs($admin)
-            ->patch(route('members.update', $admin), ['role' => 'admin', 'is_active' => 0])
-            ->assertSessionHasErrors('role');
+            ->patch(route('members.access', $admin), ['is_active' => 0])
+            ->assertForbidden();
 
         $admin->refresh();
 

@@ -7,6 +7,7 @@ use App\Enums\NotificationType;
 use App\Enums\ProjectPriority;
 use App\Enums\ProjectStatus;
 use App\Notifications\ProjectEvent;
+use App\Support\Avisos;
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -18,7 +19,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
 class Project extends Model
@@ -208,7 +208,7 @@ class Project extends Model
 
             Activity::anotar(ActivityAction::EstadoCambiado, $author, $this, detail: $detalle);
 
-            Notification::send(
+            Avisos::mandar(
                 $this->interesados($author),
                 new ProjectEvent(NotificationType::CambioEstado, $this, $author, $detalle),
             );

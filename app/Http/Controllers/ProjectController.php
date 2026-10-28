@@ -11,9 +11,9 @@ use App\Models\Project;
 use App\Models\ProjectUpdate;
 use App\Models\User;
 use App\Notifications\ProjectEvent;
+use App\Support\Avisos;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -252,7 +252,7 @@ class ProjectController extends Controller
 
         Activity::anotar(ActivityAction::NotaNueva, $request->user(), $project, detail: $resumen);
 
-        Notification::send(
+        Avisos::mandar(
             $project->interesados($request->user()),
             new ProjectEvent(NotificationType::Comentario, $project, $request->user(), $resumen),
         );
@@ -369,8 +369,9 @@ class ProjectController extends Controller
     private function avisarAsignaciones(Project $project, User $actor, array $sumados, ?int $duenioAnterior): void
     {
         if ($project->owner_id && $project->owner_id !== $duenioAnterior && $project->owner_id !== $actor->id) {
-            $project->owner?->notify(
-                new ProjectEvent(NotificationType::TeAsignaron, $project, $actor)
+            Avisos::mandar(
+                array_filter([$project->owner]),
+                new ProjectEvent(NotificationType::TeAsignaron, $project, $actor),
             );
         }
 
@@ -381,7 +382,7 @@ class ProjectController extends Controller
             ->where('is_active', true)
             ->get();
 
-        Notification::send($nuevos, new ProjectEvent(NotificationType::TeSumaron, $project, $actor));
+        Avisos::mandar($nuevos, new ProjectEvent(NotificationType::TeSumaron, $project, $actor));
     }
 
     /**

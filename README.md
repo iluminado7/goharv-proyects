@@ -19,6 +19,35 @@ intentos fallidos por minuto y bloqueo de cuentas dadas de baja. Tres roles:
 *profesional externo*, que solo ve los proyectos que le delegaron y no entra ni
 a Equipo ni a Actividad.
 
+**Correo.** Listo pero **apagado**: falta un dominio verificado en Resend
+(`goharv.com.ar` no está, y el dominio de Laravel Cloud no sirve porque su DNS
+no es nuestro). Mientras tanto corre con `MAIL_MAILER=log`: no sale nada, el
+panel funciona igual y la campana avisa como siempre. Para prenderlo alcanza
+con verificar un dominio y poner `MAIL_MAILER=resend` más `MAIL_FROM_ADDRESS`
+en ese dominio; no hay que tocar código. `Avisos::hayCorreo()` dice si está
+activo, y las pantallas que prometen un mail lo consultan antes de prometerlo.
+
+Tres avisos salen por mail además de la campana: te
+asignaron un proyecto, te sumaron a un proyecto y te asignaron una tarea. Los
+informativos —nota, cambio de estado, tarea completada— se quedan en la campana
+para no convertir la casilla en ruido. Lo decide `NotificationType::vaPorCorreo()`.
+El transporte es Resend, conectado desde Laravel Cloud.
+
+**Alta con correo de bienvenida.** Crear una cuenta manda el usuario y la clave
+provisoria, y la cuenta nace con `must_change_password`: el panel queda cerrado
+hasta que esa persona elija una clave suya. Lo mismo cuando un responsable le
+resetea la clave a alguien.
+
+**Edición de cuentas.** Solo el responsable del panel: nombre, correo, permisos
+y, opcionalmente, restablecer la clave de quien la olvidó. Queda en la bitácora
+con el detalle de qué se tocó.
+
+**Baja de cuentas.** Un responsable da de baja a cualquiera y un socio a los
+profesionales externos. La cuenta pierde el acceso en el acto y sale de todos
+los desplegables, pero sus proyectos, notas, tareas y la bitácora quedan. Se
+reactiva desde la misma pantalla. Reusa `is_active`: no hay un segundo estado
+de "eliminado" que los trece filtros del panel tendrían que chequear aparte.
+
 **Archivar y restaurar.** Archivar saca el proyecto del tablero sin borrar nada.
 Los archivados tienen su pantalla en `/proyectos/archivados`, con buscador, y
 vuelven con un clic. Las dos cosas quedan asentadas en el historial.
@@ -264,8 +293,8 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
 ### Bloqueantes antes de producción
 
 1. **Recuperación de clave.** No existe. Cada uno ya se cambia la clave desde
-   *Mi perfil*, pero el que la olvida sigue dependiendo de que el responsable se
-   la resetee a mano. Falta `ForgotPasswordController`, la tabla
+   *Mi perfil*, y el responsable puede restablecérsela desde *Equipo → Editar*,
+   pero sigue necesitando avisarle por fuera del panel. Falta `ForgotPasswordController`, la tabla
    `password_reset_tokens` (Laravel ya la trae) y configurar el mailer.
 2. **Configurar el envío de correo.** Sin esto no funciona ni el punto anterior
    ni ninguna notificación futura.
