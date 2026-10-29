@@ -136,6 +136,10 @@ Route::middleware('auth')->group(function () {
 */
 if (app()->environment('local')) {
     Route::prefix('arca/test')->controller(ArcaTestController::class)->group(function () {
+        Route::get('/', 'pantalla')->name('arca.test');
+        Route::post('emitir', 'emitir')->name('arca.test.emitir');
+
+        // Los de abajo contestan JSON: son los del curl de la guia.
         Route::get('estado', 'estado');
         Route::get('conexion', 'conexion');
         Route::post('factura', 'factura')
