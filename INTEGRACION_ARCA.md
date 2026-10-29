@@ -74,3 +74,55 @@ ARCA_KEY_PATH=arca/private.key
 4. `ARCA_PRODUCTION=true` solo cuando salgas a producción.
 
 El código no se toca.
+
+---
+
+## Lo que salió al probarlo (29/10/2026)
+
+Los cuatro pasos funcionan contra homologación con el CUIT de prueba
+compartido. Factura emitida: **16497**, CAE `86441030270826`, resultado `A`.
+
+Tres cosas que no estaban en la guía y costaron encontrar:
+
+### El número de comprobante es una carrera
+
+No lo elegís vos: hay que preguntarle a ARCA cuál fue el último autorizado y
+pedir el siguiente. Entre esas dos llamadas puede colarse otro, y ARCA
+contesta **10016**. `CreateNextVoucher` del SDK no ayuda: hace lo mismo y
+tampoco reintenta.
+
+`ArcaService::autorizar()` reintenta hasta cuatro veces, solo ante el 10016 y
+con espera creciente. **Esto se queda en producción**: con un CUIT propio pasa
+igual el día que dos personas del equipo facturen al mismo tiempo.
+
+### El 10016 también puede ser la fecha
+
+El mensaje dice "el número *o fecha*". Los comprobantes van en orden de fecha
+no decreciente, así que no se puede emitir con una fecha anterior a la del
+último autorizado.
+
+En el sandbox compartido alguien emitió con fecha futura (`20261103`), y hasta
+que el calendario la alcance nadie puede facturar con la fecha de hoy. Por eso
+`emitirFacturaC()` acepta una `$fecha` opcional. **Por omisión usa hoy, que es
+lo correcto**; el parámetro existe para la ventana que ARCA permite (±5 días
+productos, ±10 servicios) y para poder probar en el sandbox.
+
+### La zona horaria importa
+
+La app corre en UTC. En Argentina eso adelanta el día tres horas antes de
+medianoche, así que una factura emitida a las 21:30 se fecharía al día
+siguiente. `ArcaService` usa `America/Argentina/Buenos_Aires` explícito.
+
+## Pendiente antes de producción
+
+- **El certificado no puede vivir en `storage/app`.** Laravel Cloud borra el
+  disco en cada deploy y en cada arranque tras el scale-to-zero. Va como
+  variable de entorno o en un bucket. `ArcaService` ya lee el *contenido* y no
+  la ruta, así que el cambio es de configuración y no de código.
+- **Los PDFs de Afip SDK vencen a las 24 h.** Si el panel emite comprobantes,
+  hay que bajar el PDF y guardarlo, no enlazar al de ellos.
+- **Las peticiones pasan por `app.afipsdk.com`**, no van directo a ARCA. Para
+  facturar de verdad, decisión a tomar a conciencia.
+- **Las rutas de `/arca/test` solo existen en local** y están fuera de `auth`.
+  Cuando facturar sea una funcionalidad del panel, se mueven adentro con su
+  Policy.

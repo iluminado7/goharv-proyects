@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\ArcaTestController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\NotificationController;
@@ -118,3 +119,27 @@ Route::middleware('auth')->group(function () {
         Route::patch('/equipo/{user}', [MemberController::class, 'update'])->name('members.update');
     });
 });
+
+/*
+|--------------------------------------------------------------------------
+| Pruebas de ARCA
+|--------------------------------------------------------------------------
+|
+| Solo en local: en Laravel Cloud APP_ENV es production y estas rutas ni se
+| registran. Van fuera del grupo 'auth' y sin CSRF en el POST para poder
+| pegarles con curl, que es justamente por lo que no pueden existir en un
+| servidor donde entra el equipo.
+|
+| Son exploracion: cuando la facturacion sea una funcionalidad del panel, se
+| mueve adentro de 'auth' con su Policy, como todo lo demas.
+|
+*/
+if (app()->environment('local')) {
+    Route::prefix('arca/test')->controller(ArcaTestController::class)->group(function () {
+        Route::get('estado', 'estado');
+        Route::get('conexion', 'conexion');
+        Route::post('factura', 'factura')
+            ->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
+        Route::get('factura/{numero}', 'consultar')->whereNumber('numero');
+    });
+}
