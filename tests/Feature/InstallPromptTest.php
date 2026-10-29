@@ -13,12 +13,19 @@ class InstallPromptTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Se afirma la estructura y no el texto: el cartel se reescribe cada
+     * tanto, y un test que se rompe cada vez que alguien mejora una frase
+     * entrena a ignorar los tests. Lo que no puede faltar es el dialogo y
+     * las dos salidas.
+     */
     public function test_el_panel_ofrece_instalarse(): void
     {
         $this->actingAs(User::factory()->create())
             ->get(route('projects.index'))
-            ->assertSee('data-instalar', escape: false)
-            ->assertSee('¿Instalás el panel?');
+            ->assertSee('<dialog class="ofrecer" data-instalar>', escape: false)
+            ->assertSee('data-instalar-no', escape: false)
+            ->assertSee('data-instalar-si', escape: false);
     }
 
     /**
