@@ -51,6 +51,27 @@ class Avisos
             return;
         }
 
+        /*
+         * Un aviso que solo sabe ir por correo, cuando no hay correo a donde
+         * ir, no se manda.
+         *
+         * Con MAIL_MAILER=log Laravel no descarta el mensaje: lo escribe
+         * entero en storage/logs, cuerpo incluido. El de bienvenida lleva la
+         * clave provisoria en texto plano, asi que quedaba legible en el
+         * archivo, para siempre y para cualquiera que pueda abrirlo —en
+         * Laravel Cloud los logs se leen desde el panel de la plataforma—.
+         *
+         * Se mira el aviso y no quien lo manda: los que ademas van por
+         * campana o push salen igual, porque esos canales no dependen del
+         * correo. La pantalla de alta ya avisa que la clave hay que pasarla
+         * por otro medio mientras el correo este apagado.
+         */
+        if (! static::hayCorreo() && $destinatarios->contains(
+            fn ($quien) => $aviso->via($quien) === ['mail']
+        )) {
+            return;
+        }
+
         try {
             Notificaciones::send($destinatarios, $aviso);
         } catch (\Throwable $e) {

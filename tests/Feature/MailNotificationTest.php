@@ -196,11 +196,72 @@ class MailNotificationTest extends TestCase
         $this->assertDatabaseHas('projects', ['name' => 'Igual se guarda']);
     }
 
+    // --- La clave no puede terminar en el log -----------------------------
+
+    /**
+     * Con MAIL_MAILER=log Laravel no manda nada: escribe el correo entero en
+     * storage/logs, cuerpo incluido. El de bienvenida lleva la clave
+     * provisoria en texto plano, asi que ahi quedaba, legible y para siempre,
+     * para cualquiera que pueda abrir el archivo.
+     *
+     * Un aviso que solo va por correo y no tiene correo a donde ir, no se
+     * manda. Los que ademas van por campana o push salen igual.
+     */
+    public function test_sin_correo_configurado_la_bienvenida_no_se_manda(): void
+    {
+        Notification::fake();
+        config(['mail.default' => 'log']);
+
+        $this->actingAs(User::factory()->admin()->create())->post(route('members.store'), [
+            'name' => 'Estudio Contable', 'email' => 'estudio@ejemplo.com',
+            'password' => 'una-clave-larga-y-rara', 'role' => 'external',
+        ]);
+
+        Notification::assertNothingSent();
+        $this->assertDatabaseHas('users', ['email' => 'estudio@ejemplo.com']);
+    }
+
+    /** El aviso de proyecto sí sale: la campana no depende del correo. */
+    public function test_sin_correo_los_avisos_de_campana_salen_igual(): void
+    {
+        Notification::fake();
+        config(['mail.default' => 'log']);
+
+        $admin  = User::factory()->admin()->create();
+        $duenio = User::factory()->create();
+
+        $this->actingAs($admin)->post(route('projects.store'), [
+            'name' => 'Para otro', 'status' => 'nuevo',
+            'priority' => 'media', 'owner_id' => $duenio->id,
+        ]);
+
+        Notification::assertSentTo($duenio, ProjectEvent::class);
+    }
+
+    public function test_con_correo_configurado_la_bienvenida_vuelve_a_salir(): void
+    {
+        Notification::fake();
+        config(['mail.default' => 'resend']);
+
+        $this->actingAs(User::factory()->admin()->create())->post(route('members.store'), [
+            'name' => 'Estudio Contable', 'email' => 'estudio@ejemplo.com',
+            'password' => 'una-clave-larga-y-rara', 'role' => 'external',
+        ]);
+
+        Notification::assertSentTo(
+            User::where('email', 'estudio@ejemplo.com')->firstOrFail(),
+            Bienvenida::class,
+        );
+    }
+
     // --- Bienvenida --------------------------------------------------------
 
     public function test_crear_una_cuenta_manda_la_bienvenida(): void
     {
         Notification::fake();
+        // Con un mailer de verdad: si no hay correo configurado, la
+        // bienvenida no sale a proposito, y eso lo cubre su propio test.
+        config(['mail.default' => 'resend']);
 
         $this->actingAs(User::factory()->admin()->create())->post(route('members.store'), [
             'name' => 'Estudio Contable', 'email' => 'estudio@ejemplo.com',

@@ -257,11 +257,18 @@ En Laravel 10 o anterior el alias va en `app/Http/Kernel.php`, dentro de
 
 ```bash
 php artisan migrate --seed
+php artisan goharv:responsable
 php artisan serve
 ```
 
-Primer ingreso: `admin@goharv.com` con la clave del seeder. Cambiarla de
-inmediato y cargar al resto del equipo desde *Equipo*.
+`goharv:responsable` crea el primer responsable y pide la clave por teclado.
+Después se carga al resto del equipo desde *Equipo*.
+
+> **El seeder no crea cuentas**, y es a propósito. Antes sembraba un
+> `admin@goharv.com` con la contraseña escrita en este repositorio y sin guarda
+> de entorno: cualquiera que leyera el código tenía acceso de responsable, y un
+> `db:seed` contra producción dejaba esa cuenta viva. Una contraseña en un
+> archivo versionado no es una contraseña.
 
 ---
 
@@ -443,6 +450,16 @@ tests/Feature/        Login, Project, ProjectHistory, ProjectPolicy, Profile,
   **nada que el HTML o un formulario puedan resolver solos**: antes de sumar
   otro, buscar el elemento nativo —`<details>`, `<datalist>`— que haga el
   trabajo.
+- **Ninguna contraseña se escribe en el repositorio ni se deja en un valor por
+  defecto.** El seeder no crea cuentas; el primer responsable sale de
+  `goharv:responsable`, que la pide por teclado. Si alguna vez hace falta
+  sembrar credenciales, que sea desde una variable de entorno y sin valor por
+  defecto: un `env('X', 'admin123')` termina siendo la contraseña real el día
+  que falta la variable.
+- **Un aviso que solo va por correo no se manda si no hay correo configurado.**
+  Con `MAIL_MAILER=log` Laravel no descarta el mensaje: lo escribe entero en
+  `storage/logs`, y el de bienvenida lleva la clave provisoria en texto plano.
+  Lo frena `Avisos::mandar()`, que es el único punto de salida de los avisos.
 - Todo lo que el navegador pueda cachear lleva su versión en la URL: el CSS con
   `Assets::versioned()` y las fotos con `?v=` + la fecha de la foto. Si algún
   día se suma otro archivo así, que siga la misma regla: sin versión en la URL,
