@@ -59,13 +59,22 @@ return [
     | Application Timezone
     |--------------------------------------------------------------------------
     |
-    | Here you may specify the default timezone for your application, which
-    | will be used by the PHP date and date-time functions. The timezone
-    | is set to "UTC" by default as it is suitable for most use cases.
+    | El equipo trabaja en Argentina y el panel no tiene usuarios en otro huso,
+    | asi que guardar y mostrar en hora local es lo que hace que las fechas
+    | digan lo que uno espera. Con UTC, despues de las 21 "hoy" ya era manana:
+    | una tarea que vencia hoy aparecia vencida tres horas antes de tiempo.
+    |
+    | Va escrito y no por env() a proposito. Si fuera env() y la variable
+    | faltara en el servidor —como ya nos paso con LOG_LEVEL— volveria a UTC
+    | sin avisar, y el sintoma serian fechas corridas, no un error.
+    |
+    | Argentina es UTC-3 todo el ano: no hay horario de verano desde 2009. Esa
+    | es la razon por la que la migracion que corrio las fechas guardadas pudo
+    | restar tres horas parejas sin preguntarse por la epoca del ano.
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'America/Argentina/Buenos_Aires',
 
     /*
     |--------------------------------------------------------------------------
