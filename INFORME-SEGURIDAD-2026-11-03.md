@@ -30,7 +30,7 @@ quien pueda leer el repositorio o los logs.
 | 🔴 Crítica | 0 |
 | 🟠 Alta | 2 (ambas cerradas) |
 | 🟡 Media | 1 |
-| 🔵 Baja | 3 |
+| 🔵 Baja | 3 (1 cerrada) |
 
 ---
 
@@ -272,7 +272,7 @@ Verificado en seco: actualiza 7.4.19 → 7.4.22 sin arrastrar nada más.
 
 ---
 
-### [SEG-05] 🔵 Las fotos de perfil se sirven por ID a cualquier usuario con sesión
+### [SEG-05] 🔵 ~~Las fotos de perfil se sirven por ID a cualquier usuario con sesión~~ · CORREGIDO 2026-11-03
 
 - **Ubicación:** `app/Http/Controllers/ProfileController.php:85-93`
 - **Categoría:** Exposición de información (OWASP A01)
@@ -415,7 +415,10 @@ llegó a materializarse en producción.
 4. SEG-04 — `composer update symfony/mime`.
 
 **Cuando toque**
-5. SEG-05 y SEG-06.
+5. ~~SEG-05~~ — hecho el 2026-11-03. El externo ve solo las fotos de quienes
+   comparten proyecto con él, más la suya. Nueve tests lo fijan, incluido uno
+   que recorre IDs como lo haría quien quisiera enumerar al equipo.
+6. SEG-06 — cambiar `LOG_LEVEL` a `error` en Laravel Cloud. No es código.
 
 ---
 

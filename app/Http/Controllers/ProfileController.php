@@ -84,6 +84,26 @@ class ProfileController extends Controller
      */
     public function avatar(Request $request, User $user): Response
     {
+        /*
+         * Las caras del equipo son para el equipo: aparecen en tareas, notas
+         * y en Equipo, asi que entre nosotros no hay nada que esconder.
+         *
+         * Al profesional externo le cerramos Equipo justamente para que no
+         * vea quienes somos, y recorriendo /equipo/1/foto, /equipo/2/foto...
+         * obtenia la misma lista por la puerta de atras. Ve las de la gente
+         * con la que comparte proyecto —ahi su avatar ya le aparece en
+         * pantalla— y nada mas.
+         *
+         * 404 y no 403: un 403 confirmaria que ese usuario existe, que es la
+         * mitad de lo que se estaba buscando.
+         */
+        abort_unless(
+            $request->user()->isInternal()
+                || $request->user()->is($user)
+                || $request->user()->comparteProyectoCon($user),
+            404,
+        );
+
         $avatar = $user->avatar()->first();
 
         abort_if($avatar === null, 404);

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -94,6 +95,24 @@ class User extends Authenticatable
     public function isInternal(): bool
     {
         return $this->role->isInternal();
+    }
+
+    /**
+     * Si comparten al menos un proyecto, como responsable o colaborador.
+     *
+     * Se apoya en visibleTo(), que es donde ya esta definido que proyectos ve
+     * cada uno: asi no hay una segunda definicion de visibilidad que pueda
+     * quedar desincronizada con la primera. Cuenta los archivados porque el
+     * externo los sigue viendo en su pantalla de Archivados.
+     */
+    public function comparteProyectoCon(User $otro): bool
+    {
+        return Project::withTrashed()
+            ->visibleTo($this)
+            ->where(fn (Builder $q) => $q
+                ->where('owner_id', $otro->id)
+                ->orWhereHas('collaborators', fn (Builder $c) => $c->whereKey($otro->id)))
+            ->exists();
     }
 
     /** Proyectos donde figura como responsable. */
