@@ -28,7 +28,7 @@ quien pueda leer el repositorio o los logs.
 | Severidad | Cantidad |
 |---|---|
 | 🔴 Crítica | 0 |
-| 🟠 Alta | 2 (ambas corregidas) |
+| 🟠 Alta | 2 (ambas cerradas) |
 | 🟡 Media | 1 |
 | 🔵 Baja | 3 |
 
@@ -40,7 +40,7 @@ quien pueda leer el repositorio o los logs.
 
 - **Ubicación:** `database/seeders/DatabaseSeeder.php:15-21`
 - **Categoría:** Credenciales por defecto (OWASP A07)
-- **Confianza:** Confirmado en el código · **A verificar en producción**
+- **Confianza:** Confirmado en el código · **Verificado en producción el 2026-11-03: la cuenta no existe**
 
 **Qué pasa:** el `firstOrCreate` que crea la cuenta `admin@goharv.com` con rol
 `admin` tiene la contraseña escrita como literal de 18 caracteres en el archivo,
@@ -55,7 +55,10 @@ administrador activa con esa contraseña. Desde ahí se puede editar cualquier
 cuenta, cambiar roles y borrar proyectos para siempre.
 
 En la base local esa cuenta **no existe**, así que el seeder nunca corrió acá.
-Falta confirmar lo mismo en producción.
+**Verificado el 2026-11-03: tampoco existe en producción.** El seeder nunca
+corrió en ninguno de los dos entornos, así que la contraseña del repositorio
+nunca llegó a ser una cuenta usable. El hallazgo era riesgo latente, no una
+puerta abierta.
 
 **Código actual:**
 
@@ -123,7 +126,7 @@ y nadie la creó a mano desde Equipo, cambiale la contraseña ya.
 
 - **Ubicación:** `app/Notifications/Bienvenida.php` + `config/mail.php` (`'default' => env('MAIL_MAILER', 'log')`)
 - **Categoría:** Exposición de datos sensibles (OWASP A02)
-- **Confianza:** Confirmado en local · **A verificar en producción**
+- **Confianza:** Confirmado en local · **Verificado en producción el 2026-11-03: nunca se escribió ninguna clave**
 
 **Qué pasa:** cuando se crea una cuenta, el panel manda un correo de bienvenida
 con el usuario y la clave provisoria. Con `MAIL_MAILER=log` —que es lo que hay
@@ -131,7 +134,14 @@ hoy, porque el envío por Resend quedó pendiente— Laravel no manda nada: escr
 el correo **entero** en `storage/logs/laravel.log`, incluido el cuerpo HTML con
 la clave en texto plano.
 
-En el log local hay **27 correos de bienvenida** con su clave legible.
+En el log local había **27 correos de bienvenida** con su clave legible
+(vaciado el 2026-11-03).
+
+**En producción nunca llegó a pasar.** `mail.default` es `log` allá, así que el
+riesgo era real, pero el correo de bienvenida existe desde el 28/10/2026 y la
+cuenta más nueva del panel es del 05/10/2026: ninguna de las seis pudo
+generarlo. El arreglo entró 23 días antes del primer uso posible — suerte de
+cronograma, no diseño, y por eso valía corregirlo igual.
 
 **Cómo se explota:** cualquiera que pueda leer los logs obtiene credenciales
 utilizables. En Laravel Cloud los logs se ven desde el panel de la plataforma y
@@ -388,12 +398,16 @@ claves ni certificados versionados. `public/` tiene solo lo que debe.
    `MAIL_MAILER=log` ya no hace crecer el archivo de log ni un byte.
 
 **Queda de esos dos, y es manual:**
-- Verificar en producción si existe `admin@goharv.com`. Si existe y nadie la
-  creó a mano desde Equipo, cambiarle la clave.
-- Vaciar `storage/logs/laravel.log` en local y en producción: las 27 claves que
-  ya están escritas no se borran solas.
-- Cambiar las claves de las cuentas creadas hasta hoy que su dueño no haya
-  cambiado todavía.
+- ~~Verificar en producción si existe `admin@goharv.com`~~ — hecho el
+  2026-11-03: no existe. El seeder nunca corrió allá.
+- ~~Vaciar `storage/logs/laravel.log`~~ — hecho el 2026-11-03 en local (de
+  1,4 MB a 0). En producción no hacía falta: Laravel Cloud no escribe a disco
+  —usa `laravel-cloud-socket`— y nunca hubo una clave que escribir.
+- ~~Cambiar las claves de las cuentas creadas hasta hoy~~ — no aplica: ninguna
+  cuenta se creó después de que existiera el correo de bienvenida.
+
+**Las dos altas quedan cerradas:** código corregido y verificado que ninguna
+llegó a materializarse en producción.
 
 **Esta semana**
 3. SEG-03 — sumar `auth` y `admin` a las rutas de ARCA antes de que la rama se
@@ -409,7 +423,7 @@ claves ni certificados versionados. `public/` tiene solo lo que debe.
 
 - [ ] `APP_DEBUG=false` y `APP_ENV=production` en Laravel Cloud
 - [ ] `APP_KEY` de producción distinta de la local
-- [ ] `admin@goharv.com` no existe, o tiene una contraseña cambiada a mano
+- [x] `admin@goharv.com` no existe en producción (verificado 2026-11-03)
 - [ ] El comando de deploy **no** incluye `db:seed` ni `migrate --seed`
 - [ ] `MAIL_MAILER` configurado, o SEG-02 corregido
 - [ ] `LOG_STACK=daily` y `LOG_LEVEL=error`
