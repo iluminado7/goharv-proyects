@@ -28,6 +28,20 @@ class ArcaService
             throw new RuntimeException('Falta ARCA_ACCESS_TOKEN en el .env');
         }
 
+        /*
+         * Ultima traba, la que no depende de rutas ni de middleware: emitir
+         * contra produccion desde una maquina que no es produccion seria
+         * generar comprobantes fiscales reales por accidente, probando. Un
+         * ARCA_PRODUCTION=true copiado sin querer de un .env a otro alcanza
+         * para que pase.
+         */
+        if ($config['production'] && ! app()->environment('production')) {
+            throw new RuntimeException(
+                'ARCA_PRODUCTION esta en true fuera de produccion: los comprobantes '
+                .'serian reales. Poné ARCA_PRODUCTION=false para probar.'
+            );
+        }
+
         $options = [
             'CUIT'         => $config['cuit'],
             'production'   => (bool) $config['production'],

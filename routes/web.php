@@ -114,36 +114,38 @@ Route::middleware('auth')->group(function () {
     // Sumar gente y cambiar permisos siguen siendo de admins.
     Route::middleware('admin')->group(function () {
         Route::get('/actividad', [ActivityController::class, 'index'])->name('activity.index');
+
+        /*
+         * Facturacion electronica, todavia en pruebas.
+         *
+         * Vive adentro de 'auth' y 'admin' como cualquier otra pantalla del
+         * panel, y no afuera como estaba. Que sea de prueba no la hace menos
+         * sensible: con ARCA_PRODUCTION en true emite comprobantes fiscales
+         * reales, asi que es de las acciones mas delicadas que hay aca.
+         *
+         * El entorno sigue siendo una traba, pero ahora la tercera y no la
+         * unica: hacen falta sesion, rol de responsable y estar fuera de
+         * produccion. Cuando la facturacion deje de ser exploracion, se saca
+         * esta linea y la pantalla sale sin tocar nada mas.
+         *
+         * 'testing' esta en la lista para que los tests puedan entrar: sin
+         * eso la ruta no existe al correrlos y no habria forma de verificar
+         * que efectivamente pide sesion y rol. Una ruta que no se puede
+         * testear es peor que una ruta con una traba menos.
+         */
+        if (app()->environment('local', 'testing')) {
+            Route::prefix('arca')->controller(ArcaTestController::class)->group(function () {
+                Route::get('/', 'pantalla')->name('arca.test');
+                Route::post('/emitir', 'emitir')->name('arca.test.emitir');
+
+                // Las dos de abajo contestan JSON, para mirar la respuesta
+                // cruda desde el navegador ya con la sesion abierta.
+                Route::get('/estado', 'estado')->name('arca.estado');
+                Route::get('/conexion', 'conexion')->name('arca.conexion');
+            });
+        }
         Route::post('/equipo', [MemberController::class, 'store'])->name('members.store');
         Route::get('/equipo/{user}/editar', [MemberController::class, 'edit'])->name('members.edit');
         Route::patch('/equipo/{user}', [MemberController::class, 'update'])->name('members.update');
     });
 });
-
-/*
-|--------------------------------------------------------------------------
-| Pruebas de ARCA
-|--------------------------------------------------------------------------
-|
-| Solo en local: en Laravel Cloud APP_ENV es production y estas rutas ni se
-| registran. Van fuera del grupo 'auth' y sin CSRF en el POST para poder
-| pegarles con curl, que es justamente por lo que no pueden existir en un
-| servidor donde entra el equipo.
-|
-| Son exploracion: cuando la facturacion sea una funcionalidad del panel, se
-| mueve adentro de 'auth' con su Policy, como todo lo demas.
-|
-*/
-if (app()->environment('local')) {
-    Route::prefix('arca/test')->controller(ArcaTestController::class)->group(function () {
-        Route::get('/', 'pantalla')->name('arca.test');
-        Route::post('emitir', 'emitir')->name('arca.test.emitir');
-
-        // Los de abajo contestan JSON: son los del curl de la guia.
-        Route::get('estado', 'estado');
-        Route::get('conexion', 'conexion');
-        Route::post('factura', 'factura')
-            ->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
-        Route::get('factura/{numero}', 'consultar')->whereNumber('numero');
-    });
-}

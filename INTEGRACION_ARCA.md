@@ -25,38 +25,43 @@ ARCA_KEY_PATH=
 
 Después: `php artisan config:clear`
 
-## 3. Rutas (agregar al final de `routes/web.php`)
+## 3. Rutas
+
+Ya están en `routes/web.php`, **adentro del grupo `auth` + `admin`**, junto a
+Actividad. No hace falta agregar nada.
 
 ```php
-use App\Http\Controllers\ArcaTestController;
-
-if (app()->environment('local')) {
-    Route::prefix('arca/test')->controller(ArcaTestController::class)->group(function () {
-        Route::get('estado', 'estado');
-        Route::get('conexion', 'conexion');
-        Route::post('factura', 'factura')->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
-        Route::get('factura/{numero}', 'consultar');
+if (app()->environment('local', 'testing')) {
+    Route::prefix('arca')->controller(ArcaTestController::class)->group(function () {
+        Route::get('/', 'pantalla')->name('arca.test');
+        Route::post('/emitir', 'emitir')->name('arca.test.emitir');
+        Route::get('/estado', 'estado')->name('arca.estado');
+        Route::get('/conexion', 'conexion')->name('arca.conexion');
     });
 }
 ```
 
+Hacen falta **tres** cosas para entrar: sesión abierta, rol de responsable y
+estar fuera de producción. Antes la única traba era el entorno, y eso era un
+hallazgo de la auditoría (SEG-03): aunque sea una pantalla de prueba, emite
+comprobantes, y con `ARCA_PRODUCTION=true` son fiscales y reales.
+
+`ArcaService` tiene además una cuarta traba que no depende de rutas: se niega a
+construirse si `ARCA_PRODUCTION` está en true fuera de producción.
+
 ## 4. Probar
 
-```bash
-# Estado de servidores
-curl http://localhost:8000/arca/test/estado
+Entrá con una cuenta de responsable y abrí **Facturación** en el menú lateral.
+La pestaña solo aparece si la ruta existe, así que en producción no se ve.
 
-# Conexión completa (auth + punto de venta)
-curl http://localhost:8000/arca/test/conexion
+La pantalla tiene tres bloques: probar conexión, emitir y consultar. Cada uno
+muestra la respuesta de ARCA tal cual.
 
-# Emitir Factura C de prueba a consumidor final
-curl -X POST http://localhost:8000/arca/test/factura \
-  -H "Content-Type: application/json" -H "Accept: application/json" \
-  -d '{"importe": 1500}'
-
-# Consultar la factura emitida
-curl http://localhost:8000/arca/test/factura/1
-```
+> Los `curl` que traía esta guía ya no sirven, y es a propósito: las rutas
+> piden sesión, así que no hay forma de pegarles desde la terminal sin una
+> cookie. El `POST` tampoco tiene ya la excepción de CSRF que se le había
+> puesto para eso. Para mirar la respuesta cruda están `/arca/estado` y
+> `/arca/conexion`, que contestan JSON desde el navegador ya logueado.
 
 ## 5. Pasar a tu certificado
 
@@ -123,6 +128,8 @@ siguiente. `ArcaService` usa `America/Argentina/Buenos_Aires` explícito.
   hay que bajar el PDF y guardarlo, no enlazar al de ellos.
 - **Las peticiones pasan por `app.afipsdk.com`**, no van directo a ARCA. Para
   facturar de verdad, decisión a tomar a conciencia.
-- **Las rutas de `/arca/test` solo existen en local** y están fuera de `auth`.
-  Cuando facturar sea una funcionalidad del panel, se mueven adentro con su
-  Policy.
+- ~~Las rutas de `/arca/test` están fuera de `auth`~~ — corregido el
+  2026-11-03: viven adentro de `auth` + `admin`, con el entorno como tercera
+  traba y una cuarta en `ArcaService`. Cuando facturar deje de ser
+  exploración, se saca el `if` del entorno y la pantalla sale sin tocar nada
+  más.

@@ -26,6 +26,13 @@
         }
         if (auth()->user()->isAdmin()) {
             $items[] = ['actividad', 'Actividad', route('activity.index'), request()->routeIs('activity.*')];
+
+            // Todavía en pruebas, así que la ruta solo existe en local: se
+            // pregunta por el nombre y no por el entorno, para que el día que
+            // la pantalla salga a producción el menú la tome sin tocar nada.
+            if (Route::has('arca.test')) {
+                $items[] = ['factura', 'Facturación', route('arca.test'), request()->routeIs('arca.*')];
+            }
         }
         $items[] = ['perfil', 'Mi perfil', route('profile.edit'), request()->routeIs('profile.*')];
     @endphp

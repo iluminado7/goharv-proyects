@@ -9,6 +9,7 @@
                      . '<path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
         'actividad' => '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
         'perfil'    => '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+        'factura'   => '<path d="M4 3h16v18l-3-2-2 2-3-2-3 2-2-2-3 2z"/><path d="M8 8h8"/><path d="M8 12h8"/>',
         'salir'     => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>'
                      . '<path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
         'menu'      => '<path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/>',

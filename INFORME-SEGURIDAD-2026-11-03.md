@@ -29,7 +29,7 @@ quien pueda leer el repositorio o los logs.
 |---|---|
 | 🔴 Crítica | 0 |
 | 🟠 Alta | 2 (ambas corregidas) |
-| 🟡 Media | 1 |
+| 🟡 Media | 1 (cerrada) |
 | 🔵 Baja | 3 |
 
 ---
@@ -187,7 +187,7 @@ cambiadas por su dueño.
 
 ---
 
-### [SEG-03] 🟡 Las rutas de prueba de ARCA no piden sesión y pueden emitir comprobantes fiscales
+### [SEG-03] 🟡 ~~Las rutas de prueba de ARCA no piden sesión y pueden emitir comprobantes fiscales~~ · CORREGIDO 2026-11-03
 
 - **Ubicación:** `routes/web.php:133-151` (rama `arca`)
 - **Categoría:** Autorización ausente (OWASP A01)
@@ -396,8 +396,11 @@ claves ni certificados versionados. `public/` tiene solo lo que debe.
   cambiado todavía.
 
 **Esta semana**
-3. SEG-03 — sumar `auth` y `admin` a las rutas de ARCA antes de que la rama se
-   acerque a `main`.
+3. ~~SEG-03~~ — hecho el 2026-11-03. Las rutas viven adentro de `auth` +
+   `admin`; el entorno pasó de ser la única traba a ser la tercera, y
+   `ArcaService` suma una cuarta que no depende de rutas ni de middleware. La
+   pantalla usa el layout del panel y aparece como pestaña *Facturación*, solo
+   para responsables. Doce tests nuevos lo fijan.
 4. SEG-04 — `composer update symfony/mime`.
 
 **Cuando toque**

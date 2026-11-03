@@ -1,24 +1,8 @@
-{{-- Pantalla de prueba de ARCA. Exploración: no guarda nada, no tiene
-     permisos y solo existe en local.
+@extends('layouts.app')
+@section('title', 'Facturación')
 
-     No extiende layouts.app porque estas rutas están fuera de 'auth' y ese
-     layout da por hecho que hay sesión. Sí usa la hoja de estilos del panel,
-     para no inventar una estética paralela. --}}
-<!DOCTYPE html>
-<html lang="es" data-theme="{{ $tema }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Pruebas de ARCA — GoHarv</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ \App\Support\Assets::versioned('css/goharv.css') }}">
-</head>
-<body>
-<main class="wrap" style="padding-top:32px">
-
-    <span class="gh-label">Solo en local · no guarda nada</span>
+@section('content')
+    <span class="gh-label">En pruebas · no guarda nada</span>
     <h1 class="page">Pruebas de ARCA</h1>
     <p class="page-sub">
         {{ $config['production'] ? 'PRODUCCIÓN' : 'Homologación' }} ·
@@ -39,7 +23,7 @@
 
     <div class="card">
         <p class="hint">
-            Cada llamada a ARCA tarda entre dos y cuatro segundos, así que no se
+            Cada llamada a ARCA tarda entre dos y nueve segundos, así que no se
             consulta sola al abrir la página.
         </p>
 
@@ -148,6 +132,4 @@
     </div>
 
     <div style="height:60px"></div>
-</main>
-</body>
-</html>
+@endsection
