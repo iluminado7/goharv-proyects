@@ -30,7 +30,7 @@ quien pueda leer el repositorio o los logs.
 | 🔴 Crítica | 0 |
 | 🟠 Alta | 2 (ambas cerradas) |
 | 🟡 Media | 1 |
-| 🔵 Baja | 3 (2 cerradas) |
+| 🔵 Baja | 3 (todas cerradas) |
 
 ---
 
@@ -327,7 +327,7 @@ quedar desincronizada. Devuelve 404 y no 403 para no confirmar que el ID existe.
 
 ---
 
-### [SEG-06] 🔵 El log no rota y guarda la base de datos en los mensajes de error
+### [SEG-06] 🔵 ~~El log no rota y guarda la base de datos en los mensajes de error~~ · CORREGIDO 2026-11-03
 
 - **Ubicación:** `.env` — `LOG_STACK=single`, `LOG_LEVEL=debug`
 - **Categoría:** Exposición de información / higiene
@@ -338,8 +338,14 @@ el canal es `single` y no `daily`. Con `LOG_LEVEL=debug` se vuelcan las consulta
 SQL completas de los errores, incluidos nombres de base, host y —en un caso
 verificado— la URL de suscripción push con su token.
 
-**Corrección:** en producción, `LOG_STACK=daily` y `LOG_LEVEL=error`. En local
-se puede dejar `debug`, pero conviene vaciar el archivo cada tanto.
+**Corrección:** aplicada el 2026-11-03. Se agregó `LOG_LEVEL=error` a las
+variables de producción en Laravel Cloud. La variable **no existía**, y sin
+ella los siete canales de `config/logging.php` caen en su valor por omisión,
+que es `debug`: el más verboso.
+
+La rotación no hace falta allá: el canal es `laravel-cloud-socket` y la maneja
+la plataforma, no un archivo en disco. En local se puede dejar `debug`, pero
+conviene vaciar el archivo cada tanto — el 2026-11-03 se vació, de 1,4 MB a 0.
 
 ---
 
@@ -420,7 +426,10 @@ llegó a materializarse en producción.
 5. ~~SEG-05~~ — hecho el 2026-11-03. El externo ve solo las fotos de quienes
    comparten proyecto con él, más la suya. Nueve tests lo fijan, incluido uno
    que recorre IDs como lo haría quien quisiera enumerar al equipo.
-6. SEG-06 — cambiar `LOG_LEVEL` a `error` en Laravel Cloud. No es código.
+6. ~~SEG-06~~ — hecho el 2026-11-03. `LOG_LEVEL=error` agregada a las
+   variables de producción.
+
+**Los seis hallazgos quedan cerrados.**
 
 ---
 
@@ -431,7 +440,7 @@ llegó a materializarse en producción.
 - [x] `admin@goharv.com` no existe en producción (verificado 2026-11-03)
 - [ ] El comando de deploy **no** incluye `db:seed` ni `migrate --seed`
 - [ ] `MAIL_MAILER` configurado, o SEG-02 corregido
-- [ ] `LOG_STACK=daily` y `LOG_LEVEL=error`
+- [x] `LOG_LEVEL=error` en producción (2026-11-03)
 - [ ] `composer audit` sin avisos
 - [ ] La rama `arca` no está fusionada, o SEG-03 está corregido
 - [ ] Recuperación de contraseña por correo (hoy depende de un responsable)
