@@ -30,7 +30,7 @@ quien pueda leer el repositorio o los logs.
 | 🔴 Crítica | 0 |
 | 🟠 Alta | 2 (ambas cerradas) |
 | 🟡 Media | 1 |
-| 🔵 Baja | 3 (1 cerrada) |
+| 🔵 Baja | 3 (2 cerradas) |
 
 ---
 
@@ -246,7 +246,7 @@ las rutas queden expuestas.
 
 ---
 
-### [SEG-04] 🔵 `symfony/mime` con una vulnerabilidad conocida y corrección disponible
+### [SEG-04] 🔵 ~~`symfony/mime` con una vulnerabilidad conocida y corrección disponible~~ · CORREGIDO 2026-11-03
 
 - **Ubicación:** `composer.lock` — `symfony/mime v7.4.19`
 - **Categoría:** Dependencia vulnerable (OWASP A06)
@@ -262,13 +262,14 @@ parámetro MIME, que es lo que pasa típicamente con nombres de archivos adjunto
 reporta porque la corrección cuesta un comando y porque el día que se adjunte un
 PDF de factura, el camino aparece.
 
-**Corrección:**
+**Corrección:** hecha el 2026-11-03 en las dos ramas.
 
 ```bash
 composer update symfony/mime
 ```
 
-Verificado en seco: actualiza 7.4.19 → 7.4.22 sin arrastrar nada más.
+Actualizó 7.4.19 → 7.4.22 sin arrastrar nada más. `composer audit` quedó en
+«No security vulnerability advisories found» y la suite pasa completa.
 
 ---
 
@@ -412,7 +413,8 @@ llegó a materializarse en producción.
 **Esta semana**
 3. SEG-03 — sumar `auth` y `admin` a las rutas de ARCA antes de que la rama se
    acerque a `main`.
-4. SEG-04 — `composer update symfony/mime`.
+4. ~~SEG-04~~ — hecho el 2026-11-03. symfony/mime 7.4.19 → 7.4.22,
+   `composer audit` limpio.
 
 **Cuando toque**
 5. ~~SEG-05~~ — hecho el 2026-11-03. El externo ve solo las fotos de quienes
