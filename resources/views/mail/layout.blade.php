@@ -36,7 +36,7 @@
                     <tr>
                         <td style="padding:26px 32px;border-bottom:1px solid {{ $dorado }};">
                             <div style="font-family:{{ $titulos }};font-size:21px;font-weight:700;letter-spacing:.02em;color:{{ $texto }};">
-                                GoHarv.
+                                
                             </div>
                             <div style="font-family:{{ $titulos }};font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:{{ $oscuro }};padding-top:4px;">
                                 Project Manager
@@ -80,7 +80,7 @@
                     <tr>
                         <td style="padding:20px 32px;border-top:1px solid {{ $dorado }};">
                             <div style="font-family:{{ $titulos }};font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:{{ $oscuro }};">
-                                GoHarv Project Manager · {{ now()->year }}
+                                Project Manager · {{ now()->year }}
                             </div>
                         </td>
                     </tr>

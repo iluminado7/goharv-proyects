@@ -4,7 +4,7 @@
     </p>
 
     <p style="margin:0 0 20px;font-family:Roboto,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#555555;">
-        {{ $quien }} te creó una cuenta en el panel de proyectos de GoHarv. Entrás con
+        {{ $quien }} te creó una cuenta en el panel de proyectos del Project Manager. Entrás con
         estos datos:
     </p>
 
