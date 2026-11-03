@@ -28,9 +28,9 @@ quien pueda leer el repositorio o los logs.
 | Severidad | Cantidad |
 |---|---|
 | 🔴 Crítica | 0 |
-| 🟠 Alta | 2 (ambas corregidas) |
+| 🟠 Alta | 2 (ambas cerradas) |
 | 🟡 Media | 1 (cerrada) |
-| 🔵 Baja | 3 |
+| 🔵 Baja | 3 (2 cerradas) |
 
 ---
 
@@ -40,7 +40,7 @@ quien pueda leer el repositorio o los logs.
 
 - **Ubicación:** `database/seeders/DatabaseSeeder.php:15-21`
 - **Categoría:** Credenciales por defecto (OWASP A07)
-- **Confianza:** Confirmado en el código · **A verificar en producción**
+- **Confianza:** Confirmado en el código · **Verificado en producción el 2026-11-03: la cuenta no existe**
 
 **Qué pasa:** el `firstOrCreate` que crea la cuenta `admin@goharv.com` con rol
 `admin` tiene la contraseña escrita como literal de 18 caracteres en el archivo,
@@ -55,7 +55,10 @@ administrador activa con esa contraseña. Desde ahí se puede editar cualquier
 cuenta, cambiar roles y borrar proyectos para siempre.
 
 En la base local esa cuenta **no existe**, así que el seeder nunca corrió acá.
-Falta confirmar lo mismo en producción.
+**Verificado el 2026-11-03: tampoco existe en producción.** El seeder nunca
+corrió en ninguno de los dos entornos, así que la contraseña del repositorio
+nunca llegó a ser una cuenta usable. El hallazgo era riesgo latente, no una
+puerta abierta.
 
 **Código actual:**
 
@@ -123,7 +126,7 @@ y nadie la creó a mano desde Equipo, cambiale la contraseña ya.
 
 - **Ubicación:** `app/Notifications/Bienvenida.php` + `config/mail.php` (`'default' => env('MAIL_MAILER', 'log')`)
 - **Categoría:** Exposición de datos sensibles (OWASP A02)
-- **Confianza:** Confirmado en local · **A verificar en producción**
+- **Confianza:** Confirmado en local · **Verificado en producción el 2026-11-03: nunca se escribió ninguna clave**
 
 **Qué pasa:** cuando se crea una cuenta, el panel manda un correo de bienvenida
 con el usuario y la clave provisoria. Con `MAIL_MAILER=log` —que es lo que hay
@@ -131,7 +134,14 @@ hoy, porque el envío por Resend quedó pendiente— Laravel no manda nada: escr
 el correo **entero** en `storage/logs/laravel.log`, incluido el cuerpo HTML con
 la clave en texto plano.
 
-En el log local hay **27 correos de bienvenida** con su clave legible.
+En el log local había **27 correos de bienvenida** con su clave legible
+(vaciado el 2026-11-03).
+
+**En producción nunca llegó a pasar.** `mail.default` es `log` allá, así que el
+riesgo era real, pero el correo de bienvenida existe desde el 28/10/2026 y la
+cuenta más nueva del panel es del 05/10/2026: ninguna de las seis pudo
+generarlo. El arreglo entró 23 días antes del primer uso posible — suerte de
+cronograma, no diseño, y por eso valía corregirlo igual.
 
 **Cómo se explota:** cualquiera que pueda leer los logs obtiene credenciales
 utilizables. En Laravel Cloud los logs se ven desde el panel de la plataforma y
@@ -236,7 +246,7 @@ las rutas queden expuestas.
 
 ---
 
-### [SEG-04] 🔵 `symfony/mime` con una vulnerabilidad conocida y corrección disponible
+### [SEG-04] 🔵 ~~`symfony/mime` con una vulnerabilidad conocida y corrección disponible~~ · CORREGIDO 2026-11-03
 
 - **Ubicación:** `composer.lock` — `symfony/mime v7.4.19`
 - **Categoría:** Dependencia vulnerable (OWASP A06)
@@ -252,17 +262,18 @@ parámetro MIME, que es lo que pasa típicamente con nombres de archivos adjunto
 reporta porque la corrección cuesta un comando y porque el día que se adjunte un
 PDF de factura, el camino aparece.
 
-**Corrección:**
+**Corrección:** hecha el 2026-11-03 en las dos ramas.
 
 ```bash
 composer update symfony/mime
 ```
 
-Verificado en seco: actualiza 7.4.19 → 7.4.22 sin arrastrar nada más.
+Actualizó 7.4.19 → 7.4.22 sin arrastrar nada más. `composer audit` quedó en
+«No security vulnerability advisories found» y la suite pasa completa.
 
 ---
 
-### [SEG-05] 🔵 Las fotos de perfil se sirven por ID a cualquier usuario con sesión
+### [SEG-05] 🔵 ~~Las fotos de perfil se sirven por ID a cualquier usuario con sesión~~ · CORREGIDO 2026-11-03
 
 - **Ubicación:** `app/Http/Controllers/ProfileController.php:85-93`
 - **Categoría:** Exposición de información (OWASP A01)
@@ -388,23 +399,32 @@ claves ni certificados versionados. `public/` tiene solo lo que debe.
    `MAIL_MAILER=log` ya no hace crecer el archivo de log ni un byte.
 
 **Queda de esos dos, y es manual:**
-- Verificar en producción si existe `admin@goharv.com`. Si existe y nadie la
-  creó a mano desde Equipo, cambiarle la clave.
-- Vaciar `storage/logs/laravel.log` en local y en producción: las 27 claves que
-  ya están escritas no se borran solas.
-- Cambiar las claves de las cuentas creadas hasta hoy que su dueño no haya
-  cambiado todavía.
+- ~~Verificar en producción si existe `admin@goharv.com`~~ — hecho el
+  2026-11-03: no existe. El seeder nunca corrió allá.
+- ~~Vaciar `storage/logs/laravel.log`~~ — hecho el 2026-11-03 en local (de
+  1,4 MB a 0). En producción no hacía falta: Laravel Cloud no escribe a disco
+  —usa `laravel-cloud-socket`— y nunca hubo una clave que escribir.
+- ~~Cambiar las claves de las cuentas creadas hasta hoy~~ — no aplica: ninguna
+  cuenta se creó después de que existiera el correo de bienvenida.
+
+**Las dos altas quedan cerradas:** código corregido y verificado que ninguna
+llegó a materializarse en producción.
 
 **Esta semana**
-3. ~~SEG-03~~ — hecho el 2026-11-03. Las rutas viven adentro de `auth` +
-   `admin`; el entorno pasó de ser la única traba a ser la tercera, y
-   `ArcaService` suma una cuarta que no depende de rutas ni de middleware. La
-   pantalla usa el layout del panel y aparece como pestaña *Facturación*, solo
-   para responsables. Doce tests nuevos lo fijan.
-4. SEG-04 — `composer update symfony/mime`.
+3. ~~SEG-03~~ — hecho el 2026-11-03 en la rama `arca`, que es la única donde
+   existe esa pantalla. Las rutas viven adentro de `auth` + `admin`; el
+   entorno pasó de ser la única traba a ser la tercera, y `ArcaService` suma
+   una cuarta que no depende de rutas ni de middleware. La pantalla usa el
+   layout del panel y aparece como pestaña *Facturación*, solo para
+   responsables. Doce tests nuevos lo fijan.
+4. ~~SEG-04~~ — hecho el 2026-11-03. symfony/mime 7.4.19 → 7.4.22,
+   `composer audit` limpio.
 
 **Cuando toque**
-5. SEG-05 y SEG-06.
+5. ~~SEG-05~~ — hecho el 2026-11-03. El externo ve solo las fotos de quienes
+   comparten proyecto con él, más la suya. Nueve tests lo fijan, incluido uno
+   que recorre IDs como lo haría quien quisiera enumerar al equipo.
+6. SEG-06 — cambiar `LOG_LEVEL` a `error` en Laravel Cloud. No es código.
 
 ---
 
@@ -412,7 +432,7 @@ claves ni certificados versionados. `public/` tiene solo lo que debe.
 
 - [ ] `APP_DEBUG=false` y `APP_ENV=production` en Laravel Cloud
 - [ ] `APP_KEY` de producción distinta de la local
-- [ ] `admin@goharv.com` no existe, o tiene una contraseña cambiada a mano
+- [x] `admin@goharv.com` no existe en producción (verificado 2026-11-03)
 - [ ] El comando de deploy **no** incluye `db:seed` ni `migrate --seed`
 - [ ] `MAIL_MAILER` configurado, o SEG-02 corregido
 - [ ] `LOG_STACK=daily` y `LOG_LEVEL=error`
