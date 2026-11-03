@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Enums\ActivityAction;
+use App\Enums\Currency;
 use App\Enums\NotificationType;
+use App\Enums\PaymentTerm;
 use App\Enums\ProjectPriority;
 use App\Enums\ProjectStatus;
 use App\Notifications\ProjectEvent;
@@ -29,16 +31,20 @@ class Project extends Model
         'name', 'slug', 'description', 'client',
         'status', 'priority', 'owner_id', 'due_date',
         'started_at', 'completed_at',
+        'precio', 'moneda', 'condicion_pago', 'orden_compra',
     ];
 
     protected function casts(): array
     {
         return [
-            'status'       => ProjectStatus::class,
-            'priority'     => ProjectPriority::class,
-            'due_date'     => 'date',
-            'started_at'   => 'datetime',
-            'completed_at' => 'datetime',
+            'status'         => ProjectStatus::class,
+            'priority'       => ProjectPriority::class,
+            'due_date'       => 'date',
+            'started_at'     => 'datetime',
+            'completed_at'   => 'datetime',
+            'precio'         => 'decimal:2',
+            'moneda'         => Currency::class,
+            'condicion_pago' => PaymentTerm::class,
         ];
     }
 
@@ -315,6 +321,21 @@ class Project extends Model
                 ->orWhere('description', 'like', "%{$term}%")
                 ->orWhere('client', 'like', "%{$term}%");
         });
+    }
+
+    /**
+     * El precio listo para mostrar, o null si no se acordo todavia.
+     *
+     * Sin moneda no hay precio que mostrar: un numero suelto no dice nada
+     * cuando el panel maneja pesos y dolares.
+     */
+    public function precioFormateado(): ?string
+    {
+        if ($this->precio === null || $this->moneda === null) {
+            return null;
+        }
+
+        return $this->moneda->formato($this->precio);
     }
 
     public function isOverdue(): bool

@@ -64,6 +64,51 @@
             @error('description') <p class="err">{{ $message }}</p> @enderror
         </div>
 
+        @can('viewPrice', $project)
+        {{-- Lo comercial. No lo ve el profesional externo: el precio es lo que
+             paga el cliente, no lo que cobra el. La policy decide, y el
+             controlador descarta estos campos si llegan igual por POST. --}}
+        <div class="row-2">
+            <div class="field">
+                <label for="precio">Precio</label>
+                <input id="precio" name="precio" type="number" step="0.01" min="0"
+                       inputmode="decimal" placeholder="Sin acordar"
+                       value="{{ old('precio', $project->precio) }}">
+                @error('precio') <p class="err">{{ $message }}</p> @enderror
+            </div>
+            <div class="field">
+                <label for="moneda">Moneda</label>
+                <select id="moneda" name="moneda">
+                    <option value="">—</option>
+                    @foreach ($monedas as $m)
+                        <option value="{{ $m->value }}" @selected(old('moneda', $project->moneda?->value) === $m->value)>{{ $m->value }} · {{ $m->label() }}</option>
+                    @endforeach
+                </select>
+                @error('moneda') <p class="err">{{ $message }}</p> @enderror
+            </div>
+        </div>
+
+        <div class="row-2">
+            <div class="field">
+                <label for="condicion_pago">Condición de pago</label>
+                <select id="condicion_pago" name="condicion_pago">
+                    <option value="">Sin definir</option>
+                    @foreach ($condiciones as $c)
+                        <option value="{{ $c->value }}" @selected(old('condicion_pago', $project->condicion_pago?->value) === $c->value)>{{ $c->label() }}</option>
+                    @endforeach
+                </select>
+                @error('condicion_pago') <p class="err">{{ $message }}</p> @enderror
+            </div>
+            <div class="field">
+                <label for="orden_compra">Orden de compra</label>
+                <input id="orden_compra" name="orden_compra" maxlength="60"
+                       placeholder="La que mandó el cliente"
+                       value="{{ old('orden_compra', $project->orden_compra) }}">
+                @error('orden_compra') <p class="err">{{ $message }}</p> @enderror
+            </div>
+        </div>
+        @endcan
+
         <div class="row-2">
             <div class="field">
                 <label for="status">Estado</label>

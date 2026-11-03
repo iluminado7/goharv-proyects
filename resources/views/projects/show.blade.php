@@ -19,6 +19,29 @@
             <p style="margin:0 0 20px;max-width:66ch">{{ $project->description }}</p>
         @endif
 
+        @can('viewPrice', $project)
+            @php
+                $comercial = array_filter([
+                    'Precio'            => $project->precioFormateado(),
+                    'Condición de pago' => $project->condicion_pago?->label(),
+                    'Orden de compra'   => $project->orden_compra,
+                ]);
+            @endphp
+
+            @if ($comercial)
+                {{-- Solo el equipo. El profesional externo ve la ficha entera
+                     menos este bloque. --}}
+                <dl class="comercial">
+                    @foreach ($comercial as $rotulo => $valor)
+                        <div>
+                            <dt>{{ $rotulo }}</dt>
+                            <dd @class(['monto' => $rotulo === 'Precio'])>{{ $valor }}</dd>
+                        </div>
+                    @endforeach
+                </dl>
+            @endif
+        @endcan
+
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
             @foreach ($project->links as $link)
                 <a class="btn btn-ghost" href="{{ $link->url }}"

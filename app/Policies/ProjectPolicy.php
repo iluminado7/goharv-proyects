@@ -56,6 +56,22 @@ class ProjectPolicy
         return $user->isInternal();
     }
 
+    /**
+     * Ver y tocar lo comercial: precio, moneda, condicion de pago y orden de
+     * compra.
+     *
+     * Solo el equipo. El profesional externo ve el proyecto entero menos
+     * esto, porque es lo que paga el cliente y no lo que cobra el: son dos
+     * numeros distintos y el segundo se acuerda aparte.
+     *
+     * El $project es opcional para que valga tambien al crear, cuando todavia
+     * no hay proyecto: ahi la pregunta es la misma y la respuesta tambien.
+     */
+    public function viewPrice(User $user, ?Project $project = null): bool
+    {
+        return $user->isInternal();
+    }
+
     public function update(User $user, Project $project): bool
     {
         return $this->involved($user, $project);

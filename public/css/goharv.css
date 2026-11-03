@@ -521,3 +521,15 @@ h2.section{font-family:var(--fuente-titulo);font-weight:700;font-size:22px;line-
   border-left:3px solid var(--accent);font-family:'Courier New',Courier,monospace;
   font-size:15px;color:var(--ink);text-transform:none;word-break:break-word;
   -webkit-user-select:all;user-select:all}
+
+/* --- Lo comercial del proyecto ----------------------------------------- */
+/* Los rotulos son etiquetas de la marca: versalitas, espaciadas y en --label,
+   que es dorado oscuro en claro y dorado claro en oscuro. El monto no va en
+   dorado: la guia pide que los numeros vayan en --ink, y pintarlo seria
+   competir con el unico acento de la pantalla. */
+.comercial{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:18px;margin:0 0 24px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.comercial dt{font-family:var(--fuente-titulo);font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:var(--tracking-label);color:var(--label)}
+.comercial dd{margin:6px 0 0;font-size:16px;color:var(--ink)}
+.comercial dd.monto{font-family:var(--fuente-numeros);font-size:20px;font-weight:700}

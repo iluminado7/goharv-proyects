@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ActivityAction;
+use App\Enums\Currency;
 use App\Enums\NotificationType;
+use App\Enums\PaymentTerm;
 use App\Enums\ProjectPriority;
 use App\Enums\ProjectStatus;
 use App\Models\Activity;
@@ -86,8 +88,10 @@ class ProjectController extends Controller
             'links'      => [],
             'statuses'   => ProjectStatus::cases(),
             'priorities' => ProjectPriority::cases(),
-            'members'    => $this->activeMembers(),
-            'empresas'   => Project::clientes($request->user()),
+            'members'     => $this->activeMembers(),
+            'empresas'    => Project::clientes($request->user()),
+            'monedas'     => Currency::cases(),
+            'condiciones' => PaymentTerm::cases(),
         ]);
     }
 
@@ -96,6 +100,8 @@ class ProjectController extends Controller
         $this->authorize('create', Project::class);
 
         $data = $this->validated($request);
+
+        $this->sacarLoComercial($data, $request, null);
 
         $project = Project::create($data);
         $sync = $project->collaborators()->sync($request->input('collaborators', []));
@@ -140,8 +146,10 @@ class ProjectController extends Controller
             'links'      => $project->links->map->only(['label', 'url'])->all(),
             'statuses'   => ProjectStatus::cases(),
             'priorities' => ProjectPriority::cases(),
-            'members'    => $this->activeMembers(),
-            'empresas'   => Project::clientes($request->user()),
+            'members'     => $this->activeMembers(),
+            'empresas'    => Project::clientes($request->user()),
+            'monedas'     => Currency::cases(),
+            'condiciones' => PaymentTerm::cases(),
         ]);
     }
 
@@ -170,6 +178,8 @@ class ProjectController extends Controller
         if (! $puedeDelegar) {
             unset($data['owner_id']);
         }
+
+        $this->sacarLoComercial($data, $request, $project);
 
         $project->update($data);
 
@@ -399,6 +409,22 @@ class ProjectController extends Controller
         return User::where('is_active', true)->orderBy('name')->get();
     }
 
+    /**
+     * Lo comercial solo lo escribe quien puede verlo.
+     *
+     * Misma idea que prioridad y responsable: esconder los campos en la vista
+     * no alcanza, porque nada impide mandar un POST con precio=1 a mano. La
+     * regla vive en la policy y aca se aplica.
+     */
+    private function sacarLoComercial(array &$data, Request $request, ?Project $project): void
+    {
+        if ($request->user()->can('viewPrice', $project ?? Project::class)) {
+            return;
+        }
+
+        unset($data['precio'], $data['moneda'], $data['condicion_pago'], $data['orden_compra']);
+    }
+
     private function validated(Request $request): array
     {
         $validated = $request->validate([
@@ -409,6 +435,10 @@ class ProjectController extends Controller
             'priority'        => ['required', Rule::in(ProjectPriority::values())],
             'owner_id'        => ['nullable', 'exists:users,id'],
             'due_date'        => ['nullable', 'date'],
+            'precio'          => ['nullable', 'numeric', 'min:0', 'max:999999999999.99'],
+            'moneda'          => ['nullable', Rule::in(Currency::values()), 'required_with:precio'],
+            'condicion_pago'  => ['nullable', Rule::in(PaymentTerm::values())],
+            'orden_compra'    => ['nullable', 'string', 'max:60'],
             'collaborators'   => ['array'],
             'collaborators.*' => ['integer', 'exists:users,id'],
             'links'           => ['array', 'max:12'],
@@ -417,6 +447,8 @@ class ProjectController extends Controller
         ], [
             'links.*.url.url'           => 'Los enlaces tienen que ser una URL completa (https://…).',
             'links.*.url.required_with' => 'Falta la URL de uno de los enlaces.',
+            'moneda.required_with'      => 'Elegí la moneda del precio.',
+            'precio.min'                => 'El precio no puede ser negativo.',
         ]);
 
         unset($validated['links'], $validated['collaborators']);
