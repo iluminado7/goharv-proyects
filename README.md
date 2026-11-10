@@ -218,6 +218,45 @@ para auditar el panel entero y la mira un responsable cuando quiere; la
 **campana** es personal y trae solo lo que pide tu atención. Si un evento no
 cumple "otro te lo hizo y podés hacer algo", va a la bitácora y no a la campana.
 
+**Formulario de cacciatoreabogados.com.ar.** El sitio del estudio es estático
+(S3 + CloudFront, sin backend propio) y manda su formulario de contacto al panel
+por una API mínima: `POST /api/cacciatore` (`routes/api.php`,
+`Api\CacciatoreMessageController`). Llega como JSON desde otro dominio y sin
+sesión, así que no pasa por el grupo `web`: ni CSRF, ni CSP, ni el chequeo de
+cuentas de baja. Las defensas, de la más barata a la más cara:
+
+- **5 envíos por minuto por IP** (`throttle:5,1`).
+- **Campo trampa** (`website`): si llega completo, responde OK sin guardar.
+- **Validación propia**: el navegador del sitio también valida, pero eso lo
+  saltea cualquiera que mande el POST a mano. Los campos que terminan en el
+  asunto o en las cabeceras del mail no aceptan saltos de línea. Al teléfono se
+  le sacan espacios, guiones y paréntesis antes de validar.
+- **Cloudflare Turnstile**: el sitio manda el token del widget y el panel lo
+  verifica contra Cloudflare con `TURNSTILE_SECRET_KEY` (`App\Support\Turnstile`).
+  Falla cerrado: sin clave, con Cloudflare caído o con un token inválido, no se
+  guarda nada.
+- **CORS** solo para los orígenes de `CORS_ALLOWED_ORIGINS` (`config/cors.php`).
+  Ese archivo tiene que existir: sin él, Laravel acepta cualquier origen en
+  `api/*`. CORS solo lo respetan los navegadores; la protección real son los
+  puntos de arriba.
+- **Siempre JSON**, también en los errores (`shouldRenderJsonWhen` en
+  `bootstrap/app.php`). Sin eso, un error de validación sería una redirección
+  que el `fetch` sigue hasta un 200, y el visitante vería "¡Gracias!" sin que se
+  guardara nada.
+
+Primero se guarda la consulta y después se avisa, y ningún aviso puede voltear
+el envío: bitácora (`ConsultaRecibida`), campana y push al **equipo interno**
+(`Notifications\ConsultaRecibida`; el profesional externo no la recibe) y un
+**mail al estudio** (`Mail\CacciatoreMessageReceived`) a `CACCIATORE_MAIL_TO`,
+desde `CACCIATORE_MAIL_FROM` y con el visitante en **Reply-To**, nunca en From
+(rompería SPF y DMARC). Con `MAIL_MAILER=log` el mail no se manda, para no
+escribir datos personales en el log. Se leen en **Consultas web** (`/consultas`),
+del equipo interno, con filtro por fechas y empresa.
+
+Para probar en local, el sitio detecta `localhost` y usa la clave de prueba de
+Turnstile; el panel tiene que tener la secreta de prueba
+(`1x0000000000000000000000000000000AA`).
+
 ---
 
 ## Instalación
@@ -240,6 +279,11 @@ DB_USERNAME=
 DB_PASSWORD=
 APP_LOCALE=es
 APP_TIMEZONE=America/Argentina/Buenos_Aires
+# Formulario de cacciatoreabogados.com.ar (ver "Qué hace hoy")
+CORS_ALLOWED_ORIGINS=https://cacciatoreabogados.com.ar,https://www.cacciatoreabogados.com.ar
+TURNSTILE_SECRET_KEY=
+CACCIATORE_MAIL_TO=
+CACCIATORE_MAIL_FROM=
 ```
 
 Registrar el middleware de administrador en `bootstrap/app.php`:
@@ -286,6 +330,7 @@ Después se carga al resto del equipo desde *Equipo*.
 | `activity_logs` | Bitácora: `user_id`, `action`, `project_id`, `subject`, `detail`, `ip`, `created_at`. Append-only, sin `updated_at`. |
 | `project_user` | Colaboradores además del responsable. |
 | `project_updates` | Historial: autor, comentario, `status_from`, `status_to`. |
+| `cacciatore_messages` | Consultas del sitio del estudio: `name`, `last_name`, `company`, `email`, `phone`, `country`, `message`, `page`, `locale` (es/en/pt), `consented_at` e IP. |
 
 Los archivados no son otra tabla: son filas de `projects` con `deleted_at` cargado.
 
@@ -296,12 +341,16 @@ Los archivados no son otra tabla: son filas de `projects` con `deleted_at` carga
 ```
 app/Enums/            ProjectStatus, ProjectPriority, UserRole, ActivityAction,
                       NotificationType
-app/Notifications/    ProjectEvent
+app/Notifications/    ProjectEvent, ConsultaRecibida
+app/Mail/             CacciatoreMessageReceived
 app/Models/           Project, ProjectLink, ProjectUpdate, Task, User,
-                      UserAvatar, Activity
-app/Support/          AvatarImage, Assets
+                      UserAvatar, Activity, CacciatoreMessage
+app/Support/          AvatarImage, Assets, Avisos, Turnstile
 app/Http/Controllers/ ProjectController, MemberController, ProfileController,
-                      ThemeController, Auth/LoginController
+                      ThemeController, Auth/LoginController, InquiryController,
+                      Api/CacciatoreMessageController
+routes/api.php        POST /api/cacciatore (formulario del sitio del estudio)
+config/cors.php       Orígenes permitidos para la API
 app/Http/Middleware/  EnsureUserIsAdmin, EnsureUserIsActive, SecurityHeaders
 app/Policies/         ProjectPolicy, ProjectUpdatePolicy, TaskPolicy
 resources/views/      layouts/app, auth/login, projects/*, members/index,

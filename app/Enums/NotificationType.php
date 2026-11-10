@@ -17,6 +17,13 @@ enum NotificationType: string
     case TareaHecha    = 'tarea_hecha';
 
     /**
+     * Llego una consulta por cacciatoreabogados.com.ar. Es la excepcion a la
+     * regla de arriba: no viene de un proyecto, pero es plata que entra y la
+     * atiende quien pueda, asi que avisa a todo el equipo interno.
+     */
+    case ConsultaWeb   = 'consulta_web';
+
+    /**
      * Cuales ademas del aviso en la campana mandan un correo.
      *
      * Solo los tres que dicen "esto ahora es tuyo". Los otros tres —una nota,
@@ -50,6 +57,7 @@ enum NotificationType: string
             self::Comentario    => 'dejó una nota en',
             self::CambioEstado  => 'movió de estado',
             self::TareaHecha    => 'completó una tarea en',
+            self::ConsultaWeb   => 'mandó una consulta por',
         };
     }
 
@@ -62,6 +70,7 @@ enum NotificationType: string
             self::CambioEstado => 'Cambio de estado',
             self::TareaAsignada => 'Te asignaron una tarea',
             self::TareaHecha    => 'Completaron una tarea',
+            self::ConsultaWeb   => 'Consulta web',
         };
     }
 
@@ -74,6 +83,7 @@ enum NotificationType: string
             self::CambioEstado => 'var(--accent)',
             self::TareaAsignada => 'var(--warning)',
             self::TareaHecha    => 'var(--success)',
+            self::ConsultaWeb   => 'var(--accent)',
         };
     }
 }

@@ -16,9 +16,7 @@
         @forelse ($notificaciones as $n)
             @php
                 $tipo    = \App\Enums\NotificationType::tryFrom($n->data['tipo'] ?? '');
-                $destino = ($n->data['project_id'] ?? null)
-                    ? \App\Models\Project::find($n->data['project_id'])
-                    : null;
+                $destino = \App\Support\Avisos::destino($n->data);
             @endphp
 
             <div class="aviso {{ $n->read_at ? '' : 'sin-leer' }}">
@@ -27,7 +25,7 @@
                 <span class="aviso-cuerpo">
                     <strong>{{ $tipo?->label() ?? 'Novedad' }}</strong> ·
                     @if ($destino)
-                        <a class="to-detail" href="{{ route('projects.show', $destino) }}">{{ $n->data['proyecto'] }}</a>
+                        <a class="to-detail" href="{{ $destino }}">{{ $n->data['proyecto'] }}</a>
                     @else
                         {{-- El proyecto pudo haberse borrado: el nombre quedó guardado. --}}
                         {{ $n->data['proyecto'] ?? 'Un proyecto' }}

@@ -22,6 +22,7 @@
             ['proyectos', 'Proyectos', route('projects.index'), request()->routeIs('projects.*')],
         ];
         if (auth()->user()->isInternal()) {
+            $items[] = ['consultas', 'Consultas web', route('inquiries.index'), request()->routeIs('inquiries.*')];
             $items[] = ['equipo', 'Equipo', route('members.index'), request()->routeIs('members.*')];
         }
         if (auth()->user()->isAdmin()) {

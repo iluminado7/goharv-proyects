@@ -34,13 +34,11 @@
             @forelse ($ultimas as $n)
                 @php
                     $tipo    = \App\Enums\NotificationType::tryFrom($n->data['tipo'] ?? '');
-                    $destino = ($n->data['project_id'] ?? null)
-                        ? \App\Models\Project::find($n->data['project_id'])
-                        : null;
+                    $destino = \App\Support\Avisos::destino($n->data);
                 @endphp
 
                 <a class="campana-item {{ $n->read_at ? '' : 'sin-leer' }}"
-                   href="{{ $destino ? route('projects.show', $destino) : route('notifications.index') }}">
+                   href="{{ $destino ?? route('notifications.index') }}">
                     <span class="aviso-punto" style="background:{{ $tipo?->color() ?? 'var(--muted)' }}"></span>
                     <span>
                         <strong>{{ $tipo?->label() ?? 'Novedad' }}</strong>

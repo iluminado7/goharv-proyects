@@ -428,14 +428,34 @@ cuando las hizo otro:
 - Alguien movió el estado
 - Te asignaron una tarea en un proyecto
 - Completaron una tarea que te tocaba, o una que vos pediste
+- Llegó una consulta por la web del estudio (ver *Consultas web*)
 
 **No te avisa de lo que hacés vos**, ni de proyectos en los que no participás.
-Es a propósito: una campana que suena por todo se termina ignorando.
+Es a propósito: una campana que suena por todo se termina ignorando. La única
+excepción son las consultas de la web: le avisan a todo el equipo, porque no
+tienen dueño y las atiende quien pueda.
 
 Los avisos sin leer quedan resaltados. Con *Marcar todas como leídas* se limpia
 el contador; los avisos no se borran.
 
 Por ahora los avisos viven dentro del panel: **no llega nada por correo**.
+
+---
+
+## Consultas web
+
+Lo que la gente manda por el formulario de contacto de
+**cacciatoreabogados.com.ar**. Cada consulta muestra quién la mandó, de qué
+empresa, su correo y teléfono, el mensaje, el país y en qué idioma estaba
+mirando el sitio (ES, EN o PT).
+
+Arriba se filtra por fechas y por empresa. Las más nuevas aparecen primero.
+
+**Para contestar**, respondé el mail que le llega al estudio con la consulta:
+el *Responder* va directo a la persona. El panel solo las muestra; no se
+contestan ni se borran desde acá.
+
+La ve todo el equipo, salvo los profesionales externos.
 
 ---
 
@@ -445,8 +465,8 @@ Solo para responsables del panel, en **Actividad**. Es el registro de todo lo
 que pasa: quién entró, quién intentó entrar sin lograrlo, qué proyectos se
 crearon, se movieron de estado o se archivaron, y quién borró qué.
 
-Arriba hay cuatro botones para filtrar —*Todo*, *Accesos*, *Fallidos*,
-*Proyectos*— y se puede acotar por acción o por persona. Si ves muchos
+Arriba hay cinco botones para filtrar —*Todo*, *Accesos*, *Fallidos*,
+*Proyectos*, *Sitio web*— y se puede acotar por acción o por persona. Si ves muchos
 **intentos fallidos** seguidos de un mismo correo, puede ser alguien que se
 olvidó la clave… o alguien probando.
 

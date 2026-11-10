@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Enums\NotificationType;
+use App\Models\Project;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -39,6 +41,25 @@ class Avisos
     {
         return filled(config('webpush.vapid.public_key'))
             && filled(config('webpush.vapid.private_key'));
+    }
+
+    /**
+     * A donde lleva un aviso guardado, o null si ya no lleva a ningun lado
+     * (el proyecto se borro). Lo usan la campana y la pantalla de avisos.
+     *
+     * Se arma al mostrarlo y no se guarda en el aviso: una URL guardada queda
+     * apuntando al dominio viejo si el panel se muda, y en XAMPP el panel
+     * cuelga de una subcarpeta.
+     */
+    public static function destino(array $data): ?string
+    {
+        if (($data['tipo'] ?? null) === NotificationType::ConsultaWeb->value) {
+            return route('inquiries.index');
+        }
+
+        $proyecto = ($data['project_id'] ?? null) ? Project::find($data['project_id']) : null;
+
+        return $proyecto ? route('projects.show', $proyecto) : null;
     }
 
     public static function mandar(Collection|array $destinatarios, Notification $aviso): void

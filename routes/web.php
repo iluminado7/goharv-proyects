@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PasswordChangeController;
@@ -108,6 +109,11 @@ Route::middleware('auth')->group(function () {
     Route::middleware('interno')->group(function () {
         Route::get('/equipo', [MemberController::class, 'index'])->name('members.index');
         Route::patch('/equipo/{user}/acceso', [MemberController::class, 'access'])->name('members.access');
+
+        // Lo que llega del formulario de cacciatoreabogados.com.ar (se guarda
+        // por routes/api.php). Del equipo interno: son datos de clientes del
+        // estudio, y el profesional externo solo ve lo que le delegaron.
+        Route::get('/consultas', [InquiryController::class, 'index'])->name('inquiries.index');
     });
 
     // Sumar gente y cambiar permisos siguen siendo de admins.

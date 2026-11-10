@@ -235,6 +235,32 @@ a{color:inherit;text-decoration:none}
 .dot{width:7px;height:7px;border-radius:50%}
 .acts{display:flex;gap:7px;padding:15px 16px 15px 0;align-items:center}
 
+/* Consultas web: una tarjeta por consulta del sitio. */
+.msg{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:15px 18px}
+.msg-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px 16px;flex-wrap:wrap}
+.msg-who{min-width:0}
+.msg-when{flex:none;font-size:12px;color:var(--faint);white-space:nowrap;padding-top:2px}
+.msg-tag{font-size:11.5px;color:var(--muted);border:1px solid var(--line);padding:1px 8px}
+.msg-lang{font-weight:600;letter-spacing:.06em}
+.msg-contact{margin:5px 0 0;font-size:13.5px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+.msg-contact a{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;overflow-wrap:anywhere}
+.msg-contact a:hover{color:var(--ink);text-decoration-color:var(--ink)}
+.msg-text{margin:10px 0 0;font-size:14px;max-width:72ch;white-space:pre-line;overflow-wrap:anywhere}
+.msg .meta{margin-bottom:0}
+.inq-tools{align-items:flex-end;border-bottom:1px solid var(--line);padding-top:6px}
+.inq-f{display:flex;flex-direction:column;gap:5px;flex:1 1 180px;min-width:0}
+.inq-f-date{flex:0 1 160px}
+.inq-f>span{font-family:var(--fuente-titulo);font-size:11px;font-weight:600;letter-spacing:var(--tracking-label);text-transform:uppercase;color:var(--label)}
+.inq-f select,.inq-f input[type=date]{width:100%;min-width:0;height:40px;background:var(--panel);border:1px solid var(--line);border-radius:0;padding:0 10px;color:var(--ink);color-scheme:dark}
+[data-theme="claro"] .inq-f input[type=date]{color-scheme:light}
+.inq-tools-acts{display:flex;gap:8px}
+.inq-total{margin:12px 0 10px;font-size:12.5px;color:var(--faint)}
+@media (max-width:640px){
+  .inq-f-date{flex:1 1 40%}
+  .inq-tools-acts{flex:1 1 100%}
+  .inq-tools-acts .btn{flex:1}
+}
+
 .danger-card{border-color:var(--error)}
 .perdida{margin:0;padding-left:20px;color:var(--muted);font-size:14px}
 .perdida li{margin-bottom:4px}
@@ -485,7 +511,7 @@ h2.section{font-family:var(--fuente-titulo);font-weight:700;font-size:22px;line-
   .to-detail{text-decoration-color:var(--muted)}
   /* Safari hace zoom al enfocar cualquier campo de menos de 16px. */
   .field input,.field select,.field textarea,
-  .tools input[type=search],.tools select,
+  .tools input[type=search],.tools select,.tools input[type=date],
   .links-grid input,.comment-box textarea,.member-row select{font-size:16px}
 }
 

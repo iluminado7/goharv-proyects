@@ -22,14 +22,15 @@ class MenuTest extends TestCase
     /**
      * Equipo esta en el menu para todos: la lista le sirve a cualquiera para
      * saber a quien pedirle algo. Lo que cambia es lo que hay adentro, y eso
-     * lo cubre TeamVisibilityTest.
+     * lo cubre TeamVisibilityTest. Consultas web tambien es de todo el equipo
+     * interno: las consultas del sitio las atiende quien pueda.
      */
-    public function test_el_menu_tiene_las_tres_secciones_para_todos(): void
+    public function test_el_menu_tiene_las_cuatro_secciones_para_todos(): void
     {
         foreach ([User::factory()->create(), User::factory()->admin()->create()] as $quien) {
             $html = $this->actingAs($quien)->get(route('projects.index'))->getContent();
 
-            foreach (['>Proyectos</span>', '>Equipo</span>', '>Mi perfil</span>'] as $boton) {
+            foreach (['>Proyectos</span>', '>Consultas web</span>', '>Equipo</span>', '>Mi perfil</span>'] as $boton) {
                 $this->assertStringContainsString($boton, $html);
             }
         }

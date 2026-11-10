@@ -25,6 +25,9 @@ enum ActivityAction: string
     case TareaReabierta     = 'tarea_reabierta';
     case TareaEliminada     = 'tarea_eliminada';
 
+    // Sitio web (cacciatoreabogados.com.ar)
+    case ConsultaRecibida   = 'consulta_recibida';
+
     // Cuentas
     case CuentaDadaDeBaja   = 'cuenta_dada_de_baja';
     case CuentaReactivada   = 'cuenta_reactivada';
@@ -50,6 +53,7 @@ enum ActivityAction: string
             self::TareaCompletada    => 'Tarea completada',
             self::TareaReabierta     => 'Tarea reabierta',
             self::TareaEliminada     => 'Tarea eliminada',
+            self::ConsultaRecibida   => 'Consulta del sitio',
             self::CuentaDadaDeBaja   => 'Cuenta dada de baja',
             self::CuentaReactivada   => 'Cuenta reactivada',
             self::CuentaEditada      => 'Datos de cuenta editados',
@@ -91,13 +95,21 @@ enum ActivityAction: string
         return [self::Ingreso, self::ClaveIncorrecta, self::CorreoInexistente, self::CuentaDeBaja, self::Salida];
     }
 
+    /** Lo que entra por el formulario de cacciatoreabogados.com.ar. */
+    public static function sitio(): array
+    {
+        return [self::ConsultaRecibida];
+    }
+
     public static function proyectos(): array
     {
         // array_diff() compara convirtiendo a texto y un enum no se deja:
         // hay que filtrar comparando los casos en si.
+        $otros = array_merge(self::acceso(), self::sitio());
+
         return array_values(array_filter(
             self::cases(),
-            fn (self $caso) => ! in_array($caso, self::acceso(), true),
+            fn (self $caso) => ! in_array($caso, $otros, true),
         ));
     }
 
